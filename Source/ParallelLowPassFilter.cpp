@@ -34,7 +34,6 @@ void ParallelLowPassFilter::processBlock(
 ParallelLowPassFilter::ParallelLowPassFilter() {
 	cutOffFrequency = 0.0f;
 	sampleRate = 0.0f;
-
 	leftDnBuffer = 0.0f;
 	rightDnBuffer = 0.0f;
 }

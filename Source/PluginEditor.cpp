@@ -12,13 +12,14 @@
 //==============================================================================
 BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
         BreaQAudioProcessor& p, 
-        juce::AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), 
-    audioProcessor (p)
-{
+        juce::AudioProcessorValueTreeState& vts
+    ) : 
+        AudioProcessorEditor (&p), 
+        audioProcessor (p) {
     addAndMakeVisible(crossOverFrequencySlider);
     crossOverFrequencySlider.setSliderStyle(
-        juce::Slider::SliderStyle::RotaryVerticalDrag);
+        juce::Slider::SliderStyle::RotaryVerticalDrag
+    );
     crossOverFrequencyAttachment.reset(
         new juce::AudioProcessorValueTreeState::SliderAttachment(
             vts, "crossOverFrequency", crossOverFrequencySlider
@@ -32,7 +33,8 @@ BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
     
     addAndMakeVisible(crossOverWidthSlider);
     crossOverWidthSlider.setSliderStyle(
-        juce::Slider::SliderStyle::RotaryVerticalDrag);
+        juce::Slider::SliderStyle::RotaryVerticalDrag
+    );
     crossOverWidthAttachment.reset(
         new juce::AudioProcessorValueTreeState::SliderAttachment(
             vts, "crossOverWidth", crossOverWidthSlider
@@ -47,8 +49,7 @@ BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
     setSize (800, 600);
 }
 
-BreaQAudioProcessorEditor::~BreaQAudioProcessorEditor()
-{
+BreaQAudioProcessorEditor::~BreaQAudioProcessorEditor() {
 }
 
 //==============================================================================

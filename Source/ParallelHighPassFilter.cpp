@@ -1,11 +1,11 @@
 #include "ParallelHighPassFilter.h"
 
 void ParallelHighPassFilter::processBlock(
-	float* leftBuffer,
-	float* rightBuffer,
-	const float* leftPointer,
-	const float* rightPointer,
-	int bufferSize) {
+		float* leftBuffer,
+		float* rightBuffer,
+		const float* leftPointer,
+		const float* rightPointer,
+		int bufferSize) {
 	constexpr auto PI = 3.14159265359f;
 	const auto tan = std::tan(PI * cutOffFrequency / sampleRate);
 	const auto a1 = (tan - 1.0f) / (tan + 1.0f);
@@ -34,7 +34,6 @@ void ParallelHighPassFilter::processBlock(
 ParallelHighPassFilter::ParallelHighPassFilter() {
 	cutOffFrequency = 0.0f;
 	sampleRate = 0.0f;
-
 	leftDnBuffer = 0.0f;
 	rightDnBuffer = 0.0f;
 }

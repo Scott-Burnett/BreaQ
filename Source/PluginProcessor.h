@@ -16,33 +16,12 @@
 /**
 */
 
-enum ChainPositions {
-    LowCut,
-    Notch,
-    HighCut
-};
-
 enum Slope {
     DbOct12,
     DbOct24,
     DbOct36,
     DbOct48
 };
-
-struct ChainSettings
-{
-    float notchFrequency{ 0.0f };
-    float notchGainInDecibels{ 0.0f };
-    float notchQuality{ 0.0f };
-
-    float lowCutFrequency{ 0.0f };
-    Slope lowCutSlope{ Slope::DbOct12 };
-
-    float highCutFrequency{ 0.0f };
-    Slope highCutSlope{ Slope::DbOct12 };
-};
-
-ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts);
 
 //==============================================================================
 /**
@@ -90,16 +69,7 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-    /*juce::AudioProcessorValueTreeState apvts{
-        *this, nullptr, "Parameters", createParameterLayout()
-    };*/
-
 private:
-    /*using Filter = juce::dsp::IIR::Filter<float>;
-    using CutFilter = juce::dsp::ProcessorChain<Filter, Filter, Filter, Filter>;
-    using MonoChain = juce::dsp::ProcessorChain<CutFilter, Filter, CutFilter>;
-
-    MonoChain leftChain, rightChain;*/
 
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::AudioProcessorValueTreeState parameters{
@@ -115,8 +85,6 @@ private:
     ParallelLowPassFilter lowPassFilter;
     ParallelHighPassFilter highPassFilter;
 
-    /*void updateNotchFilter(ChainSettings chainSettings);
-    void updateLowCutFilter(ChainSettings chainSettings);*/
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BreaQAudioProcessor)
 };
