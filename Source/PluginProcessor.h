@@ -10,6 +10,7 @@
 
 #include <JuceHeader.h>
 #include <ParallelLowPassFilter.h>
+#include <ParallelHighPassFilter.h>
 
 //==============================================================================
 /**
@@ -108,7 +109,11 @@ private:
     std::atomic<float>* crossOverFrequencyParameter = nullptr;
     std::atomic<float>* crossOverWidthParameter = nullptr;
 
+    float lowPassFrequency;
+    float highPassFrequency;
+
     ParallelLowPassFilter lowPassFilter;
+    ParallelHighPassFilter highPassFilter;
 
     /*void updateNotchFilter(ChainSettings chainSettings);
     void updateLowCutFilter(ChainSettings chainSettings);*/

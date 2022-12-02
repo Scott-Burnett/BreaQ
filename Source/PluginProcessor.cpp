@@ -20,29 +20,8 @@ BreaQAudioProcessor::BreaQAudioProcessor()
     #endif
         .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
 #endif
-        ),
-#else
-    : // ToDo: Old way is better
+        )
 #endif
-    parameters(
-        *this, 
-        nullptr, 
-        juce::Identifier("BreaQ"),
-        {
-            std::make_unique<juce::AudioParameterFloat>(
-                "crossOverFrequency", "Cross Over Frequency", juce::NormalisableRange{
-                    20.0f, 20000.0f, 0.1f, 0.2f, false
-                },
-                500.0f
-            ),
-            std::make_unique<juce::AudioParameterFloat>(
-                "crossOverWidth", "Cross Over Width", juce::NormalisableRange{
-                    20.0f, 20000.0f, 0.1f, 0.2f, false
-                },
-                500.0f
-            )
-        }
-    )
 {
     crossOverFrequencyParameter = parameters.getRawParameterValue("crossOverFrequency");
     crossOverWidthParameter = parameters.getRawParameterValue("crossOverWidth");  
@@ -117,26 +96,8 @@ void BreaQAudioProcessor::changeProgramName (int index, const juce::String& newN
 //==============================================================================
 void BreaQAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
-
-    /*juce::dsp::ProcessSpec spec;
-
-    spec.maximumBlockSize = samplesPerBlock;
-    spec.numChannels = 1;
-    spec.sampleRate = sampleRate;
-
-    leftChain.prepare(spec);
-    rightChain.prepare(spec);
-
-    auto chainSettings = getChainSettings(apvts);
-
-    updateNotchFilter(chainSettings);
-    updateLowCutFilter(chainSettings);*/
-
     lowPassFilter.sampleRate = static_cast<float>(sampleRate);
-    lowPassFilter.initializeOutputBuffers(samplesPerBlock); // ToDo: Fix this
-    
+    highPassFilter.sampleRate = static_cast<float>(sampleRate);
 }
 
 void BreaQAudioProcessor::releaseResources()
@@ -171,8 +132,9 @@ bool BreaQAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) co
 }
 #endif
 
-void BreaQAudioProcessor::processBlock (juce::AudioBuffer<float>& audioBuffer, juce::MidiBuffer& midiMessages)
-{
+void BreaQAudioProcessor::processBlock (
+        juce::AudioBuffer<float>& audioBuffer, 
+        juce::MidiBuffer& midiMessages) {
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
@@ -184,7 +146,10 @@ void BreaQAudioProcessor::processBlock (juce::AudioBuffer<float>& audioBuffer, j
     const auto crossOverFrequency = crossOverFrequencyParameter->load();
     const auto crossOverWidth = crossOverWidthParameter->load();
 
-    lowPassFilter.cutOffFrequency = crossOverFrequency;
+    lowPassFrequency = crossOverFrequency + crossOverWidth;
+    highPassFrequency = crossOverFrequency - crossOverWidth;
+
+    lowPassFilter.cutOffFrequency = lowPassFrequency;
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -207,42 +172,29 @@ void BreaQAudioProcessor::processBlock (juce::AudioBuffer<float>& audioBuffer, j
         bufferSize
     );
 
+    highPassFilter.processBlock(
+        leftHighPassOutputChannel,
+        rightHighPassOutputChannel,
+        leftInputChannel,
+        rightInputChannel,
+        bufferSize
+    );
+
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     auto leftOutputChannel = audioBuffer.getWritePointer(0);
     auto rightOutputChannel = audioBuffer.getWritePointer(1);
 
     for (auto i = 0; i < bufferSize; i++) {
-        // ToDo: Sum Input with High Pass Filter
-        leftOutputChannel[i] = leftLowPassOutputChannel[i];
-        rightOutputChannel[i] = rightLowPassOutputChannel[i];
+        leftOutputChannel[i] = leftLowPassOutputChannel[i] + leftHighPassOutputChannel[i];
+        rightOutputChannel[i] = rightLowPassOutputChannel[i] + rightHighPassOutputChannel[i];
     }
 
-    free(leftHighPassOutputChannel);
-    free(rightHighPassOutputChannel);
-    free(leftLowPassOutputChannel);
-    free(rightLowPassOutputChannel);
-
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    /*
-    auto chainSettings = getChainSettings(apvts);
-
-    updateNotchFilter(chainSettings);
-    updateLowCutFilter(chainSettings);
-
-    juce::dsp::AudioBlock<float> block(buffer);
-    auto leftBlock = block.getSingleChannelBlock(0);
-    auto rightBlock = block.getSingleChannelBlock(1);
-
-    juce::dsp::ProcessContextReplacing<float> leftContext(leftBlock);
-    juce::dsp::ProcessContextReplacing<float> rightContext(rightBlock);
-
-    leftChain.process(leftContext);
-    rightChain.process(rightContext);
-    */
-
-    // const float* leftPointer = audioBuffer.getReadPointer(0);
+    // ??
+    delete(leftHighPassOutputChannel);
+    delete(rightHighPassOutputChannel);
+    delete(leftLowPassOutputChannel);
+    delete(rightLowPassOutputChannel);
 }
 
 //==============================================================================
@@ -265,12 +217,21 @@ void BreaQAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
+
+    juce::MemoryOutputStream mos (destData, true);
+    parameters.state.writeToStream(mos);
 }
 
 void BreaQAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
+
+    auto tree = juce::ValueTree::readFromData(data, sizeInBytes);
+    if (tree.isValid()) {
+        parameters.replaceState(tree);
+        // ToDo: Update everything with new parameters
+    }
 }
 
 /*ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts) {

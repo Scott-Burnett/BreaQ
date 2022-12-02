@@ -2,7 +2,7 @@
 #include <vector>
 #include "JuceHeader.h"
 
-class ParallelLowPassFilter
+class ParallelHighPassFilter
 {
 public:
 	float cutOffFrequency;
@@ -18,3 +18,4 @@ public:
 		const float* rightPointer,
 		int bufferSize);
 };
+

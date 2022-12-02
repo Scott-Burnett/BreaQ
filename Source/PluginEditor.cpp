@@ -64,6 +64,23 @@ void BreaQAudioProcessorEditor::paint (juce::Graphics& g)
 
 void BreaQAudioProcessorEditor::resized()
 {
-    // This is generally where you'll want to lay out the positions of any
-    // subcomponents in your editor..
+    auto bounds = getLocalBounds();
+    auto topPanel = bounds.removeFromTop(bounds.getHeight() * 0.33f);
+
+    auto leftPanelBounds = bounds.removeFromLeft(bounds.getHeight() * 0.33f);
+    auto rightPanelBounds = bounds.removeFromRight(bounds.getHeight() * 0.5f);
+
+    auto crossOverFrequencyControlBounds = 
+        bounds.removeFromTop(bounds.getHeight() * 0.5f);
+    auto crossOverFrequencyLabelBounds = 
+        crossOverFrequencyControlBounds.removeFromBottom(bounds.getHeight() * 0.2f);
+    crossOverFrequencySlider.setBounds(crossOverFrequencyControlBounds);
+    crossOverFrequencyLabel.setBounds(crossOverFrequencyLabelBounds);
+
+    auto crossOverWidthControlBounds = bounds;
+    auto crossOverWidthLabelBounds =
+        crossOverWidthControlBounds.removeFromBottom(bounds.getHeight() * 0.2f);
+    crossOverWidthSlider.setBounds(crossOverWidthControlBounds);
+    crossOverWidthLabel.setBounds(crossOverWidthLabelBounds);
+
 }
