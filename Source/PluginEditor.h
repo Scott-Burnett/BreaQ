@@ -17,7 +17,7 @@
 class BreaQAudioProcessorEditor  : public juce::AudioProcessorEditor
 {
 public:
-    BreaQAudioProcessorEditor (BreaQAudioProcessor&);
+    BreaQAudioProcessorEditor (BreaQAudioProcessor&, juce::AudioProcessorValueTreeState&);
     ~BreaQAudioProcessorEditor() override;
 
     //==============================================================================
@@ -28,6 +28,16 @@ private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     BreaQAudioProcessor& audioProcessor;
+
+    juce::Slider crossOverFrequencySlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> 
+        crossOverFrequencyAttachment;
+    juce::Label crossOverFrequencyLabel;
+
+    juce::Slider crossOverWidthSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
+        crossOverWidthAttachment;
+    juce::Label crossOverWidthLabel;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BreaQAudioProcessorEditor)
 };
