@@ -13,7 +13,8 @@
 BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
         BreaQAudioProcessor& p, 
         juce::AudioProcessorValueTreeState& vts)
-    : AudioProcessorEditor (&p), audioProcessor (p)
+    : AudioProcessorEditor (&p), 
+    audioProcessor (p)
 {
     addAndMakeVisible(crossOverFrequencySlider);
     crossOverFrequencySlider.setSliderStyle(
@@ -42,9 +43,7 @@ BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
     crossOverWidthLabel.setText(
         "Cross Over Width", juce::dontSendNotification
     );
-    
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
+
     setSize (800, 600);
 }
 
@@ -53,22 +52,19 @@ BreaQAudioProcessorEditor::~BreaQAudioProcessorEditor()
 }
 
 //==============================================================================
-void BreaQAudioProcessorEditor::paint (juce::Graphics& g)
-{
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
+void BreaQAudioProcessorEditor::paint (juce::Graphics& g) {
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
 
     g.setColour (juce::Colours::white);
     g.setFont (15.0f);
 }
 
-void BreaQAudioProcessorEditor::resized()
-{
+void BreaQAudioProcessorEditor::resized() {
     auto bounds = getLocalBounds();
     auto topPanel = bounds.removeFromTop(bounds.getHeight() * 0.33f);
 
-    auto leftPanelBounds = bounds.removeFromLeft(bounds.getHeight() * 0.33f);
-    auto rightPanelBounds = bounds.removeFromRight(bounds.getHeight() * 0.5f);
+    auto leftPanelBounds = bounds.removeFromLeft(bounds.getWidth() * 0.33f);
+    auto rightPanelBounds = bounds.removeFromRight(bounds.getWidth() * 0.5f);
 
     auto crossOverFrequencyControlBounds = 
         bounds.removeFromTop(bounds.getHeight() * 0.5f);

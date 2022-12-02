@@ -149,7 +149,11 @@ void BreaQAudioProcessor::processBlock (
     lowPassFrequency = crossOverFrequency + crossOverWidth;
     highPassFrequency = crossOverFrequency - crossOverWidth;
 
+    lowPassFrequency = std::clamp(lowPassFrequency, 20.0f, 20000.0f);
+    highPassFrequency = std::clamp(highPassFrequency, 20.0f, 20000.0f);
+
     lowPassFilter.cutOffFrequency = lowPassFrequency;
+    highPassFilter.cutOffFrequency = highPassFrequency;
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -186,8 +190,26 @@ void BreaQAudioProcessor::processBlock (
     auto rightOutputChannel = audioBuffer.getWritePointer(1);
 
     for (auto i = 0; i < bufferSize; i++) {
-        leftOutputChannel[i] = leftLowPassOutputChannel[i] + leftHighPassOutputChannel[i];
-        rightOutputChannel[i] = rightLowPassOutputChannel[i] + rightHighPassOutputChannel[i];
+        float leftSample = 0.5f * (leftLowPassOutputChannel[i] + leftHighPassOutputChannel[i]);
+        /*leftSample =
+            leftSample > 1.0f
+            ? 1.0f
+            : leftSample < -1.0f
+            ? -1.0f
+            : leftSample;*/
+        leftOutputChannel[i] = leftSample;
+
+        float rightSample = 0.5f * (rightLowPassOutputChannel[i] + rightHighPassOutputChannel[i]);
+        /*rightSample =
+            rightSample > 1.0f
+            ? 1.0f
+            : rightSample < -1.0f
+            ? -1.0f
+            : rightSample;*/
+        rightOutputChannel[i] = rightSample;
+
+        // leftOutputChannel[i] = leftLowPassOutputChannel[i];
+        // rightOutputChannel[i] = rightLowPassOutputChannel[i];
     }
 
     // ??
@@ -263,7 +285,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout BreaQAudioProcessor::createP
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         "crossOverWidth", "Cross Over Width", juce::NormalisableRange{
-            20.0f, 20000.0f, 0.1f, 0.2f, false
+            -500.0f, 500.0f, 0.1f, 1.0f, false
         },
         500.0f
     ));

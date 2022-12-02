@@ -17,5 +17,7 @@ public:
 		const float* leftPointer,
 		const float* rightPointer,
 		int bufferSize);
+
+	ParallelHighPassFilter();
 };
 
