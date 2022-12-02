@@ -280,14 +280,14 @@ juce::AudioProcessorValueTreeState::ParameterLayout BreaQAudioProcessor::createP
         "crossOverFrequency", "Cross Over Frequency", juce::NormalisableRange{
             20.0f, 20000.0f, 0.1f, 0.2f, false
         },
-        500.0f
+        1000.0f
     ));
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         "crossOverWidth", "Cross Over Width", juce::NormalisableRange{
             -500.0f, 500.0f, 0.1f, 1.0f, false
         },
-        500.0f
+        40.0f
     ));
 
     /*layout.add(std::make_unique<juce::AudioParameterFloat>(
