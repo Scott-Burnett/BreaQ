@@ -20,6 +20,10 @@ BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
     crossOverFrequencySlider.setSliderStyle(
         juce::Slider::SliderStyle::RotaryVerticalDrag
     );
+    crossOverFrequencySlider.setTextBoxStyle(
+        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
+    );
+    crossOverFrequencySlider.hideTextBox(false);
     crossOverFrequencyAttachment.reset(
         new juce::AudioProcessorValueTreeState::SliderAttachment(
             vts, "crossOverFrequency", crossOverFrequencySlider
@@ -35,6 +39,10 @@ BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
     crossOverWidthSlider.setSliderStyle(
         juce::Slider::SliderStyle::RotaryVerticalDrag
     );
+    crossOverWidthSlider.setTextBoxStyle(
+        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
+    );
+    crossOverWidthSlider.hideTextBox(false);
     crossOverWidthAttachment.reset(
         new juce::AudioProcessorValueTreeState::SliderAttachment(
             vts, "crossOverWidth", crossOverWidthSlider
@@ -50,6 +58,10 @@ BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
     lowPassOrderSlider.setSliderStyle(
         juce::Slider::SliderStyle::RotaryVerticalDrag
     );
+    lowPassOrderSlider.setTextBoxStyle(
+        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
+    );
+    lowPassOrderSlider.hideTextBox(false);
     lowPassOrderAttachment.reset(
         new juce::AudioProcessorValueTreeState::SliderAttachment(
             vts, "lowPassRollOff", lowPassOrderSlider
@@ -60,6 +72,10 @@ BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
     highPassOrderSlider.setSliderStyle(
         juce::Slider::SliderStyle::RotaryVerticalDrag
     );
+    highPassOrderSlider.setTextBoxStyle(
+        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
+    );
+    highPassOrderSlider.hideTextBox(false);
     highPassOrderAttachment.reset(
         new juce::AudioProcessorValueTreeState::SliderAttachment(
             vts, "highPassRollOff", highPassOrderSlider
@@ -86,6 +102,13 @@ void BreaQAudioProcessorEditor::resized() {
 
     auto leftPanelBounds = bounds.removeFromLeft(bounds.getWidth() * 0.33f);
     auto rightPanelBounds = bounds.removeFromRight(bounds.getWidth() * 0.5f);
+    
+    auto peripheralControlsWidth = bounds.getWidth() * 0.3f;
+    auto leftPeripheralControlsPanel = bounds.removeFromLeft(peripheralControlsWidth);
+    auto rightPeripheralControlsPanel = bounds.removeFromRight(peripheralControlsWidth);
+
+    lowPassOrderSlider.setBounds(leftPeripheralControlsPanel.removeFromTop(peripheralControlsWidth));
+    highPassOrderSlider.setBounds(rightPeripheralControlsPanel.removeFromTop(peripheralControlsWidth));
 
     auto crossOverFrequencyControlBounds = 
         bounds.removeFromTop(bounds.getHeight() * 0.5f);
@@ -98,12 +121,5 @@ void BreaQAudioProcessorEditor::resized() {
     auto crossOverWidthLabelBounds =
         crossOverWidthControlBounds.removeFromBottom(bounds.getHeight() * 0.2f);
     crossOverWidthSlider.setBounds(crossOverWidthControlBounds);
-    crossOverWidthLabel.setBounds(crossOverWidthLabelBounds);
-
-    auto rollOffControlsBounds = crossOverFrequencyControlBounds.removeFromTop(crossOverFrequencyControlBounds.getHeight() * 0.5f);
-    auto lowPassRollOffOrderControlBounds = rollOffControlsBounds.removeFromRight(crossOverFrequencyControlBounds.getWidth() * 0.5f);
-    auto highPassRollOffOrderControlBounds = rollOffControlsBounds;
-
-    lowPassOrderSlider.setBounds(lowPassRollOffOrderControlBounds);
-    highPassOrderSlider.setBounds(highPassRollOffOrderControlBounds);
+    crossOverWidthLabel.setBounds(crossOverWidthLabelBounds); 
 }
