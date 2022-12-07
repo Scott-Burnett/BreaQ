@@ -25,8 +25,6 @@ public:
     void resized() override;
 
 private:
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
     BreaQAudioProcessor& audioProcessor;
 
     juce::Slider crossOverFrequencySlider;
@@ -38,6 +36,14 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
         crossOverWidthAttachment;
     juce::Label crossOverWidthLabel;
+
+    juce::Slider lowPassOrderSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
+        lowPassOrderAttachment;
+
+    juce::Slider highPassOrderSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
+        highPassOrderAttachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BreaQAudioProcessorEditor)
 };

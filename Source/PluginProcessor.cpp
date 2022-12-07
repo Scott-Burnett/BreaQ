@@ -25,6 +25,8 @@ BreaQAudioProcessor::BreaQAudioProcessor()
 {
     crossOverFrequencyParameter = parameters.getRawParameterValue("crossOverFrequency");
     crossOverWidthParameter = parameters.getRawParameterValue("crossOverWidth");  
+    highPassOrderParameter = parameters.getRawParameterValue("highPassRollOff");
+    lowPassOrderParameter = parameters.getRawParameterValue("lowPassRollOff");
 }
 
 BreaQAudioProcessor::~BreaQAudioProcessor() {
@@ -88,8 +90,7 @@ void BreaQAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     highPassFilter.sampleRate = static_cast<float>(sampleRate);
 }
 
-void BreaQAudioProcessor::releaseResources()
-{
+void BreaQAudioProcessor::releaseResources() {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
 }
@@ -100,15 +101,10 @@ bool BreaQAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) co
     juce::ignoreUnused (layouts);
     return true;
   #else
-    // This is the place where you check if the layout is supported.
-    // In this template code we only support mono or stereo.
-    // Some plugin hosts, such as certain GarageBand versions, will only
-    // load plugins that support stereo bus layouts.
     if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
      && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
         return false;
 
-    // This checks if the input layout matches the output layout
    #if ! JucePlugin_IsSynth
     if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
         return false;
@@ -132,6 +128,11 @@ void BreaQAudioProcessor::processBlock (
     // ToDo: Move These
     const auto crossOverFrequency = crossOverFrequencyParameter->load();
     const auto crossOverWidth = crossOverWidthParameter->load();
+    const auto highPassOrder = (int)highPassOrderParameter->load();
+    const auto lowPassOrder = (int)lowPassOrderParameter->load();
+
+    highPassFilter.f_order = highPassOrder + 1;
+    lowPassFilter.f_order = lowPassOrder + 1;
 
     lowPassFrequency = crossOverFrequency + crossOverWidth;
     highPassFrequency = crossOverFrequency - crossOverWidth;
@@ -178,10 +179,12 @@ void BreaQAudioProcessor::processBlock (
 
     for (auto i = 0; i < bufferSize; i++) {
         float leftSample = 0.5f * (leftLowPassOutputChannel[i] + leftHighPassOutputChannel[i]);
-        leftOutputChannel[i] = leftSample;
+        //leftOutputChannel[i] = leftSample;
+        leftOutputChannel[i] = leftHighPassOutputChannel[i];
 
         float rightSample = 0.5f * (rightLowPassOutputChannel[i] + rightHighPassOutputChannel[i]);
-        rightOutputChannel[i] = rightSample;
+        //rightOutputChannel[i] = rightSample;
+        rightOutputChannel[i] = rightHighPassOutputChannel[i];
     }
 
     // ??
@@ -230,6 +233,27 @@ juce::AudioProcessorValueTreeState::ParameterLayout BreaQAudioProcessor::createP
         },
         40.0f
     ));
+
+    juce::StringArray rollOffOrderParameterOptions;
+    for (int i = 0; i < 60; i += 12) {
+        juce::String str;
+        str << i << " db/Oct";
+        rollOffOrderParameterOptions.add(str);
+    }
+
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        "lowPassRollOff", 
+        "Low Pass Roll Off", 
+        rollOffOrderParameterOptions,
+        0
+    ));
+
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        "highPassRollOff",
+        "High Pass Roll Off",
+        rollOffOrderParameterOptions,
+        0
+        ));
 
     return layout;
 }

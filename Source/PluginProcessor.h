@@ -72,15 +72,19 @@ public:
 private:
 
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
-    juce::AudioProcessorValueTreeState parameters{
+    juce::AudioProcessorValueTreeState parameters {
         *this, nullptr, "Parameters", createParameterLayout()
     };
 
     std::atomic<float>* crossOverFrequencyParameter = nullptr;
     std::atomic<float>* crossOverWidthParameter = nullptr;
+    std::atomic<float>* highPassOrderParameter = nullptr;
+    std::atomic<float>* lowPassOrderParameter = nullptr;
 
     float lowPassFrequency;
+    Slope lowPassOrder;
     float highPassFrequency;
+    Slope highPassOrder;
 
     ParallelLowPassFilter lowPassFilter;
     ParallelHighPassFilter highPassFilter;

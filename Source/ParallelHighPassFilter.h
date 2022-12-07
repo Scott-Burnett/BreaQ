@@ -7,9 +7,7 @@ class ParallelHighPassFilter
 public:
 	float cutOffFrequency;
 	float sampleRate;
-
-	float leftDnBuffer;
-	float rightDnBuffer;
+	int f_order;
 
 	void processBlock(
 		float* leftBuffer,
@@ -20,5 +18,9 @@ public:
 	);
 
 	ParallelHighPassFilter();
+
+private:
+	float leftDnBuffer;
+	float rightDnBuffer;
 };
 
