@@ -11,9 +11,7 @@ void BreaQLookAndFeel::drawRotarySlider(
 		const float rotaryStartAngle,
 		const float rotaryEndAngle,
 		juce::Slider& slider) {
-
     auto bounds = juce::Rectangle<int>(x, y, width, height).toFloat().reduced(10);
-
     auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) / 2.0f;
     auto toAngle = rotaryStartAngle + sliderPos * (rotaryEndAngle - rotaryStartAngle);
     auto lineW = juce::jmin(8.0f, radius * 0.5f);
@@ -27,9 +25,10 @@ void BreaQLookAndFeel::drawRotarySlider(
         0.0f,
         rotaryStartAngle,
         rotaryEndAngle,
-        true);
+        true
+    );
 
-    g.setColour(unusedArcColour);
+    g.setColour(usedArcColour);
     g.strokePath(
         backgroundArc, 
         juce::PathStrokeType(
@@ -48,12 +47,14 @@ void BreaQLookAndFeel::drawRotarySlider(
             0.0f,
             rotaryStartAngle,
             toAngle,
-            true);
+            true
+        );
 
         g.setColour(usedArcColour);
         g.strokePath(
             valueArc, 
-            juce::PathStrokeType(lineW, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+            juce::PathStrokeType(lineW, juce::PathStrokeType::curved, juce::PathStrokeType::rounded)
+        );
     }
 
     juce::Point<float> thumbPoint(

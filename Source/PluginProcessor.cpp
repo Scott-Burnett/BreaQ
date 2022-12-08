@@ -218,6 +218,7 @@ void BreaQAudioProcessor::setStateInformation (const void* data, int sizeInBytes
 juce::AudioProcessorValueTreeState::ParameterLayout BreaQAudioProcessor::createParameterLayout() {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
+    // Cross Over Controls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         "crossOverFrequency", "Cross Over Frequency", juce::NormalisableRange{
             20.0f, 20000.0f, 0.1f, 0.2f, false
@@ -252,6 +253,106 @@ juce::AudioProcessorValueTreeState::ParameterLayout BreaQAudioProcessor::createP
         rollOffOrderParameterOptions,
         0
         ));
+
+    // Low Pass Envelope Controls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "lowPassAttack", "Attack", juce::NormalisableRange{
+            0.0f, 1000.0f, 0.1f, 1.0f, false
+        },
+        0.0f
+    ));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "lowPassDecay", "Decay", juce::NormalisableRange{
+            0.0f, 1000.0f, 0.1f, 1.0f, false
+        },
+        0.0f
+    ));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "lowPassSustain", "Sustain", juce::NormalisableRange{
+            0.0f, 1000.0f, 0.1f, 1.0f, false
+        },
+        0.0f
+    ));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "lowPassRelease", "Release", juce::NormalisableRange{
+            0.0f, 1000.0f, 0.1f, 1.0f, false
+        },
+        0.0f
+    ));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "lowPassAttackCurve", "Attack Curve", juce::NormalisableRange{
+            0.0f, 2.0f, 0.1f, 1.0f, false
+        },
+        1.0f
+    ));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "lowPassDecayCurve", "Decay Curve", juce::NormalisableRange{
+            0.0f, 2.0f, 0.1f, 1.0f, false
+        },
+        1.0f
+    ));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "lowPassReleaseCurve", "Release Curve", juce::NormalisableRange{
+            0.0f, 2.0f, 0.1f, 1.0f, false
+        },
+        1.0f
+    ));
+
+    // High Pass Envelope Controls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "highPassAttack", "Attack", juce::NormalisableRange{
+            0.0f, 1000.0f, 0.1f, 1.0f, false
+        },
+        0.0f
+    ));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "highPassDecay", "Decay", juce::NormalisableRange{
+            0.0f, 1000.0f, 0.1f, 1.0f, false
+        },
+        0.0f
+    ));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "highPassSustain", "Sustain", juce::NormalisableRange{
+            0.0f, 1000.0f, 0.1f, 1.0f, false
+        },
+        0.0f
+    ));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "highPassRelease", "Release", juce::NormalisableRange{
+            0.0f, 1000.0f, 0.1f, 1.0f, false
+        },
+        0.0f
+    ));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "highPassAttackCurve", "Attack Curve", juce::NormalisableRange{
+            0.0f, 2.0f, 0.1f, 1.0f, false
+        },
+        1.0f
+    ));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "highPassDecayCurve", "Decay Curve", juce::NormalisableRange{
+            0.0f, 2.0f, 0.1f, 1.0f, false
+        },
+        1.0f
+    ));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "highPassReleaseCurve", "Release Curve", juce::NormalisableRange{
+            0.0f, 2.0f, 0.1f, 1.0f, false
+        },
+        1.0f
+    ));
 
     return layout;
 }

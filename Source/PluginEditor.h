@@ -29,6 +29,7 @@ private:
     BreaQAudioProcessor& audioProcessor;
     BreaQLookAndFeel breaQLookAndFeel;
 
+    // Cross Over Controls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     juce::Slider crossOverFrequencySlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> 
         crossOverFrequencyAttachment;
@@ -46,6 +47,68 @@ private:
     juce::Slider highPassOrderSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
         highPassOrderAttachment;
+
+    // High Pass Envelope Controls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    juce::Slider highPassAttackSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
+        highPassAttackAttachment;
+
+    juce::Slider highPassAttackCurveSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
+        highPassAttackCurveAttachment;
+
+    juce::Slider highPassDecaySlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
+        highPassDecayAttachment;
+
+    juce::Slider highPassDecayCurveSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
+        highPassDecayCurveAttachment;
+
+    juce::Slider highPassSustainSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
+        highPassSustainAttachment;
+
+    juce::Slider highPassReleaseSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
+        highPassReleaseAttachment;
+
+    juce::Slider highPassReleaseCurveSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
+        highPassReleaseCurveAttachment;
+
+    // Low Pass Envelope Controls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    juce::Slider lowPassAttackSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
+        lowPassAttackAttachment;
+
+    juce::Slider lowPassAttackCurveSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
+        lowPassAttackCurveAttachment;
+
+    juce::Slider lowPassDecaySlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
+        lowPassDecayAttachment;
+
+    juce::Slider lowPassDecayCurveSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
+        lowPassDecayCurveAttachment;
+
+    juce::Slider lowPassSustainSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
+        lowPassSustainAttachment;
+
+    juce::Slider lowPassReleaseSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
+        lowPassReleaseAttachment;
+
+    juce::Slider lowPassReleaseCurveSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
+        lowPassReleaseCurveAttachment;
+
+    
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BreaQAudioProcessorEditor)
 };

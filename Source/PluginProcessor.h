@@ -82,9 +82,9 @@ private:
     std::atomic<float>* lowPassOrderParameter = nullptr;
 
     float lowPassFrequency;
-    Slope lowPassOrder;
+    // Slope lowPassOrder;
     float highPassFrequency;
-    Slope highPassOrder;
+    // Slope highPassOrder;
 
     ParallelLowPassFilter lowPassFilter;
     ParallelHighPassFilter highPassFilter;
