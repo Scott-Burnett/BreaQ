@@ -10,6 +10,7 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include "BreaQLookAndFeel.h"
 
 //==============================================================================
 /**
@@ -26,6 +27,7 @@ public:
 
 private:
     BreaQAudioProcessor& audioProcessor;
+    BreaQLookAndFeel breaQLookAndFeel;
 
     juce::Slider crossOverFrequencySlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> 

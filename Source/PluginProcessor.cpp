@@ -179,12 +179,10 @@ void BreaQAudioProcessor::processBlock (
 
     for (auto i = 0; i < bufferSize; i++) {
         float leftSample = 0.5f * (leftLowPassOutputChannel[i] + leftHighPassOutputChannel[i]);
-        //leftOutputChannel[i] = leftSample;
-        leftOutputChannel[i] = leftHighPassOutputChannel[i];
+        leftOutputChannel[i] = leftSample;
 
         float rightSample = 0.5f * (rightLowPassOutputChannel[i] + rightHighPassOutputChannel[i]);
-        //rightOutputChannel[i] = rightSample;
-        rightOutputChannel[i] = rightHighPassOutputChannel[i];
+        rightOutputChannel[i] = rightSample;
     }
 
     // ??
@@ -235,7 +233,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout BreaQAudioProcessor::createP
     ));
 
     juce::StringArray rollOffOrderParameterOptions;
-    for (int i = 0; i < 60; i += 12) {
+    for (int i = 12; i < 60; i += 12) {
         juce::String str;
         str << i << " db/Oct";
         rollOffOrderParameterOptions.add(str);

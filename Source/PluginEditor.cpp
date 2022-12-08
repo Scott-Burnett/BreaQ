@@ -83,9 +83,11 @@ BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
     );
 
     setSize (800, 600);
+    juce::LookAndFeel::setDefaultLookAndFeel(&breaQLookAndFeel);
 }
 
 BreaQAudioProcessorEditor::~BreaQAudioProcessorEditor() {
+    juce::LookAndFeel::setDefaultLookAndFeel(nullptr);
 }
 
 //==============================================================================
