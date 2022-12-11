@@ -28,16 +28,20 @@ BreaQAudioProcessor::BreaQAudioProcessor()
     highPassOrderParameter = parameters.getRawParameterValue("highPassRollOff");
     lowPassOrderParameter = parameters.getRawParameterValue("lowPassRollOff");
 
+    lowPassInitialParameter = parameters.getRawParameterValue("lowPassInitial");
     lowPassAttackParameter = parameters.getRawParameterValue("lowPassAttack");
     lowPassAttackCurveParameter = parameters.getRawParameterValue("lowPassAttackCurve");
+    lowPassPeakParameter = parameters.getRawParameterValue("lowPassPeak");
     lowPassDecayParameter = parameters.getRawParameterValue("lowPassDecay");
     lowPassDecayCurveParameter = parameters.getRawParameterValue("lowPassDecayCurve");
     lowPassSustainParameter = parameters.getRawParameterValue("lowPassSustain");
     lowPassReleaseParameter = parameters.getRawParameterValue("lowPassRelease");
     lowPassReleaseCurveParameter = parameters.getRawParameterValue("lowPassReleaseCurve");
 
+    highPassInitialParameter = parameters.getRawParameterValue("highPassInitial");
     highPassAttackParameter = parameters.getRawParameterValue("highPassAttack");
     highPassAttackCurveParameter = parameters.getRawParameterValue("highPassAttackCurve");
+    highPassPeakParameter = parameters.getRawParameterValue("highPassPeak");
     highPassDecayParameter = parameters.getRawParameterValue("highPassDecay");
     highPassDecayCurveParameter = parameters.getRawParameterValue("highPassDecayCurve");
     highPassSustainParameter = parameters.getRawParameterValue("highPassSustain");
@@ -172,32 +176,40 @@ void BreaQAudioProcessor::processBlock (
 
     // Filters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+    const auto lowPassInitial = lowPassInitialParameter->load();
     const auto lowPassAttack = lowPassAttackParameter->load();
     const auto lowPassAttackCurve = lowPassAttackCurveParameter->load();
+    const auto lowPassPeak = lowPassPeakParameter->load();
     const auto lowPassDecay = lowPassDecayParameter->load();
     const auto lowPassDecayCurve = lowPassDecayCurveParameter->load();
     const auto lowPassSustain = lowPassSustainParameter->load();
     const auto lowPassRelease = lowPassReleaseParameter->load();
     const auto lowPassReleaseCurve = lowPassReleaseCurveParameter->load();
 
+    lowPassADSR.initialLevel = lowPassInitial;
     lowPassADSR.attackTime = lowPassAttack;
     lowPassADSR.attackCurve = lowPassAttackCurve;
+    lowPassADSR.peakLevel = lowPassPeak;
     lowPassADSR.decayTime = lowPassDecay;
     lowPassADSR.decayCurve = lowPassDecayCurve;
     lowPassADSR.sustainLevel = lowPassSustain;
     lowPassADSR.releaseTime = lowPassRelease;
     lowPassADSR.releaseCurve = lowPassReleaseCurve;
 
+    const auto highPassInitial = highPassInitialParameter->load();
     const auto highPassAttack = highPassAttackParameter->load();
     const auto highPassAttackCurve = highPassAttackCurveParameter->load();
+    const auto highPassPeak = highPassPeakParameter->load();
     const auto highPassDecay = highPassDecayParameter->load();
     const auto highPassDecayCurve = highPassDecayCurveParameter->load();
     const auto highPassSustain = highPassSustainParameter->load();
     const auto highPassRelease = highPassReleaseParameter->load();
     const auto highPassReleaseCurve = highPassReleaseCurveParameter->load();
 
+    highPassADSR.initialLevel = highPassInitial;
     highPassADSR.attackTime = highPassAttack;
     highPassADSR.attackCurve = highPassAttackCurve;
+    highPassADSR.peakLevel = highPassPeak;
     highPassADSR.decayTime = highPassDecay;
     highPassADSR.decayCurve = highPassDecayCurve;
     highPassADSR.sustainLevel = highPassSustain;
@@ -343,7 +355,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout BreaQAudioProcessor::createP
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         "lowPassAttack", "Attack", juce::NormalisableRange{
-            0.0f, 1.0f, 0.000001f, 1.0F, false
+            0.0f, 0.5f, 0.000001f, 0.2f, false
         },
         0.5f
     ));
@@ -357,7 +369,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout BreaQAudioProcessor::createP
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         "lowPassDecay", "Decay", juce::NormalisableRange{
-            0.0f, 1.0f, 0.000001f, 1.0f, false
+            0.0f, 1.0f, 0.000001f, 0.2f, false
         },
         0.5f
     ));
@@ -371,7 +383,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout BreaQAudioProcessor::createP
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         "lowPassRelease", "Release", juce::NormalisableRange{
-            0.0f, 1.0f, 0.000001f, 1.0f, false
+            0.0f, 1.0f, 0.000001f, 0.2f, false
         },
         0.5f
     ));
@@ -408,7 +420,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout BreaQAudioProcessor::createP
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         "highPassAttack", "Attack", juce::NormalisableRange{
-            0.0f, 1.0f, 0.000001f, 1.0f, false
+            0.0f, 0.5f, 0.000001f, 0.2f, false
         },
         0.5f
     ));
@@ -422,7 +434,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout BreaQAudioProcessor::createP
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         "highPassDecay", "Decay", juce::NormalisableRange{
-            0.0f, 1.0f, 0.000001f, 1.0F, false
+            0.0f, 1.0f, 0.000001f, 0.2f, false
         },
         0.5f
     ));
@@ -436,7 +448,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout BreaQAudioProcessor::createP
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         "highPassRelease", "Release", juce::NormalisableRange{
-            0.0f, 1.0f, 0.000001f, 1.0f, false
+            0.0f, 1.0f, 0.000001f, 0.2f, false
         },
         0.5f
     ));

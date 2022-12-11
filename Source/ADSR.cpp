@@ -70,7 +70,12 @@ void ADSR::incrementTime() {
 			return;
 		}
 
-		attenuation = // No need to check for zero. zero attack time would trigger above
+		if (peakLevel == initialLevel) {
+			attenuation = peakLevel;
+			return;
+		}
+
+		attenuation = 
 			pow(
 				initialLevel + timeSinceTrigger / attackTime * (peakLevel - initialLevel),
 				attackCurve
@@ -85,7 +90,12 @@ void ADSR::incrementTime() {
 			return;
 		}
 
-		attenuation = // No need to check for zero. zero decay time would trigger above
+		if (sustainLevel == peakLevel) {
+			attenuation = sustainLevel;
+			return;
+		}
+
+		attenuation =
 			pow(
 				peakLevel + timeSinceDecay / decayTime * (sustainLevel - peakLevel),
 				decayCurve
@@ -98,13 +108,14 @@ void ADSR::incrementTime() {
 
 	case ADSR::State::Release:
 		timeSinceRelease += sampleDuration;
-		if (timeSinceRelease >= releaseTime) {
+		if (timeSinceRelease >= releaseTime ||
+			sustainLevel == 0.0f) {
 			state = ADSR::State::Idle;
 			attenuation = 0.0f;
 			return;
 		}
 
-		attenuation = // No need to check for zero. zero decay time would trigger above
+		attenuation = 
 			pow(
 				sustainLevel + timeSinceRelease / releaseTime * (0.0f - sustainLevel),
 				releaseCurve

@@ -52,10 +52,10 @@ BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
         )
     );
 
-    addAndMakeVisible(crossOverFrequencyLabel);
+    /*addAndMakeVisible(crossOverFrequencyLabel);
     crossOverFrequencyLabel.setText(
         "Cross Over Frequency", juce::dontSendNotification
-    );
+    );*/
     
     addAndMakeVisible(crossOverWidthSlider);
     crossOverWidthSlider.setSliderStyle(
@@ -71,10 +71,10 @@ BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
         )
     );
 
-    addAndMakeVisible(crossOverWidthLabel);
+    /*addAndMakeVisible(crossOverWidthLabel);
     crossOverWidthLabel.setText(
         "Cross Over Width", juce::dontSendNotification
-    );
+    );*/
 
     addAndMakeVisible(lowPassOrderSlider);
     lowPassOrderSlider.setSliderStyle(
@@ -403,16 +403,16 @@ void BreaQAudioProcessorEditor::resized() {
 
     auto crossOverFrequencyControlBounds = 
         bounds.removeFromTop(bounds.getHeight() * 0.5f);
-    auto crossOverFrequencyLabelBounds = 
-        crossOverFrequencyControlBounds.removeFromBottom(bounds.getHeight() * 0.2f);
     crossOverFrequencySlider.setBounds(crossOverFrequencyControlBounds);
-    crossOverFrequencyLabel.setBounds(crossOverFrequencyLabelBounds);
+    /*auto crossOverFrequencyLabelBounds =
+        crossOverFrequencyControlBounds.removeFromBottom(bounds.getHeight() * 0.2f);*/
+    /*crossOverFrequencyLabel.setBounds(crossOverFrequencyLabelBounds);*/
 
     auto crossOverWidthControlBounds = bounds;
-    auto crossOverWidthLabelBounds =
-        crossOverWidthControlBounds.removeFromBottom(bounds.getHeight() * 0.2f);
     crossOverWidthSlider.setBounds(crossOverWidthControlBounds);
-    crossOverWidthLabel.setBounds(crossOverWidthLabelBounds);
+    /*auto crossOverWidthLabelBounds =
+        crossOverWidthControlBounds.removeFromBottom(bounds.getHeight() * 0.2f);*/
+    /*crossOverWidthLabel.setBounds(crossOverWidthLabelBounds);*/
 
     // Left Panel %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -420,6 +420,7 @@ void BreaQAudioProcessorEditor::resized() {
 
     auto controlHeight = leftPanelBounds.getHeight() / 3;
     int controlWidth = leftPanelBounds.getWidth() / 6;
+    int indent = controlWidth / 5;
     const auto controlExpansion = 3;
 
     auto leftEnvelopeControlsBounds = leftPanelBounds.removeFromTop(controlHeight);
@@ -430,7 +431,7 @@ void BreaQAudioProcessorEditor::resized() {
     auto leftSustainBounds = leftEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
 
     leftEnvelopeControlsBounds = leftPanelBounds.removeFromTop(controlHeight);
-    leftEnvelopeControlsBounds.removeFromLeft(controlWidth);
+    leftEnvelopeControlsBounds.removeFromLeft(indent);
     auto leftAttackBounds = leftEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
     leftEnvelopeControlsBounds.removeFromLeft(controlWidth);
     auto leftDecayBounds = leftEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
@@ -439,6 +440,8 @@ void BreaQAudioProcessorEditor::resized() {
     leftEnvelopeControlsBounds.removeFromLeft(controlWidth);
 
     leftEnvelopeControlsBounds = leftPanelBounds.removeFromTop(controlHeight);
+    leftEnvelopeControlsBounds.removeFromLeft(indent);
+    leftEnvelopeControlsBounds.removeFromLeft(indent);
     auto leftAttackCurveBounds = leftEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
     leftEnvelopeControlsBounds.removeFromLeft(controlWidth);
     auto leftDecayCurveBounds = leftEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
@@ -493,7 +496,7 @@ void BreaQAudioProcessorEditor::resized() {
     auto rightSustainBounds = rightEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
 
     rightEnvelopeControlsBounds = rightPanelBounds.removeFromTop(controlHeight);
-    rightEnvelopeControlsBounds.removeFromLeft(controlWidth);
+    rightEnvelopeControlsBounds.removeFromLeft(indent);
     auto rightAttackBounds = rightEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
     rightEnvelopeControlsBounds.removeFromLeft(controlWidth);
     auto rightDecayBounds = rightEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
@@ -502,6 +505,8 @@ void BreaQAudioProcessorEditor::resized() {
     rightEnvelopeControlsBounds.removeFromLeft(controlWidth);
 
     rightEnvelopeControlsBounds = rightPanelBounds.removeFromTop(controlHeight);
+    rightEnvelopeControlsBounds.removeFromLeft(indent);
+    rightEnvelopeControlsBounds.removeFromLeft(indent);
     auto rightAttackCurveBounds = rightEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
     rightEnvelopeControlsBounds.removeFromLeft(controlWidth);
     auto rightDecayCurveBounds = rightEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
