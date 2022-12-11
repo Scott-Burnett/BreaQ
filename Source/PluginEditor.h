@@ -13,7 +13,7 @@
 #include "BreaQLookAndFeel.h"
 
 //==============================================================================
-/**
+/*
 */
 class BreaQAudioProcessorEditor  : public juce::AudioProcessorEditor
 {
@@ -30,6 +30,7 @@ private:
     BreaQLookAndFeel breaQLookAndFeel;
 
     // Cross Over Controls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
     juce::Slider crossOverFrequencySlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> 
         crossOverFrequencyAttachment;
@@ -50,6 +51,10 @@ private:
 
     // High Pass Envelope Controls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+    juce::Slider highPassInitialSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
+        highPassInitialAttachment;
+
     juce::Slider highPassAttackSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
         highPassAttackAttachment;
@@ -57,6 +62,10 @@ private:
     juce::Slider highPassAttackCurveSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
         highPassAttackCurveAttachment;
+
+    juce::Slider highPassPeakSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
+        highPassPeakAttachment;
 
     juce::Slider highPassDecaySlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
@@ -80,6 +89,10 @@ private:
 
     // Low Pass Envelope Controls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+    juce::Slider lowPassInitialSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
+        lowPassInitialAttachment;
+
     juce::Slider lowPassAttackSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
         lowPassAttackAttachment;
@@ -87,6 +100,10 @@ private:
     juce::Slider lowPassAttackCurveSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
         lowPassAttackCurveAttachment;
+
+    juce::Slider lowPassPeakSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
+        lowPassPeakAttachment;
 
     juce::Slider lowPassDecaySlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
@@ -107,8 +124,6 @@ private:
     juce::Slider lowPassReleaseCurveSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
         lowPassReleaseCurveAttachment;
-
-    
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BreaQAudioProcessorEditor)
 };

@@ -1,9 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="pwa3iP" name="BreaQ" projectType="audioplug" useAppConfig="0"
-              addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1">
+              addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
+              pluginCharacteristicsValue="pluginWantsMidiIn" pluginManufacturer="The Breakfast Factory"
+              companyName="The Breakfast Factory" companyEmail="thebreakfastfactoryyay@gmail.com">
   <MAINGROUP id="a5UCxf" name="BreaQ">
     <GROUP id="{429EAC7B-C196-BF01-2C16-93E8F8D785CB}" name="Source">
+      <FILE id="UyaDhu" name="ParallelHighPassFilter.h" compile="0" resource="0"
+            file="Source/ParallelHighPassFilter.h"/>
+      <FILE id="FNU3o9" name="ParallelLowPassFilter.cpp" compile="1" resource="0"
+            file="Source/ParallelLowPassFilter.cpp"/>
+      <FILE id="oGx0FO" name="ParallelLowPassFilter.h" compile="0" resource="0"
+            file="Source/ParallelLowPassFilter.h"/>
+      <FILE id="vjYc0W" name="ParallelHighPassFilter.cpp" compile="1" resource="0"
+            file="Source/ParallelHighPassFilter.cpp"/>
+      <FILE id="xt3S16" name="BreaQLookAndFeel.cpp" compile="1" resource="0"
+            file="Source/BreaQLookAndFeel.cpp"/>
+      <FILE id="R1S6lG" name="BreaQLookAndFeel.h" compile="0" resource="0"
+            file="Source/BreaQLookAndFeel.h"/>
+      <FILE id="eyZ3Rh" name="ADSR.cpp" compile="1" resource="0" file="Source/ADSR.cpp"/>
+      <FILE id="iBXLjy" name="ADSR.h" compile="0" resource="0" file="Source/ADSR.h"/>
       <FILE id="xqI4KJ" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="VlzYuX" name="PluginProcessor.h" compile="0" resource="0"

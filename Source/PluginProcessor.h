@@ -8,9 +8,11 @@
 
 #pragma once
 
+
 #include <JuceHeader.h>
-#include <ParallelLowPassFilter.h>
-#include <ParallelHighPassFilter.h>
+#include "ParallelLowPassFilter.h"
+#include "ParallelHighPassFilter.h"
+#include "ADSR.h"
 
 //==============================================================================
 /**
@@ -32,6 +34,8 @@ class BreaQAudioProcessor  : public juce::AudioProcessor
                             #endif
 {
 public:
+
+
     //==============================================================================
     BreaQAudioProcessor();
     ~BreaQAudioProcessor() override;
@@ -81,6 +85,26 @@ private:
     std::atomic<float>* highPassOrderParameter = nullptr;
     std::atomic<float>* lowPassOrderParameter = nullptr;
 
+    std::atomic<float>* lowPassInitialParameter = nullptr;
+    std::atomic<float>* lowPassAttackParameter = nullptr;
+    std::atomic<float>* lowPassAttackCurveParameter = nullptr;
+    std::atomic<float>* lowPassPeakParameter = nullptr;
+    std::atomic<float>* lowPassDecayParameter = nullptr;
+    std::atomic<float>* lowPassDecayCurveParameter = nullptr;
+    std::atomic<float>* lowPassSustainParameter = nullptr;
+    std::atomic<float>* lowPassReleaseParameter = nullptr;
+    std::atomic<float>* lowPassReleaseCurveParameter = nullptr;
+
+    std::atomic<float>* highPassInitialParameter = nullptr;
+    std::atomic<float>* highPassAttackParameter = nullptr;
+    std::atomic<float>* highPassAttackCurveParameter = nullptr;
+    std::atomic<float>* highPassPeakParameter = nullptr;
+    std::atomic<float>* highPassDecayParameter = nullptr;
+    std::atomic<float>* highPassDecayCurveParameter = nullptr;
+    std::atomic<float>* highPassSustainParameter = nullptr;
+    std::atomic<float>* highPassReleaseParameter = nullptr;
+    std::atomic<float>* highPassReleaseCurveParameter = nullptr;
+
     float lowPassFrequency;
     // Slope lowPassOrder;
     float highPassFrequency;
@@ -88,6 +112,8 @@ private:
 
     ParallelLowPassFilter lowPassFilter;
     ParallelHighPassFilter highPassFilter;
+    ADSR lowPassADSR;
+    ADSR highPassADSR;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BreaQAudioProcessor)

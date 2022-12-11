@@ -106,6 +106,34 @@ BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
 
     // Low Pass Envelope Controls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+    addAndMakeVisible(lowPassInitialSlider);
+    lowPassInitialSlider.setSliderStyle(
+        juce::Slider::SliderStyle::RotaryVerticalDrag
+    );
+    lowPassInitialSlider.setTextBoxStyle(
+        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
+    );
+    lowPassInitialSlider.hideTextBox(false);
+    lowPassInitialAttachment.reset(
+        new juce::AudioProcessorValueTreeState::SliderAttachment(
+            vts, "lowPassInitial", lowPassInitialSlider
+        )
+    );
+
+    addAndMakeVisible(lowPassPeakSlider);
+    lowPassPeakSlider.setSliderStyle(
+        juce::Slider::SliderStyle::RotaryVerticalDrag
+    );
+    lowPassPeakSlider.setTextBoxStyle(
+        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
+    );
+    lowPassPeakSlider.hideTextBox(false);
+    lowPassPeakAttachment.reset(
+        new juce::AudioProcessorValueTreeState::SliderAttachment(
+            vts, "lowPassPeak", lowPassPeakSlider
+        )
+    );
+
     addAndMakeVisible(lowPassAttackSlider);
     lowPassAttackSlider.setSliderStyle(
         juce::Slider::SliderStyle::RotaryVerticalDrag
@@ -205,6 +233,34 @@ BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
     );
 
     // High Pass Envelope Controls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    addAndMakeVisible(highPassInitialSlider);
+    highPassInitialSlider.setSliderStyle(
+        juce::Slider::SliderStyle::RotaryVerticalDrag
+    );
+    highPassInitialSlider.setTextBoxStyle(
+        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
+    );
+    highPassInitialSlider.hideTextBox(false);
+    highPassInitialAttachment.reset(
+        new juce::AudioProcessorValueTreeState::SliderAttachment(
+            vts, "highPassInitial", highPassInitialSlider
+        )
+    );
+
+    addAndMakeVisible(highPassPeakSlider);
+    highPassPeakSlider.setSliderStyle(
+        juce::Slider::SliderStyle::RotaryVerticalDrag
+    );
+    highPassPeakSlider.setTextBoxStyle(
+        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
+    );
+    highPassPeakSlider.hideTextBox(false);
+    highPassPeakAttachment.reset(
+        new juce::AudioProcessorValueTreeState::SliderAttachment(
+            vts, "highPassPeak", highPassPeakSlider
+        )
+    );
 
     addAndMakeVisible(highPassAttackSlider);
     highPassAttackSlider.setSliderStyle(
@@ -306,7 +362,7 @@ BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
 
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    setSize (800, 600);
+    setSize (1200, 600);
     juce::LookAndFeel::setDefaultLookAndFeel(&breaQLookAndFeel);
 }
 
@@ -316,23 +372,31 @@ BreaQAudioProcessorEditor::~BreaQAudioProcessorEditor() {
 
 //==============================================================================
 void BreaQAudioProcessorEditor::paint (juce::Graphics& g) {
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-
-    g.setColour (juce::Colours::white);
+    g.fillAll(juce::Colours::darkturquoise);
+    g.setColour (juce::Colours::bisque);
     g.setFont (15.0f);
 }
 
 void BreaQAudioProcessorEditor::resized() {
     auto bounds = getLocalBounds();
-    auto topPanel = bounds.removeFromTop(bounds.getHeight() * 0.33f);
 
-    auto leftPanelBounds = bounds.removeFromLeft(bounds.getWidth() * 0.33f);
-    auto rightPanelBounds = bounds.removeFromRight(bounds.getWidth() * 0.5f);
+    auto mainMargin = bounds.getWidth() / 30;
+    bounds.removeFromTop(mainMargin);
+    bounds.removeFromRight(mainMargin);
+    bounds.removeFromBottom(mainMargin);
+    bounds.removeFromLeft(mainMargin);
+
+    auto topPanel = bounds.removeFromTop(bounds.getHeight() * 0.45f);
+
+    auto envelopePanelWidth = bounds.getWidth() * 0.42f;
+
+    auto leftPanelBounds = bounds.removeFromLeft(envelopePanelWidth);
+    auto rightPanelBounds = bounds.removeFromRight(envelopePanelWidth);
     
     // Centre Panel %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     auto peripheralControlsWidth = bounds.getWidth() * 0.3f;
-    auto leftPeripheralControlsPanel = bounds.removeFromLeft(peripheralControlsWidth);
-    auto rightPeripheralControlsPanel = bounds.removeFromRight(peripheralControlsWidth);
+    auto leftPeripheralControlsPanel = bounds.removeFromLeft(peripheralControlsWidth).expanded(3);
+    auto rightPeripheralControlsPanel = bounds.removeFromRight(peripheralControlsWidth).expanded(3);
 
     lowPassOrderSlider.setBounds(leftPeripheralControlsPanel.removeFromTop(peripheralControlsWidth));
     highPassOrderSlider.setBounds(rightPeripheralControlsPanel.removeFromTop(peripheralControlsWidth));
@@ -352,25 +416,42 @@ void BreaQAudioProcessorEditor::resized() {
 
     // Left Panel %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    auto leftEnvelopeVisualizerBounds = leftPanelBounds.removeFromTop(leftPanelBounds.getHeight() * 0.5f);
+    auto leftEnvelopeVisualizerBounds = leftPanelBounds.removeFromTop(leftPanelBounds.getHeight() * 0.4f);
 
-    auto leftEnvelopeControlsBounds = leftPanelBounds.removeFromTop(leftPanelBounds.getHeight() * 0.5f);
-    int leftEnvelopeControlsWidth = leftPanelBounds.getWidth() / 4;
+    auto controlHeight = leftPanelBounds.getHeight() / 3;
+    int controlWidth = leftPanelBounds.getWidth() / 6;
+    const auto controlExpansion = 3;
 
-    auto leftAttackBounds = leftEnvelopeControlsBounds.removeFromLeft(leftEnvelopeControlsWidth);
-    auto leftDecayBounds = leftEnvelopeControlsBounds.removeFromLeft(leftEnvelopeControlsWidth);
-    auto leftSustainBounds = leftEnvelopeControlsBounds.removeFromLeft(leftEnvelopeControlsWidth);
-    auto leftReleaseBounds = leftEnvelopeControlsBounds.removeFromLeft(leftEnvelopeControlsWidth);
+    auto leftEnvelopeControlsBounds = leftPanelBounds.removeFromTop(controlHeight);
+    auto leftInitialBounds = leftEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
+    leftEnvelopeControlsBounds.removeFromLeft(controlWidth);
+    auto leftPeakBounds = leftEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
+    leftEnvelopeControlsBounds.removeFromLeft(controlWidth);
+    auto leftSustainBounds = leftEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
+
+    leftEnvelopeControlsBounds = leftPanelBounds.removeFromTop(controlHeight);
+    leftEnvelopeControlsBounds.removeFromLeft(controlWidth);
+    auto leftAttackBounds = leftEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
+    leftEnvelopeControlsBounds.removeFromLeft(controlWidth);
+    auto leftDecayBounds = leftEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
+    leftEnvelopeControlsBounds.removeFromLeft(controlWidth);
+    auto leftReleaseBounds = leftEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
+    leftEnvelopeControlsBounds.removeFromLeft(controlWidth);
+
+    leftEnvelopeControlsBounds = leftPanelBounds.removeFromTop(controlHeight);
+    auto leftAttackCurveBounds = leftEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
+    leftEnvelopeControlsBounds.removeFromLeft(controlWidth);
+    auto leftDecayCurveBounds = leftEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
+    leftEnvelopeControlsBounds.removeFromLeft(controlWidth);
+    auto leftReleaseCurveBounds = leftEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
+    
+    lowPassInitialSlider.setBounds(leftInitialBounds);
+    lowPassPeakSlider.setBounds(leftPeakBounds);
+    lowPassSustainSlider.setBounds(leftSustainBounds);
 
     lowPassAttackSlider.setBounds(leftAttackBounds);
     lowPassDecaySlider.setBounds(leftDecayBounds);
-    lowPassSustainSlider.setBounds(leftSustainBounds);
     lowPassReleaseSlider.setBounds(leftReleaseBounds);
-
-    auto leftAttackCurveBounds = leftPanelBounds.removeFromLeft(leftEnvelopeControlsWidth);
-    auto leftDecayCurveBounds = leftPanelBounds.removeFromLeft(leftEnvelopeControlsWidth);
-    leftPanelBounds.removeFromLeft(leftEnvelopeControlsWidth); // Empty Space
-    auto leftReleaseCurveBounds = leftPanelBounds.removeFromLeft(leftEnvelopeControlsWidth);
 
     lowPassAttackCurveSlider.setBounds(leftAttackCurveBounds);
     lowPassDecayCurveSlider.setBounds(leftDecayCurveBounds);
@@ -378,7 +459,9 @@ void BreaQAudioProcessorEditor::resized() {
 
     // Right Panel %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    auto rightEnvelopeVisualizerBounds = rightPanelBounds.removeFromTop(rightPanelBounds.getHeight() * 0.5f);
+    auto rightEnvelopeVisualizerBounds = rightPanelBounds.removeFromTop(rightPanelBounds.getHeight() * 0.4f);
+
+    /*
 
     auto rightEnvelopeControlsBounds = rightPanelBounds.removeFromTop(rightPanelBounds.getHeight() * 0.5f);
     int rightEnvelopeControlsWidth = rightPanelBounds.getWidth() / 4;
@@ -397,6 +480,41 @@ void BreaQAudioProcessorEditor::resized() {
     auto rightDecayCurveBounds = rightPanelBounds.removeFromLeft(rightEnvelopeControlsWidth);
     rightPanelBounds.removeFromLeft(rightEnvelopeControlsWidth); // Empty Space
     auto rightReleaseCurveBounds = rightPanelBounds.removeFromLeft(rightEnvelopeControlsWidth);
+
+    highPassAttackCurveSlider.setBounds(rightAttackCurveBounds);
+    highPassDecayCurveSlider.setBounds(rightDecayCurveBounds);
+    highPassReleaseCurveSlider.setBounds(rightReleaseCurveBounds);*/
+
+    auto rightEnvelopeControlsBounds = rightPanelBounds.removeFromTop(controlHeight);
+    auto rightInitialBounds = rightEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
+    rightEnvelopeControlsBounds.removeFromLeft(controlWidth);
+    auto rightPeakBounds = rightEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
+    rightEnvelopeControlsBounds.removeFromLeft(controlWidth);
+    auto rightSustainBounds = rightEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
+
+    rightEnvelopeControlsBounds = rightPanelBounds.removeFromTop(controlHeight);
+    rightEnvelopeControlsBounds.removeFromLeft(controlWidth);
+    auto rightAttackBounds = rightEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
+    rightEnvelopeControlsBounds.removeFromLeft(controlWidth);
+    auto rightDecayBounds = rightEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
+    rightEnvelopeControlsBounds.removeFromLeft(controlWidth);
+    auto rightReleaseBounds = rightEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
+    rightEnvelopeControlsBounds.removeFromLeft(controlWidth);
+
+    rightEnvelopeControlsBounds = rightPanelBounds.removeFromTop(controlHeight);
+    auto rightAttackCurveBounds = rightEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
+    rightEnvelopeControlsBounds.removeFromLeft(controlWidth);
+    auto rightDecayCurveBounds = rightEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
+    rightEnvelopeControlsBounds.removeFromLeft(controlWidth);
+    auto rightReleaseCurveBounds = rightEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
+
+    highPassInitialSlider.setBounds(rightInitialBounds);
+    highPassPeakSlider.setBounds(rightPeakBounds);
+    highPassSustainSlider.setBounds(rightSustainBounds);
+
+    highPassAttackSlider.setBounds(rightAttackBounds);
+    highPassDecaySlider.setBounds(rightDecayBounds);
+    highPassReleaseSlider.setBounds(rightReleaseBounds);
 
     highPassAttackCurveSlider.setBounds(rightAttackCurveBounds);
     highPassDecayCurveSlider.setBounds(rightDecayCurveBounds);

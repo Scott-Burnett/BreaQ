@@ -12,8 +12,6 @@ public:
 	void processBlock(
 		float* leftBuffer,
 		float* rightBuffer,
-		const float* leftPointer,
-		const float* rightPointer,
 		int bufferSize
 	);
 
