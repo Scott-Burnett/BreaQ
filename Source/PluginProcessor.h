@@ -34,7 +34,10 @@ class BreaQAudioProcessor  : public juce::AudioProcessor
                             #endif
 {
 public:
-
+    ParallelLowPassFilter lowPassFilter;
+    ParallelHighPassFilter highPassFilter;
+    ADSR lowPassADSR;
+    ADSR highPassADSR;
 
     //==============================================================================
     BreaQAudioProcessor();
@@ -110,10 +113,7 @@ private:
     float highPassFrequency;
     // Slope highPassOrder;
 
-    ParallelLowPassFilter lowPassFilter;
-    ParallelHighPassFilter highPassFilter;
-    ADSR lowPassADSR;
-    ADSR highPassADSR;
+    
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BreaQAudioProcessor)

@@ -373,6 +373,17 @@ BreaQAudioProcessorEditor::~BreaQAudioProcessorEditor() {
 //==============================================================================
 void BreaQAudioProcessorEditor::paint (juce::Graphics& g) {
     g.fillAll(juce::Colours::darkturquoise);
+    
+    g.setColour(juce::Colours::black);
+    g.fillRect(spectrumAnalyzerBounds);
+
+    g.fillRect(lowPassADSRVisualizerBounds);
+    g.fillRect(highPassADSRVisualizerBounds);
+    
+    g.setColour(juce::Colours::bisque);
+    DrawADSRCurve(g, lowPassADSRVisualizerBounds, audioProcessor.lowPassADSR);
+    DrawADSRCurve(g, highPassADSRVisualizerBounds, audioProcessor.highPassADSR);
+    
     g.setColour (juce::Colours::bisque);
     g.setFont (15.0f);
 }
@@ -386,7 +397,8 @@ void BreaQAudioProcessorEditor::resized() {
     bounds.removeFromBottom(mainMargin);
     bounds.removeFromLeft(mainMargin);
 
-    auto topPanel = bounds.removeFromTop(bounds.getHeight() * 0.45f);
+    spectrumAnalyzerBounds = bounds.removeFromTop(bounds.getHeight() * 0.45f);
+    spectrumAnalyzerBounds.reduce(10, 10);
 
     auto envelopePanelWidth = bounds.getWidth() * 0.42f;
 
@@ -416,7 +428,8 @@ void BreaQAudioProcessorEditor::resized() {
 
     // Left Panel %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    auto leftEnvelopeVisualizerBounds = leftPanelBounds.removeFromTop(leftPanelBounds.getHeight() * 0.4f);
+    lowPassADSRVisualizerBounds = leftPanelBounds.removeFromTop(leftPanelBounds.getHeight() * 0.4f);
+    lowPassADSRVisualizerBounds.reduce(10, 10);
 
     auto controlHeight = leftPanelBounds.getHeight() / 3;
     int controlWidth = leftPanelBounds.getWidth() / 6;
@@ -462,7 +475,8 @@ void BreaQAudioProcessorEditor::resized() {
 
     // Right Panel %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    auto rightEnvelopeVisualizerBounds = rightPanelBounds.removeFromTop(rightPanelBounds.getHeight() * 0.4f);
+    highPassADSRVisualizerBounds = rightPanelBounds.removeFromTop(rightPanelBounds.getHeight() * 0.4f);
+    highPassADSRVisualizerBounds.reduce(10, 10);
 
     /*
 
@@ -524,4 +538,129 @@ void BreaQAudioProcessorEditor::resized() {
     highPassAttackCurveSlider.setBounds(rightAttackCurveBounds);
     highPassDecayCurveSlider.setBounds(rightDecayCurveBounds);
     highPassReleaseCurveSlider.setBounds(rightReleaseCurveBounds);
+}
+
+void BreaQAudioProcessorEditor::DrawADSRCurve(
+        juce::Graphics& g,
+        juce::Rectangle<int> bounds,
+        ADSR adsr) {
+    auto left = (double)bounds.getTopLeft().getX();
+    auto right = (double)bounds.getTopRight().getX();
+    auto top = (double)bounds.getTopLeft().getY();
+    auto bottom = (double)bounds.getBottomLeft().getY();
+
+    auto totalLength = (double)adsr.attackTime + (double)adsr.decayTime + (double)adsr.releaseTime;
+
+    int initialY = (int)juce::jmap(
+        (double)adsr.initialLevel,
+        bottom,
+        top
+    );
+
+    int attackX = (int)juce::jmap(
+        (double)adsr.attackTime, 
+        (double)0.0f, 
+        (double)totalLength, 
+        left, 
+        right
+    );
+
+    int attackY = (int)juce::jmap(
+        (double)adsr.peakLevel,
+        bottom,
+        top
+    );
+
+    int decayX = (int)juce::jmap(
+        (double)(adsr.attackTime + adsr.decayTime),
+        (double)0.0f,
+        (double)totalLength,
+        left,
+        right
+    );
+
+    int decayY = (int)juce::jmap(
+        (double)adsr.sustainLevel,
+        bottom,
+        top
+    );
+
+    //int releaseX = (int)juce::jmap(
+    //    (double)(adsr.attackTime + adsr.decayTime + adsr.releaseTime),
+    //    (double)0.0f,
+    //    (double)totalLength,
+    //    left,
+    //    right
+    //)
+
+    int releaseX = right;
+    int releaseY = bottom;
+
+    juce::Path path;
+    //path.startNewSubPath(left, initialY);
+    //path.lineTo(attackX, attackY);
+    //path.lineTo(decayX, decayY);
+    //path.lineTo(releaseX, releaseY);
+
+    auto attackCurveX = juce::jmap(
+        (double)adsr.attackCurve, 
+        0.0, 
+        2.0, 
+        left, 
+        (double)attackX
+    );
+
+    auto attackCurveY = juce::jmap(
+        (double)adsr.attackCurve,
+        0.0,
+        2.0,
+        (double)attackY,
+        (double)initialY
+    );
+
+    auto decayCurveX = juce::jmap(
+        (double)adsr.decayCurve,
+        0.0,
+        2.0,
+        (double)attackX,
+        (double)decayX
+    );
+
+    auto decayCurveY = juce::jmap(
+        (double)adsr.decayCurve,
+        0.0,
+        2.0,
+        (double)decayY,
+        (double)attackY
+    );
+
+    auto releaseCurveX = juce::jmap(
+        (double)adsr.releaseCurve,
+        0.0,
+        2.0,
+        (double)decayX,
+        (double)releaseX
+    );
+
+    auto releaseCurveY = juce::jmap(
+        (double)adsr.releaseCurve,
+        0.0,
+        2.0,
+        (double)releaseY,
+        (double)decayY
+    );
+
+    path.startNewSubPath(left, initialY);
+    path.quadraticTo(attackCurveX, attackCurveY, attackX, attackY);
+    path.quadraticTo(decayCurveX, decayCurveY, decayX, decayY);
+    path.quadraticTo(releaseCurveX, releaseCurveY, releaseX, releaseY);
+
+    g.strokePath(
+        path,
+        juce::PathStrokeType(
+            2,
+            juce::PathStrokeType::curved,
+            juce::PathStrokeType::rounded
+        )
+    );
 }

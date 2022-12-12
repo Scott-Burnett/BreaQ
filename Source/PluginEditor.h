@@ -124,6 +124,12 @@ private:
     juce::Slider lowPassReleaseCurveSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
         lowPassReleaseCurveAttachment;
+    
+    juce::Rectangle<int> spectrumAnalyzerBounds;
+    juce::Rectangle<int> lowPassADSRVisualizerBounds;
+    juce::Rectangle<int> highPassADSRVisualizerBounds;
+
+    void DrawADSRCurve(juce::Graphics& g, juce::Rectangle<int> bounds, ADSR adsr);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BreaQAudioProcessorEditor)
 };
