@@ -14,7 +14,7 @@ void BreaQLookAndFeel::drawRotarySlider(
     auto bounds = juce::Rectangle<int>(x, y, width, height).toFloat().reduced(10);
     auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) / 2.0f;
     auto toAngle = rotaryStartAngle + sliderPos * (rotaryEndAngle - rotaryStartAngle);
-    auto lineW = juce::jmin(3.0f, radius * 0.5f);
+    auto lineW = juce::jmax(3.0f, radius * 0.3f);
     auto arcRadius = radius - lineW * 0.5f;
 
     juce::Path backgroundArc;
@@ -28,7 +28,7 @@ void BreaQLookAndFeel::drawRotarySlider(
         true
     );
 
-    g.setColour(usedArcColour);
+    g.setColour(orange3);
     g.strokePath(
         backgroundArc, 
         juce::PathStrokeType(
@@ -50,7 +50,7 @@ void BreaQLookAndFeel::drawRotarySlider(
             true
         );
 
-        g.setColour(usedArcColour);
+        g.setColour(orange3);
         g.strokePath(
             valueArc, 
             juce::PathStrokeType(lineW, juce::PathStrokeType::curved, juce::PathStrokeType::rounded)
@@ -62,7 +62,7 @@ void BreaQLookAndFeel::drawRotarySlider(
         bounds.getCentreY() + arcRadius * std::sin(toAngle - juce::MathConstants<float>::halfPi)
     );
 
-    g.setColour(usedArcColour);
+    g.setColour(orange3);
     g.drawLine(
         bounds.getCentreX(),
         bounds.getCentreY(),

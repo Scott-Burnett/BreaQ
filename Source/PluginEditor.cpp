@@ -348,7 +348,7 @@ BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
 
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    setSize (1200, 600);
+    setSize (970, 600);
     juce::LookAndFeel::setDefaultLookAndFeel(&breaQLookAndFeel);
 }
 
@@ -358,12 +358,21 @@ BreaQAudioProcessorEditor::~BreaQAudioProcessorEditor() {
 
 //==============================================================================
 void BreaQAudioProcessorEditor::paint (juce::Graphics& g) {
-    g.fillAll(juce::Colours::darkturquoise);
+    g.fillAll(background1);
     
-    g.setColour(juce::Colours::black);
-    g.fillRect(spectrumAnalyzerBounds);
-    g.fillRect(lowPassADSRVisualizerBounds);
-    g.fillRect(highPassADSRVisualizerBounds);
+    g.setColour(background2);
+
+    decorateBounds(g, leftPanelDecorationBounds, grid1, background1);
+    decorateBounds(g, centrePanelDecorationBounds, grid1, background1);
+    decorateBounds(g, rightPanelDecorationBounds, grid1, background1);
+
+    decorateBounds(g, spectrumAnalyzerDecorationBounds, grid2, background2);
+    decorateBounds(g, lowPassADSRVisualizerDecorationBounds, grid2, background2);
+    decorateBounds(g, highPassADSRVisualizerDecorationBounds, grid2, background2);
+
+    // g.fillRect(spectrumAnalyzerBounds);
+    // g.fillRect(lowPassADSRVisualizerBounds);
+    // g.fillRect(highPassADSRVisualizerBounds);
 
     DrawFrequencyResponseCurve(
         g,
@@ -373,49 +382,54 @@ void BreaQAudioProcessorEditor::paint (juce::Graphics& g) {
         audioProcessor.highPassFrequency
     );
     
-    g.setColour(juce::Colours::bisque);
+    g.setColour(orange3);
     DrawADSRCurve(g, lowPassADSRVisualizerBounds, audioProcessor.lowPassADSR);
     DrawADSRCurve(g, highPassADSRVisualizerBounds, audioProcessor.highPassADSR);
-    
-    g.setColour (juce::Colours::bisque);
-    g.setFont (15.0f);
 }
 
 void BreaQAudioProcessorEditor::resized() {
     auto bounds = getLocalBounds();
 
-    auto mainMargin = bounds.getWidth() / 30;
+    auto mainMargin = 20;
     bounds.removeFromTop(mainMargin);
     bounds.removeFromRight(mainMargin);
     bounds.removeFromBottom(mainMargin);
     bounds.removeFromLeft(mainMargin);
 
-    spectrumAnalyzerBounds = bounds.removeFromTop(bounds.getHeight() * 0.45f);
-    spectrumAnalyzerBounds.reduce(10, 10);
+    spectrumAnalyzerDecorationBounds = bounds.removeFromTop(bounds.getHeight() * 0.45f);
+    spectrumAnalyzerDecorationBounds.reduce(3, 3);
+
+    spectrumAnalyzerBounds = spectrumAnalyzerDecorationBounds.reduced(4, 4);
 
     spectrumAnalyzer->setBounds(spectrumAnalyzerBounds);
 
     auto envelopePanelWidth = bounds.getWidth() * 0.42f;
 
-    auto leftPanelBounds = bounds.removeFromLeft(envelopePanelWidth);
-    auto rightPanelBounds = bounds.removeFromRight(envelopePanelWidth);
+    leftPanelDecorationBounds = bounds.removeFromLeft(envelopePanelWidth).reduced(3, 3);
+    auto leftPanelBounds = leftPanelDecorationBounds;
+
+    rightPanelDecorationBounds = bounds.removeFromRight(envelopePanelWidth).reduced(3, 3);
+    auto rightPanelBounds = rightPanelDecorationBounds;
     
     // Centre Panel %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    auto peripheralControlsWidth = bounds.getWidth() * 0.3f;
-    auto leftPeripheralControlsPanel = bounds.removeFromLeft(peripheralControlsWidth).expanded(3);
-    auto rightPeripheralControlsPanel = bounds.removeFromRight(peripheralControlsWidth).expanded(3);
+
+    centrePanelDecorationBounds = bounds.reduced(3, 3);
+    auto centrePanelBounds = centrePanelDecorationBounds.reduced(7, 7);
+    auto peripheralControlsWidth = centrePanelBounds.getWidth() * 0.3f;
+    auto leftPeripheralControlsPanel = centrePanelBounds.removeFromLeft(peripheralControlsWidth).expanded(3);
+    auto rightPeripheralControlsPanel = centrePanelBounds.removeFromRight(peripheralControlsWidth).expanded(3);
 
     lowPassOrderSlider.setBounds(leftPeripheralControlsPanel.removeFromTop(peripheralControlsWidth));
     highPassOrderSlider.setBounds(rightPeripheralControlsPanel.removeFromTop(peripheralControlsWidth));
 
     auto crossOverFrequencyControlBounds = 
-        bounds.removeFromTop(bounds.getHeight() * 0.5f);
+        centrePanelBounds.removeFromTop(centrePanelBounds.getHeight() * 0.5f).expanded(20);
     crossOverFrequencySlider.setBounds(crossOverFrequencyControlBounds);
     /*auto crossOverFrequencyLabelBounds =
         crossOverFrequencyControlBounds.removeFromBottom(bounds.getHeight() * 0.2f);*/
     /*crossOverFrequencyLabel.setBounds(crossOverFrequencyLabelBounds);*/
 
-    auto crossOverWidthControlBounds = bounds;
+    auto crossOverWidthControlBounds = centrePanelBounds.expanded(20);
     crossOverWidthSlider.setBounds(crossOverWidthControlBounds);
     /*auto crossOverWidthLabelBounds =
         crossOverWidthControlBounds.removeFromBottom(bounds.getHeight() * 0.2f);*/
@@ -423,13 +437,13 @@ void BreaQAudioProcessorEditor::resized() {
 
     // Left Panel %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    lowPassADSRVisualizerBounds = leftPanelBounds.removeFromTop(leftPanelBounds.getHeight() * 0.4f);
-    lowPassADSRVisualizerBounds.reduce(10, 10);
+    lowPassADSRVisualizerDecorationBounds = leftPanelBounds.removeFromTop(leftPanelBounds.getHeight() * 0.5f).reduced(3, 3).reduced(7, 7);
+    lowPassADSRVisualizerBounds = lowPassADSRVisualizerDecorationBounds.reduced(4, 4);
 
     auto controlHeight = leftPanelBounds.getHeight() / 3;
     int controlWidth = leftPanelBounds.getWidth() / 6;
-    int indent = controlWidth / 5;
-    const auto controlExpansion = 3;
+    int indent = controlWidth / 2;
+    const auto controlExpansion = 8;
 
     auto leftEnvelopeControlsBounds = leftPanelBounds.removeFromTop(controlHeight);
     auto leftInitialBounds = leftEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
@@ -470,32 +484,8 @@ void BreaQAudioProcessorEditor::resized() {
 
     // Right Panel %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    highPassADSRVisualizerBounds = rightPanelBounds.removeFromTop(rightPanelBounds.getHeight() * 0.4f);
-    highPassADSRVisualizerBounds.reduce(10, 10);
-
-    /*
-
-    auto rightEnvelopeControlsBounds = rightPanelBounds.removeFromTop(rightPanelBounds.getHeight() * 0.5f);
-    int rightEnvelopeControlsWidth = rightPanelBounds.getWidth() / 4;
-
-    auto rightAttackBounds = rightEnvelopeControlsBounds.removeFromLeft(rightEnvelopeControlsWidth);
-    auto rightDecayBounds = rightEnvelopeControlsBounds.removeFromLeft(rightEnvelopeControlsWidth);
-    auto rightSustainBounds = rightEnvelopeControlsBounds.removeFromLeft(rightEnvelopeControlsWidth);
-    auto rightReleaseBounds = rightEnvelopeControlsBounds.removeFromLeft(rightEnvelopeControlsWidth);
-
-    highPassAttackSlider.setBounds(rightAttackBounds);
-    highPassDecaySlider.setBounds(rightDecayBounds);
-    highPassSustainSlider.setBounds(rightSustainBounds);
-    highPassReleaseSlider.setBounds(rightReleaseBounds);
-
-    auto rightAttackCurveBounds = rightPanelBounds.removeFromLeft(rightEnvelopeControlsWidth);
-    auto rightDecayCurveBounds = rightPanelBounds.removeFromLeft(rightEnvelopeControlsWidth);
-    rightPanelBounds.removeFromLeft(rightEnvelopeControlsWidth); // Empty Space
-    auto rightReleaseCurveBounds = rightPanelBounds.removeFromLeft(rightEnvelopeControlsWidth);
-
-    highPassAttackCurveSlider.setBounds(rightAttackCurveBounds);
-    highPassDecayCurveSlider.setBounds(rightDecayCurveBounds);
-    highPassReleaseCurveSlider.setBounds(rightReleaseCurveBounds);*/
+    highPassADSRVisualizerDecorationBounds = rightPanelBounds.removeFromTop(rightPanelBounds.getHeight() * 0.5f).reduced(3, 3).reduced(7, 7);
+    highPassADSRVisualizerBounds = highPassADSRVisualizerDecorationBounds.reduced(4, 4);
 
     auto rightEnvelopeControlsBounds = rightPanelBounds.removeFromTop(controlHeight);
     auto rightInitialBounds = rightEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
@@ -535,73 +525,6 @@ void BreaQAudioProcessorEditor::resized() {
     highPassReleaseCurveSlider.setBounds(rightReleaseCurveBounds);
 }
 
-//==============================================================================
-/*void BreaQAudioProcessorEditor::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) {
-    if (bufferToFill.buffer->getNumChannels() > 0) {
-        auto* channelData = bufferToFill.buffer->getReadPointer(0, bufferToFill.startSample);
-
-        for (auto i = 0; i < bufferToFill.numSamples; ++i)
-            pushNextSampleIntoFifo(channelData[i]);
-    }
-}
-
-void BreaQAudioProcessorEditor::pushNextSampleIntoFifo(float sample) noexcept {
-    if (fifoIndex == fftSize) {
-        if (!nextFFTBlockReady) {
-            juce::zeromem(fftData, sizeof(fftData));
-            memcpy(fftData, fifo, sizeof(fifo));
-            nextFFTBlockReady = true;
-        }
-        fifoIndex = 0;
-    }
-    fifo[fifoIndex++] = sample;
-}
-
-void BreaQAudioProcessorEditor::drawNextFrameOfSpectrum() {
-    window.multiplyWithWindowingTable(fftData, fftSize);
-    forwardFFT.performFrequencyOnlyForwardTransform(fftData);
-
-    auto mindB = -100.0f;
-    auto maxdB = 0.0f;
-
-    for (int i = 0; i < scopeSize; ++i) {
-        auto skewedProportionX = 1.0f - std::exp(std::log(1.0f - (float)i / (float)scopeSize) * 0.2f);
-        auto fftDataIndex = juce::jlimit(0, fftSize / 2, (int)(skewedProportionX * (float)fftSize * 0.5f));
-        auto level = juce::jmap(juce::jlimit(mindB, maxdB, juce::Decibels::gainToDecibels(fftData[fftDataIndex])
-            - juce::Decibels::gainToDecibels((float)fftSize)),
-            mindB, maxdB, 0.0f, 1.0f
-        );
-
-        scopeData[i] = level;
-    }
-}
-
-void BreaQAudioProcessorEditor::timerCallback()
-{
-    if (nextFFTBlockReady)
-    {
-        drawNextFrameOfSpectrum();
-        nextFFTBlockReady = false;
-        repaint();
-    }
-}
-
-void BreaQAudioProcessorEditor::drawFrame(juce::Graphics& g)
-{
-    for (int i = 1; i < scopeSize; ++i)
-    {
-        auto width = getLocalBounds().getWidth();
-        auto height = getLocalBounds().getHeight();
-
-        g.drawLine({ (float)juce::jmap(i - 1, 0, scopeSize - 1, 0, width),
-                              juce::jmap(scopeData[i - 1], 0.0f, 1.0f, (float)height, 0.0f),
-                      (float)juce::jmap(i,     0, scopeSize - 1, 0, width),
-                              juce::jmap(scopeData[i],     0.0f, 1.0f, (float)height, 0.0f) });
-    }
-}*/
-
-
-
 void BreaQAudioProcessorEditor::DrawFrequencyResponseCurve(
         juce::Graphics& g, 
         juce::Rectangle<int> bounds,
@@ -631,7 +554,7 @@ void BreaQAudioProcessorEditor::DrawFrequencyResponseCurve(
         right
     );
 
-    g.setColour(juce::Colours::green);
+    g.setColour(grid1);
     g.drawVerticalLine(crossOverFrequencyX, top, bottom);
     g.drawVerticalLine(lowPassCutOffFrequencyX, top, bottom);
     g.drawVerticalLine(highPassCutOffFrequencyX, top, bottom);
@@ -682,7 +605,7 @@ void BreaQAudioProcessorEditor::DrawFrequencyResponseCurve(
     lowPassPath.lineTo(lowPassCutOffFrequencyX, zeroY);
     lowPassPath.quadraticTo(lowPassControlX, zeroY, lowPassEndFrequencyX, bottom);
 
-    g.setColour(juce::Colours::bisque);
+    g.setColour(lilac);
     g.strokePath(
         highPassPath,
         juce::PathStrokeType(
@@ -711,7 +634,13 @@ void BreaQAudioProcessorEditor::DrawADSRCurve(
     auto top = (double)bounds.getTopLeft().getY();
     auto bottom = (double)bounds.getBottomLeft().getY();
 
-    auto totalLength = (double)adsr.attackTime + (double)adsr.decayTime + (double)adsr.releaseTime;
+    const float minimumTime = 0.05f;
+    const auto attackTime = (double)juce::jmax(adsr.attackTime, minimumTime);
+    const auto decayTime = (double)juce::jmax(adsr.decayTime, minimumTime);
+    const auto sustainTime = 0.25f;
+    const auto releaseTime = (double)juce::jmax(adsr.releaseTime, minimumTime);
+
+    const auto totalLength = attackTime + decayTime + sustainTime + releaseTime;
 
     int initialY = (int)juce::jmap(
         (double)adsr.initialLevel,
@@ -720,9 +649,9 @@ void BreaQAudioProcessorEditor::DrawADSRCurve(
     );
 
     int attackX = (int)juce::jmap(
-        (double)adsr.attackTime, 
-        (double)0.0f, 
-        (double)totalLength, 
+        attackTime, 
+        0.0, 
+        totalLength, 
         left, 
         right
     );
@@ -734,9 +663,9 @@ void BreaQAudioProcessorEditor::DrawADSRCurve(
     );
 
     int decayX = (int)juce::jmap(
-        (double)(adsr.attackTime + adsr.decayTime),
-        (double)0.0f,
-        (double)totalLength,
+        attackTime + decayTime,
+        0.0,
+        totalLength,
         left,
         right
     );
@@ -745,6 +674,14 @@ void BreaQAudioProcessorEditor::DrawADSRCurve(
         (double)adsr.sustainLevel,
         bottom,
         top
+    );
+
+    int sustainX = (int)juce::jmap(
+        attackTime + decayTime + sustainTime,
+        0.0,
+        totalLength,
+        left,
+        right
     );
 
     int releaseX = right;
@@ -786,7 +723,7 @@ void BreaQAudioProcessorEditor::DrawADSRCurve(
         (double)adsr.releaseCurve,
         0.0,
         2.0,
-        (double)decayX,
+        (double)sustainX,
         (double)releaseX
     );
 
@@ -798,17 +735,19 @@ void BreaQAudioProcessorEditor::DrawADSRCurve(
         (double)decayY
     );
 
-    g.setColour(juce::Colours::green);
+    g.setColour(grid1);
     g.drawVerticalLine(attackX, top, bottom);
     g.drawVerticalLine(decayX, top, bottom);
+    g.drawVerticalLine(sustainX, top, bottom);
 
     juce::Path path;
     path.startNewSubPath(left, initialY);
     path.quadraticTo(attackCurveX, attackCurveY, attackX, attackY);
     path.quadraticTo(decayCurveX, decayCurveY, decayX, decayY);
+    path.lineTo(sustainX, decayY);
     path.quadraticTo(releaseCurveX, releaseCurveY, releaseX, releaseY);
 
-    g.setColour(juce::Colours::bisque);
+    g.setColour(lilac);
     g.strokePath(
         path,
         juce::PathStrokeType(
@@ -817,6 +756,33 @@ void BreaQAudioProcessorEditor::DrawADSRCurve(
             juce::PathStrokeType::rounded
         )
     );
+}
 
-    
+void BreaQAudioProcessorEditor::decorateBounds(juce::Graphics& g, juce::Rectangle<int> bounds, juce::Colour borderColour, juce::Colour fillColour) {
+    //auto left = bounds.getTopLeft().getX();
+    //auto right = bounds.getTopRight().getX();
+    //auto top = bounds.getTopLeft().getY();
+    //auto bottom = bounds.getBottomLeft().getY();/
+
+    //juce::Path path;
+    //path.startNewSubPath(left, top);
+    //path.lineTo(left, bottom);
+    //path.lineTo(right, bottom);
+    //path.lineTo(right, top);
+
+    //g.setColour(lilac);
+    //g.strokePath(
+    //    path,
+    //    juce::PathStrokeType(
+    //        2,
+    //        juce::PathStrokeType::curved,
+    //        juce::PathStrokeType::rounded
+    //    )
+    //);
+
+    g.setColour(fillColour);
+    g.fillRect(bounds);
+
+    g.setColour(borderColour);
+    g.drawRect(bounds, 3.0f);
 }

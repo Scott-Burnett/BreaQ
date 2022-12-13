@@ -19,10 +19,40 @@
 class BreaQAudioProcessorEditor  : public juce::AudioProcessorEditor //, juce::AudioSource, juce::Timer
 {
 public:
+    // Colours:
+    /*
+    * background": "#0d1016",
+    * background dark : #00010a
+    * 
+    * lilac : "#daade0"
+    * bright pink : "#ee68af"
+    * 
+    * grid 1: #292d36
+    * grid 2: #3d424d
+    * grid 3: #b3b1ad
+    * 
+    * pale orange: #fdc68a
+    * pale Orange again": "#f5bb6c"
+    * pale orange paler : #f7cb8b
+    * 
+    */
+
+    const juce::Colour background1 = juce::Colour(13, 16, 22); // (0x0d1016);
+    const juce::Colour background2 = juce::Colour(0, 1, 10); // (0x00010a);
+
+    const juce::Colour lilac = juce::Colour(218, 173, 224); // (0xdaade0);
+
+    const juce::Colour pink = juce::Colour(238, 104, 175); // (0xee68af);
+    
+    const juce::Colour grid1 = juce::Colour(41, 45, 54); // (0x292d36);
+    const juce::Colour grid2 = juce::Colour(61, 66, 77); // (0x3d424d);
+    const juce::Colour grid3 = juce::Colour(179, 177, 173); // (0xb3b1ad);
+    
+    const juce::Colour orange2 = juce::Colour(245, 187, 108); // (0xf5bb6c);
+    const juce::Colour orange1 = juce::Colour(253, 198, 138); // (0xfdc68a);
+    const juce::Colour orange3 = juce::Colour(247, 203, 139); // (0xf7cb8b);
+
     SpectrumAnalyzer* spectrumAnalyzer;
-    // static const int fftOrder = 11;
-    // static const int fftSize = 1 << fftOrder;
-    // static const int scopeSize = 512;
 
     BreaQAudioProcessorEditor (BreaQAudioProcessor&, juce::AudioProcessorValueTreeState&, SpectrumAnalyzer&);
     ~BreaQAudioProcessorEditor() override;
@@ -31,13 +61,9 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
-    // void getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) override;
-    // void timerCallback() override;
-
 private:
     BreaQAudioProcessor& audioProcessor;
     BreaQLookAndFeel breaQLookAndFeel;
-
 
     // Cross Over Controls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -135,23 +161,15 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
         lowPassReleaseCurveAttachment;
     
+    juce::Rectangle<int> leftPanelDecorationBounds;
+    juce::Rectangle<int> rightPanelDecorationBounds;
+    juce::Rectangle<int> centrePanelDecorationBounds;
     juce::Rectangle<int> spectrumAnalyzerBounds;
+    juce::Rectangle<int> spectrumAnalyzerDecorationBounds;
     juce::Rectangle<int> lowPassADSRVisualizerBounds;
+    juce::Rectangle<int> lowPassADSRVisualizerDecorationBounds;
     juce::Rectangle<int> highPassADSRVisualizerBounds;
-
-    // Analyzer %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    /*juce::dsp::FFT forwardFFT;
-    juce::dsp::WindowingFunction<float> window;
-
-    float fifo[fftSize];
-    float fftData[2 * fftSize];
-    int fifoIndex = 0;
-    bool nextFFTBlockReady = false;
-    float scopeData[scopeSize];
-
-    void pushNextSampleIntoFifo(float sample) noexcept;
-    void drawNextFrameOfSpectrum();
-    void drawFrame(juce::Graphics& g);*/
+    juce::Rectangle<int> highPassADSRVisualizerDecorationBounds;
 
     // Curves %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     void DrawFrequencyResponseCurve(
@@ -167,6 +185,9 @@ private:
         juce::Rectangle<int> bounds, 
         ADSR adsr
     );
+
+    // Decorations %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    void decorateBounds(juce::Graphics&, juce::Rectangle<int> bounds, juce::Colour borderColour, juce::Colour fillColour);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BreaQAudioProcessorEditor)
 };

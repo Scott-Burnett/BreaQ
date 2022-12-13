@@ -4,7 +4,7 @@ SpectrumAnalyzer::SpectrumAnalyzer()
 	:
 		forwardFFT(fftOrder),
 		window(fftSize, juce::dsp::WindowingFunction<float>::hann) {
-    startTimer(300);
+    startTimer(100);
 }
 
 SpectrumAnalyzer::~SpectrumAnalyzer() {
@@ -73,17 +73,34 @@ void SpectrumAnalyzer::timerCallback()
 
 void SpectrumAnalyzer::drawFrame(juce::Graphics& g)
 {
-    g.setColour(juce::Colours::yellow);
+    
+    auto width = getLocalBounds().getWidth();
+    auto height = getLocalBounds().getHeight();
+    auto bottom = getLocalBounds().getBottom();
+    auto left = getLocalBounds().getTopLeft().getX();
+
+    juce::Path path;
+    path.startNewSubPath(left, bottom);
     for (int i = 1; i < scopeSize; ++i)
     {
-        auto width = getLocalBounds().getWidth();
-        auto height = getLocalBounds().getHeight();
+        auto sampleX = juce::jmap(i, 0, scopeSize - 1, 0, width);
+        auto sampleY = juce::jmap(scopeData[i], 0.0f, 1.0f, (float)height, 0.0f);
 
-        g.drawLine({ (float)juce::jmap(i - 1, 0, scopeSize - 1, 0, width),
-                              juce::jmap(scopeData[i - 1], 0.0f, 1.0f, (float)height, 0.0f),
-                      (float)juce::jmap(i,     0, scopeSize - 1, 0, width),
-                              juce::jmap(scopeData[i],     0.0f, 1.0f, (float)height, 0.0f) });
+        path.lineTo(sampleX, sampleY);
     }
+
+    g.setColour(orange1);
+    g.fillPath(path);
+
+    //g.setColour(pink);
+    //g.strokePath(
+    //    path,
+    //    juce::PathStrokeType(
+    //        1.0f,
+    //        juce::PathStrokeType::curved,
+    //        juce::PathStrokeType::rounded
+    //    )
+    //);
 }
 
 void SpectrumAnalyzer::paint(juce::Graphics& g) {
