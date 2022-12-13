@@ -13,6 +13,7 @@
 #include "ParallelLowPassFilter.h"
 #include "ParallelHighPassFilter.h"
 #include "ADSR.h"
+#include "SpectrumAnalyzer.h"
 
 //==============================================================================
 /**
@@ -34,10 +35,17 @@ class BreaQAudioProcessor  : public juce::AudioProcessor
                             #endif
 {
 public:
+    float crossOverFequency;
+    float lowPassFrequency;
+    float highPassFrequency;
+
     ParallelLowPassFilter lowPassFilter;
     ParallelHighPassFilter highPassFilter;
+
     ADSR lowPassADSR;
     ADSR highPassADSR;
+
+    SpectrumAnalyzer spectrumAnalyzer;
 
     //==============================================================================
     BreaQAudioProcessor();
@@ -108,9 +116,8 @@ private:
     std::atomic<float>* highPassReleaseParameter = nullptr;
     std::atomic<float>* highPassReleaseCurveParameter = nullptr;
 
-    float lowPassFrequency;
+    
     // Slope lowPassOrder;
-    float highPassFrequency;
     // Slope highPassOrder;
 
     

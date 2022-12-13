@@ -11,23 +11,33 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 #include "BreaQLookAndFeel.h"
+#include "SpectrumAnalyzer.h"
 
 //==============================================================================
 /*
 */
-class BreaQAudioProcessorEditor  : public juce::AudioProcessorEditor
+class BreaQAudioProcessorEditor  : public juce::AudioProcessorEditor //, juce::AudioSource, juce::Timer
 {
 public:
-    BreaQAudioProcessorEditor (BreaQAudioProcessor&, juce::AudioProcessorValueTreeState&);
+    SpectrumAnalyzer* spectrumAnalyzer;
+    // static const int fftOrder = 11;
+    // static const int fftSize = 1 << fftOrder;
+    // static const int scopeSize = 512;
+
+    BreaQAudioProcessorEditor (BreaQAudioProcessor&, juce::AudioProcessorValueTreeState&, SpectrumAnalyzer&);
     ~BreaQAudioProcessorEditor() override;
 
     //==============================================================================
     void paint (juce::Graphics&) override;
     void resized() override;
 
+    // void getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) override;
+    // void timerCallback() override;
+
 private:
     BreaQAudioProcessor& audioProcessor;
     BreaQLookAndFeel breaQLookAndFeel;
+
 
     // Cross Over Controls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -129,7 +139,34 @@ private:
     juce::Rectangle<int> lowPassADSRVisualizerBounds;
     juce::Rectangle<int> highPassADSRVisualizerBounds;
 
-    void DrawADSRCurve(juce::Graphics& g, juce::Rectangle<int> bounds, ADSR adsr);
+    // Analyzer %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    /*juce::dsp::FFT forwardFFT;
+    juce::dsp::WindowingFunction<float> window;
+
+    float fifo[fftSize];
+    float fftData[2 * fftSize];
+    int fifoIndex = 0;
+    bool nextFFTBlockReady = false;
+    float scopeData[scopeSize];
+
+    void pushNextSampleIntoFifo(float sample) noexcept;
+    void drawNextFrameOfSpectrum();
+    void drawFrame(juce::Graphics& g);*/
+
+    // Curves %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    void DrawFrequencyResponseCurve(
+        juce::Graphics& g,
+        juce::Rectangle<int> bounds,
+        float crossOverFrequency,
+        float lowPassCutOffFrequency,
+        float highPassCutOffFrequency
+    );
+
+    void DrawADSRCurve(
+        juce::Graphics& g, 
+        juce::Rectangle<int> bounds, 
+        ADSR adsr
+    );
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BreaQAudioProcessorEditor)
 };

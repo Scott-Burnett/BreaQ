@@ -157,7 +157,7 @@ void BreaQAudioProcessor::processBlock (
     // ToDo: Move These ####################################################
     // Filters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    const auto crossOverFrequency = crossOverFrequencyParameter->load();
+    crossOverFequency = crossOverFrequencyParameter->load();
     const auto crossOverWidth = crossOverWidthParameter->load();
     const auto highPassOrder = (int)highPassOrderParameter->load();
     const auto lowPassOrder = (int)lowPassOrderParameter->load();
@@ -165,8 +165,8 @@ void BreaQAudioProcessor::processBlock (
     highPassFilter.f_order = highPassOrder + 1;
     lowPassFilter.f_order = lowPassOrder + 1;
 
-    lowPassFrequency = crossOverFrequency + crossOverWidth;
-    highPassFrequency = crossOverFrequency - crossOverWidth;
+    lowPassFrequency = crossOverFequency + crossOverWidth;
+    highPassFrequency = crossOverFequency - crossOverWidth;
 
     lowPassFrequency = std::clamp(lowPassFrequency, 20.0f, 20000.0f);
     highPassFrequency = std::clamp(highPassFrequency, 20.0f, 20000.0f);
@@ -275,6 +275,8 @@ void BreaQAudioProcessor::processBlock (
         rightOutputChannel[i] = rightSample;
     }
 
+    spectrumAnalyzer.processBuffer(leftOutputChannel, bufferSize);
+
     // ??
     delete(leftHighPassOutputChannel);
     delete(rightHighPassOutputChannel);
@@ -288,7 +290,7 @@ bool BreaQAudioProcessor::hasEditor() const {
 }
 
 juce::AudioProcessorEditor* BreaQAudioProcessor::createEditor() {
-    return new BreaQAudioProcessorEditor(*this, parameters);
+    return new BreaQAudioProcessorEditor(*this, parameters, spectrumAnalyzer);
 }
 //==============================================================================
 void BreaQAudioProcessor::getStateInformation (juce::MemoryBlock& destData) {

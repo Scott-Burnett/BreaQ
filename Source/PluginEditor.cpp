@@ -9,34 +9,20 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+
 //==============================================================================
-/*void BreaQAudioProcessorEditor::initializeSlider(
-        juce::AudioProcessorValueTreeState& vts,
-        juce::Slider slider,
-        std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> attachment,
-        const juce::String& parameterName) {
-    addAndMakeVisible(crossOverFrequencySlider);
-    crossOverFrequencySlider.setSliderStyle(
-        juce::Slider::SliderStyle::RotaryVerticalDrag
-    );
-    crossOverFrequencySlider.setTextBoxStyle(
-        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
-    );
-    crossOverFrequencySlider.hideTextBox(false);
-    crossOverFrequencyAttachment.reset(
-        new juce::AudioProcessorValueTreeState::SliderAttachment(
-            vts, "crossOverFrequency", crossOverFrequencySlider
-        )
-    );
-}*/
 
 //==============================================================================
 BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
         BreaQAudioProcessor& p, 
-        juce::AudioProcessorValueTreeState& vts
+        juce::AudioProcessorValueTreeState& vts,
+        SpectrumAnalyzer& analyzer
     ) : 
         AudioProcessorEditor (&p), 
         audioProcessor (p) {
+    spectrumAnalyzer = &analyzer;
+    addAndMakeVisible(spectrumAnalyzer);
+    
     // Cross over Controls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     addAndMakeVisible(crossOverFrequencySlider);
     crossOverFrequencySlider.setSliderStyle(
@@ -376,9 +362,16 @@ void BreaQAudioProcessorEditor::paint (juce::Graphics& g) {
     
     g.setColour(juce::Colours::black);
     g.fillRect(spectrumAnalyzerBounds);
-
     g.fillRect(lowPassADSRVisualizerBounds);
     g.fillRect(highPassADSRVisualizerBounds);
+
+    DrawFrequencyResponseCurve(
+        g,
+        spectrumAnalyzerBounds,
+        audioProcessor.crossOverFequency,
+        audioProcessor.lowPassFrequency,
+        audioProcessor.highPassFrequency
+    );
     
     g.setColour(juce::Colours::bisque);
     DrawADSRCurve(g, lowPassADSRVisualizerBounds, audioProcessor.lowPassADSR);
@@ -399,6 +392,8 @@ void BreaQAudioProcessorEditor::resized() {
 
     spectrumAnalyzerBounds = bounds.removeFromTop(bounds.getHeight() * 0.45f);
     spectrumAnalyzerBounds.reduce(10, 10);
+
+    spectrumAnalyzer->setBounds(spectrumAnalyzerBounds);
 
     auto envelopePanelWidth = bounds.getWidth() * 0.42f;
 
@@ -540,6 +535,173 @@ void BreaQAudioProcessorEditor::resized() {
     highPassReleaseCurveSlider.setBounds(rightReleaseCurveBounds);
 }
 
+//==============================================================================
+/*void BreaQAudioProcessorEditor::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) {
+    if (bufferToFill.buffer->getNumChannels() > 0) {
+        auto* channelData = bufferToFill.buffer->getReadPointer(0, bufferToFill.startSample);
+
+        for (auto i = 0; i < bufferToFill.numSamples; ++i)
+            pushNextSampleIntoFifo(channelData[i]);
+    }
+}
+
+void BreaQAudioProcessorEditor::pushNextSampleIntoFifo(float sample) noexcept {
+    if (fifoIndex == fftSize) {
+        if (!nextFFTBlockReady) {
+            juce::zeromem(fftData, sizeof(fftData));
+            memcpy(fftData, fifo, sizeof(fifo));
+            nextFFTBlockReady = true;
+        }
+        fifoIndex = 0;
+    }
+    fifo[fifoIndex++] = sample;
+}
+
+void BreaQAudioProcessorEditor::drawNextFrameOfSpectrum() {
+    window.multiplyWithWindowingTable(fftData, fftSize);
+    forwardFFT.performFrequencyOnlyForwardTransform(fftData);
+
+    auto mindB = -100.0f;
+    auto maxdB = 0.0f;
+
+    for (int i = 0; i < scopeSize; ++i) {
+        auto skewedProportionX = 1.0f - std::exp(std::log(1.0f - (float)i / (float)scopeSize) * 0.2f);
+        auto fftDataIndex = juce::jlimit(0, fftSize / 2, (int)(skewedProportionX * (float)fftSize * 0.5f));
+        auto level = juce::jmap(juce::jlimit(mindB, maxdB, juce::Decibels::gainToDecibels(fftData[fftDataIndex])
+            - juce::Decibels::gainToDecibels((float)fftSize)),
+            mindB, maxdB, 0.0f, 1.0f
+        );
+
+        scopeData[i] = level;
+    }
+}
+
+void BreaQAudioProcessorEditor::timerCallback()
+{
+    if (nextFFTBlockReady)
+    {
+        drawNextFrameOfSpectrum();
+        nextFFTBlockReady = false;
+        repaint();
+    }
+}
+
+void BreaQAudioProcessorEditor::drawFrame(juce::Graphics& g)
+{
+    for (int i = 1; i < scopeSize; ++i)
+    {
+        auto width = getLocalBounds().getWidth();
+        auto height = getLocalBounds().getHeight();
+
+        g.drawLine({ (float)juce::jmap(i - 1, 0, scopeSize - 1, 0, width),
+                              juce::jmap(scopeData[i - 1], 0.0f, 1.0f, (float)height, 0.0f),
+                      (float)juce::jmap(i,     0, scopeSize - 1, 0, width),
+                              juce::jmap(scopeData[i],     0.0f, 1.0f, (float)height, 0.0f) });
+    }
+}*/
+
+
+
+void BreaQAudioProcessorEditor::DrawFrequencyResponseCurve(
+        juce::Graphics& g, 
+        juce::Rectangle<int> bounds,
+        float crossOverFrequency,
+        float lowPassCutOffFrequency,
+        float highPassCutOffFrequency) {
+    auto left = (double)bounds.getTopLeft().getX();
+    auto right = (double)bounds.getTopRight().getX();
+    auto top = (double)bounds.getTopLeft().getY();
+    auto bottom = (double)bounds.getBottomLeft().getY();
+
+    int crossOverFrequencyX = (int)juce::jmap(
+        juce::mapFromLog10((double)crossOverFrequency, 20.0, 20000.0),
+        left,
+        right
+    );
+
+    int lowPassCutOffFrequencyX = (int)juce::jmap(
+        juce::mapFromLog10((double)lowPassCutOffFrequency, 20.0, 20000.0),
+        left,
+        right
+    );
+
+    int highPassCutOffFrequencyX = (int)juce::jmap(
+        juce::mapFromLog10((double)highPassCutOffFrequency, 20.0, 20000.0),
+        left,
+        right
+    );
+
+    g.setColour(juce::Colours::green);
+    g.drawVerticalLine(crossOverFrequencyX, top, bottom);
+    g.drawVerticalLine(lowPassCutOffFrequencyX, top, bottom);
+    g.drawVerticalLine(highPassCutOffFrequencyX, top, bottom);
+
+    int zeroY = (int)juce::jmap(0.5, top, bottom);
+
+    float highPassEndFrequency = highPassCutOffFrequency;
+    for (int i = 5; i > audioProcessor.highPassFilter.f_order; i--) {
+        highPassEndFrequency /= 2;
+    }
+
+    float lowPassEndFrequency = lowPassCutOffFrequency;
+    for (int i = 5; i > audioProcessor.lowPassFilter.f_order; i--) {
+        lowPassEndFrequency *= 2;
+    }
+
+    int highPassEndFrequencyX = (int)juce::jmap(
+        juce::mapFromLog10((double)highPassEndFrequency, 20.0, 20000.0),
+        left,
+        right
+    );
+
+    int highPassControlX = (int)juce::jmap(
+        0.5,
+        (double)highPassCutOffFrequencyX,
+        (double)highPassEndFrequencyX
+    );
+
+    int lowPassEndFrequencyX = (int)juce::jmap(
+        juce::mapFromLog10((double)lowPassEndFrequency, 20.0, 20000.0),
+        left,
+        right
+    );
+
+    int lowPassControlX = (int)juce::jmap(
+        0.5,
+        (double)lowPassCutOffFrequencyX,
+        (double)lowPassEndFrequencyX
+    );
+
+    juce::Path highPassPath;
+    highPassPath.startNewSubPath(right, zeroY);
+    highPassPath.lineTo(highPassCutOffFrequencyX, zeroY);
+    highPassPath.quadraticTo(highPassControlX, zeroY, highPassEndFrequencyX, bottom);
+
+    juce::Path lowPassPath;
+    lowPassPath.startNewSubPath(left, zeroY);
+    lowPassPath.lineTo(lowPassCutOffFrequencyX, zeroY);
+    lowPassPath.quadraticTo(lowPassControlX, zeroY, lowPassEndFrequencyX, bottom);
+
+    g.setColour(juce::Colours::bisque);
+    g.strokePath(
+        highPassPath,
+        juce::PathStrokeType(
+            2,
+            juce::PathStrokeType::curved,
+            juce::PathStrokeType::rounded
+        )
+    );
+
+    g.strokePath(
+        lowPassPath,
+        juce::PathStrokeType(
+            2,
+            juce::PathStrokeType::curved,
+            juce::PathStrokeType::rounded
+        )
+    );
+}
+
 void BreaQAudioProcessorEditor::DrawADSRCurve(
         juce::Graphics& g,
         juce::Rectangle<int> bounds,
@@ -585,22 +747,8 @@ void BreaQAudioProcessorEditor::DrawADSRCurve(
         top
     );
 
-    //int releaseX = (int)juce::jmap(
-    //    (double)(adsr.attackTime + adsr.decayTime + adsr.releaseTime),
-    //    (double)0.0f,
-    //    (double)totalLength,
-    //    left,
-    //    right
-    //)
-
     int releaseX = right;
     int releaseY = bottom;
-
-    juce::Path path;
-    //path.startNewSubPath(left, initialY);
-    //path.lineTo(attackX, attackY);
-    //path.lineTo(decayX, decayY);
-    //path.lineTo(releaseX, releaseY);
 
     auto attackCurveX = juce::jmap(
         (double)adsr.attackCurve, 
@@ -650,11 +798,17 @@ void BreaQAudioProcessorEditor::DrawADSRCurve(
         (double)decayY
     );
 
+    g.setColour(juce::Colours::green);
+    g.drawVerticalLine(attackX, top, bottom);
+    g.drawVerticalLine(decayX, top, bottom);
+
+    juce::Path path;
     path.startNewSubPath(left, initialY);
     path.quadraticTo(attackCurveX, attackCurveY, attackX, attackY);
     path.quadraticTo(decayCurveX, decayCurveY, decayX, decayY);
     path.quadraticTo(releaseCurveX, releaseCurveY, releaseX, releaseY);
 
+    g.setColour(juce::Colours::bisque);
     g.strokePath(
         path,
         juce::PathStrokeType(
@@ -663,4 +817,6 @@ void BreaQAudioProcessorEditor::DrawADSRCurve(
             juce::PathStrokeType::rounded
         )
     );
+
+    
 }
