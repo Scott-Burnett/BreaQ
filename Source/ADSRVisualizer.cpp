@@ -1,7 +1,7 @@
 #include "ADSRVisualizer.h"
 
 ADSRVisualizer::ADSRVisualizer() {
-    startTimer(700);
+    startTimer(120);
 }
 
 ADSRVisualizer::~ADSRVisualizer() {
@@ -131,11 +131,13 @@ void ADSRVisualizer::paint(juce::Graphics& g) {
     );
 
     juce::Path path;
-    path.startNewSubPath(left, initialY);
+    path.startNewSubPath(left, bottom);
+    path.lineTo(left, initialY);
     path.quadraticTo(attackCurveX, attackCurveY, attackX, attackY);
     path.quadraticTo(decayCurveX, decayCurveY, decayX, decayY);
     path.lineTo(sustainX, decayY);
     path.quadraticTo(releaseCurveX, releaseCurveY, releaseX, releaseY);
+    path.lineTo(left, bottom);
 
     g.setColour(lilac);
     g.strokePath(
