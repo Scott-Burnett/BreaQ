@@ -26,15 +26,18 @@ enum Slope {
     DbOct48
 };
 
+class BreaQAudioProcessorEditor;
+
 //==============================================================================
 /**
 */
-class BreaQAudioProcessor  : public juce::AudioProcessor
+class BreaQAudioProcessor  : public juce::AudioProcessor, public juce::AudioProcessorParameter::Listener, public juce::Timer
                             #if JucePlugin_Enable_ARA
                              , public juce::AudioProcessorARAExtension
                             #endif
 {
 public:
+    BreaQAudioProcessorEditor* editor;
     float crossOverFequency;
     float lowPassFrequency;
     float highPassFrequency;
@@ -60,6 +63,11 @@ public:
    #endif
 
     void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
+
+    //==============================================================================
+    void parameterValueChanged(int parameterIndex, float newValue) override;
+    void parameterGestureChanged(int parameterIndex, bool gestureIsStarting) override;
+    void timerCallback() override;
 
     //==============================================================================
     juce::AudioProcessorEditor* createEditor() override;
@@ -90,6 +98,8 @@ private:
     juce::AudioProcessorValueTreeState parameters {
         *this, nullptr, "Parameters", createParameterLayout()
     };
+
+    bool parametersChanged;
 
     std::atomic<float>* crossOverFrequencyParameter = nullptr;
     std::atomic<float>* crossOverWidthParameter = nullptr;

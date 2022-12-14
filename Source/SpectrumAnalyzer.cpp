@@ -78,6 +78,7 @@ void SpectrumAnalyzer::drawFrame(juce::Graphics& g)
     auto height = getLocalBounds().getHeight();
     auto bottom = getLocalBounds().getBottom();
     auto left = getLocalBounds().getTopLeft().getX();
+    auto right = getLocalBounds().getTopRight().getX();
 
     juce::Path path;
     path.startNewSubPath(left, bottom);
@@ -88,6 +89,7 @@ void SpectrumAnalyzer::drawFrame(juce::Graphics& g)
 
         path.lineTo(sampleX, sampleY);
     }
+    path.lineTo(right, bottom);
 
     g.setColour(orange1);
     g.fillPath(path);

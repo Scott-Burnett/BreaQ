@@ -11,6 +11,8 @@ public:
 		Release = 4
 	};
 
+	State state;
+
 	float sampleDuration;
 	float attackTime;
 	float attackCurve;
@@ -35,7 +37,6 @@ public:
 	~ADSR();
 
 private:
-	State state;
 	int currentNoteNumber;
 	int currentNoteChannel;
 	float timeSinceTrigger;

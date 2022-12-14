@@ -12,6 +12,7 @@
 #include "PluginProcessor.h"
 #include "BreaQLookAndFeel.h"
 #include "SpectrumAnalyzer.h"
+#include "ADSRVisualizer.h"
 
 //==============================================================================
 /*
@@ -53,13 +54,46 @@ public:
     const juce::Colour orange3 = juce::Colour(247, 203, 139); // (0xf7cb8b);
 
     SpectrumAnalyzer* spectrumAnalyzer;
+    ADSRVisualizer* lowPassADSRVisualizer;
+    ADSRVisualizer* highPassADSRVisualizer;
 
-    BreaQAudioProcessorEditor (BreaQAudioProcessor&, juce::AudioProcessorValueTreeState&, SpectrumAnalyzer&);
+    BreaQAudioProcessorEditor (
+        BreaQAudioProcessor&, 
+        juce::AudioProcessorValueTreeState&, 
+        SpectrumAnalyzer&
+    );
     ~BreaQAudioProcessorEditor() override;
 
     //==============================================================================
     void paint (juce::Graphics&) override;
     void resized() override;
+
+    void loadParameters(
+        float crossOverFrequency,
+        float crossOverWidth,
+        float highPassOrder,
+        float lowPassOrder,
+
+        float lowPassInitial,
+        float lowPassAttack,
+        float lowPassAttackCurve,
+        float lowPassPeak,
+        float lowPassDecay,
+        float lowPassDecayCurve,
+        float lowPassSustain,
+        float lowPassRelease,
+        float lowPassReleaseCurve,
+
+        float highPassInitial,
+        float highPassAttack,
+        float highPassAttackCurve,
+        float highPassPeak,
+        float highPassDecay,
+        float highPassDecayCurve,
+        float highPassSustain,
+        float highPassRelease,
+        float highPassReleaseCurve
+    );
 
 private:
     BreaQAudioProcessor& audioProcessor;

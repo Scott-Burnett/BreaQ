@@ -22,6 +22,19 @@ BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
         audioProcessor (p) {
     spectrumAnalyzer = &analyzer;
     addAndMakeVisible(spectrumAnalyzer);
+
+    lowPassADSRVisualizer = new ADSRVisualizer();
+    addAndMakeVisible(lowPassADSRVisualizer);
+
+    highPassADSRVisualizer = new ADSRVisualizer();
+    addAndMakeVisible(highPassADSRVisualizer);
+
+    //const auto& params = audioProcessor.getParameters();
+    //for (auto param : params)
+   // {
+   //     param->addListener(lowPassADSRVisualizer);
+   //     param->addListener(highPassADSRVisualizer);
+   // }
     
     // Cross over Controls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     addAndMakeVisible(crossOverFrequencySlider);
@@ -346,10 +359,90 @@ BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
         )
     );
 
+    /*const auto& params = audioProcessor.getParameters();
+    for (auto param : params)
+    {
+        //switch (param->getName(20)) {
+        //case "lowPassInitial":
+        //case "lowPassAttack":
+        //case "lowPassDecay":
+        //case "lowPassSustain":
+        //case "lowPassRelease":
+        //case "lowPassAttackCurve":
+        //case "lowPassDecayCurve":
+        //case "lowPassReleaseCurve":
+            param->addListener(lowPassADSRVisualizer);
+            param->addListener(highPassADSRVisualizer);
+    }*/
+
+    vts.getParameter("lowPassInitial")->addListener(lowPassADSRVisualizer);
+    vts.getParameter("lowPassAttack")->addListener(lowPassADSRVisualizer);
+    vts.getParameter("lowPassAttackCurve")->addListener(lowPassADSRVisualizer);
+    vts.getParameter("lowPassPeak")->addListener(lowPassADSRVisualizer);
+    vts.getParameter("lowPassDecay")->addListener(lowPassADSRVisualizer);
+    vts.getParameter("lowPassDecayCurve")->addListener(lowPassADSRVisualizer);
+    vts.getParameter("lowPassSustain")->addListener(lowPassADSRVisualizer);
+    vts.getParameter("lowPassRelease")->addListener(lowPassADSRVisualizer);
+    vts.getParameter("lowPassReleaseCurve")->addListener(lowPassADSRVisualizer);
+
+    vts.getParameter("highPassInitial")->addListener(highPassADSRVisualizer);
+    vts.getParameter("highPassAttack")->addListener(highPassADSRVisualizer);
+    vts.getParameter("highPassAttackCurve")->addListener(highPassADSRVisualizer);
+    vts.getParameter("highPassPeak")->addListener(highPassADSRVisualizer);
+    vts.getParameter("highPassDecay")->addListener(highPassADSRVisualizer);
+    vts.getParameter("highPassDecayCurve")->addListener(highPassADSRVisualizer);
+    vts.getParameter("highPassSustain")->addListener(highPassADSRVisualizer);
+    vts.getParameter("highPassRelease")->addListener(highPassADSRVisualizer);
+    vts.getParameter("highPassReleaseCurve")->addListener(highPassADSRVisualizer);
+
     // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     setSize (970, 600);
     juce::LookAndFeel::setDefaultLookAndFeel(&breaQLookAndFeel);
+}
+
+void BreaQAudioProcessorEditor::loadParameters(
+        float crossOverFrequency,
+        float crossOverWidth,
+        float highPassOrder,
+        float lowPassOrder,
+        float lowPassInitial,
+        float lowPassAttack,
+        float lowPassAttackCurve,
+        float lowPassPeak,
+        float lowPassDecay,
+        float lowPassDecayCurve,
+        float lowPassSustain,
+        float lowPassRelease,
+        float lowPassReleaseCurve,
+        float highPassInitial,
+        float highPassAttack,
+        float highPassAttackCurve,
+        float highPassPeak,
+        float highPassDecay,
+        float highPassDecayCurve,
+        float highPassSustain,
+        float highPassRelease,
+        float highPassReleaseCurve) {
+    lowPassADSRVisualizer->initial = lowPassInitial;
+    lowPassADSRVisualizer->attack = lowPassAttack;
+    lowPassADSRVisualizer->attackCurve = lowPassAttackCurve;
+    lowPassADSRVisualizer->peak = lowPassPeak;
+    lowPassADSRVisualizer->decay = lowPassDecay;
+    lowPassADSRVisualizer->decayCurve = lowPassDecayCurve;
+    lowPassADSRVisualizer->sustain = lowPassSustain;
+    lowPassADSRVisualizer->release = lowPassRelease;
+    lowPassADSRVisualizer->releaseCurve = lowPassReleaseCurve;
+
+    highPassADSRVisualizer->initial = highPassInitial;
+    highPassADSRVisualizer->attack = highPassAttack;
+    highPassADSRVisualizer->attackCurve = highPassAttackCurve;
+    highPassADSRVisualizer->peak = highPassPeak;
+    highPassADSRVisualizer->decay = highPassDecay;
+    highPassADSRVisualizer->decayCurve = highPassDecayCurve;
+    highPassADSRVisualizer->sustain = highPassSustain;
+    highPassADSRVisualizer->release = highPassRelease;
+    highPassADSRVisualizer->releaseCurve = highPassReleaseCurve;
 }
 
 BreaQAudioProcessorEditor::~BreaQAudioProcessorEditor() {
@@ -358,7 +451,7 @@ BreaQAudioProcessorEditor::~BreaQAudioProcessorEditor() {
 
 //==============================================================================
 void BreaQAudioProcessorEditor::paint (juce::Graphics& g) {
-    g.fillAll(background1);
+    //g.fillAll(background1);
     
     g.setColour(background2);
 
@@ -383,8 +476,8 @@ void BreaQAudioProcessorEditor::paint (juce::Graphics& g) {
     );
     
     g.setColour(orange3);
-    DrawADSRCurve(g, lowPassADSRVisualizerBounds, audioProcessor.lowPassADSR);
-    DrawADSRCurve(g, highPassADSRVisualizerBounds, audioProcessor.highPassADSR);
+    // DrawADSRCurve(g, lowPassADSRVisualizerBounds, audioProcessor.lowPassADSR);
+    // DrawADSRCurve(g, highPassADSRVisualizerBounds, audioProcessor.highPassADSR);
 }
 
 void BreaQAudioProcessorEditor::resized() {
@@ -419,8 +512,8 @@ void BreaQAudioProcessorEditor::resized() {
     auto leftPeripheralControlsPanel = centrePanelBounds.removeFromLeft(peripheralControlsWidth).expanded(3);
     auto rightPeripheralControlsPanel = centrePanelBounds.removeFromRight(peripheralControlsWidth).expanded(3);
 
-    lowPassOrderSlider.setBounds(leftPeripheralControlsPanel.removeFromTop(peripheralControlsWidth));
-    highPassOrderSlider.setBounds(rightPeripheralControlsPanel.removeFromTop(peripheralControlsWidth));
+    lowPassOrderSlider.setBounds(leftPeripheralControlsPanel.removeFromTop(peripheralControlsWidth).expanded(8));
+    highPassOrderSlider.setBounds(rightPeripheralControlsPanel.removeFromTop(peripheralControlsWidth).expanded(8));
 
     auto crossOverFrequencyControlBounds = 
         centrePanelBounds.removeFromTop(centrePanelBounds.getHeight() * 0.5f).expanded(20);
@@ -439,6 +532,7 @@ void BreaQAudioProcessorEditor::resized() {
 
     lowPassADSRVisualizerDecorationBounds = leftPanelBounds.removeFromTop(leftPanelBounds.getHeight() * 0.5f).reduced(3, 3).reduced(7, 7);
     lowPassADSRVisualizerBounds = lowPassADSRVisualizerDecorationBounds.reduced(4, 4);
+    lowPassADSRVisualizer->setBounds(lowPassADSRVisualizerBounds);
 
     auto controlHeight = leftPanelBounds.getHeight() / 3;
     int controlWidth = leftPanelBounds.getWidth() / 6;
@@ -486,6 +580,7 @@ void BreaQAudioProcessorEditor::resized() {
 
     highPassADSRVisualizerDecorationBounds = rightPanelBounds.removeFromTop(rightPanelBounds.getHeight() * 0.5f).reduced(3, 3).reduced(7, 7);
     highPassADSRVisualizerBounds = highPassADSRVisualizerDecorationBounds.reduced(4, 4);
+    highPassADSRVisualizer->setBounds(highPassADSRVisualizerBounds);
 
     auto rightEnvelopeControlsBounds = rightPanelBounds.removeFromTop(controlHeight);
     auto rightInitialBounds = rightEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
@@ -554,10 +649,10 @@ void BreaQAudioProcessorEditor::DrawFrequencyResponseCurve(
         right
     );
 
-    g.setColour(grid1);
-    g.drawVerticalLine(crossOverFrequencyX, top, bottom);
-    g.drawVerticalLine(lowPassCutOffFrequencyX, top, bottom);
-    g.drawVerticalLine(highPassCutOffFrequencyX, top, bottom);
+    //g.setColour(grid1);
+    //g.drawVerticalLine(crossOverFrequencyX, top, bottom);
+    //g.drawVerticalLine(lowPassCutOffFrequencyX, top, bottom);
+    //g.drawVerticalLine(highPassCutOffFrequencyX, top, bottom);
 
     int zeroY = (int)juce::jmap(0.5, top, bottom);
 
@@ -735,10 +830,10 @@ void BreaQAudioProcessorEditor::DrawADSRCurve(
         (double)decayY
     );
 
-    g.setColour(grid1);
-    g.drawVerticalLine(attackX, top, bottom);
-    g.drawVerticalLine(decayX, top, bottom);
-    g.drawVerticalLine(sustainX, top, bottom);
+    //g.setColour(grid1);
+    //g.drawVerticalLine(attackX, top, bottom);
+    //g.drawVerticalLine(decayX, top, bottom);
+    //g.drawVerticalLine(sustainX, top, bottom);
 
     juce::Path path;
     path.startNewSubPath(left, initialY);
@@ -780,9 +875,9 @@ void BreaQAudioProcessorEditor::decorateBounds(juce::Graphics& g, juce::Rectangl
     //    )
     //);
 
-    g.setColour(fillColour);
-    g.fillRect(bounds);
+    //g.setColour(fillColour);
+    //g.fillRect(bounds);
 
-    g.setColour(borderColour);
-    g.drawRect(bounds, 3.0f);
+    //g.setColour(borderColour);
+    //g.drawRect(bounds, 3.0f);
 }
