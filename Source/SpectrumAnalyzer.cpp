@@ -77,8 +77,11 @@ void SpectrumAnalyzer::drawFrame(juce::Graphics& g)
     auto width = getLocalBounds().getWidth();
     auto height = getLocalBounds().getHeight();
     auto bottom = getLocalBounds().getBottom();
+    auto top = getLocalBounds().getTopLeft().getY();
     auto left = getLocalBounds().getTopLeft().getX();
     auto right = getLocalBounds().getTopRight().getX();
+
+    auto centre = getLocalBounds().getCentre();
 
     juce::Path path;
     path.startNewSubPath(left, bottom);
@@ -91,18 +94,27 @@ void SpectrumAnalyzer::drawFrame(juce::Graphics& g)
     }
     path.lineTo(right, bottom);
 
-    g.setColour(orange1);
+    //g.setColour(orange1);
+
+    //g.setGradientFill({
+    //    transparentBackground1, static_cast<float>(centre.getX()), static_cast<float>(centre.getY()),
+    //    juce::Colour::fromRGBA(0, 0, 0, 0), static_cast<float>(centre.getX()), static_cast<float>(bottom),
+    //    false
+    //});
+    // 
+    g.setColour(transparentBackground1);
+
     g.fillPath(path);
 
-    //g.setColour(pink);
-    //g.strokePath(
-    //    path,
-    //    juce::PathStrokeType(
-    //        1.0f,
-    //        juce::PathStrokeType::curved,
-    //        juce::PathStrokeType::rounded
-    //    )
-    //);
+    g.setColour(orange3);
+    g.strokePath(
+        path,
+        juce::PathStrokeType(
+            1.0f,
+            juce::PathStrokeType::curved,
+            juce::PathStrokeType::rounded
+        )
+    );
 }
 
 void SpectrumAnalyzer::paint(juce::Graphics& g) {

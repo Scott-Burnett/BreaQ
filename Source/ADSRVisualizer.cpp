@@ -1,6 +1,8 @@
 #include "ADSRVisualizer.h"
 
 ADSRVisualizer::ADSRVisualizer() {
+    fillColour = transparentCitron;
+    
     startTimer(120);
 }
 
@@ -28,6 +30,8 @@ void ADSRVisualizer::paint(juce::Graphics& g) {
     auto right = (double)getLocalBounds().getTopRight().getX();
     auto top = (double)getLocalBounds().getTopLeft().getY();
     auto bottom = (double)getLocalBounds().getBottomLeft().getY();
+
+    auto centre = getLocalBounds().getCentre();
 
     const float minimumTime = 0.05f;
     const auto attackTime = (double)juce::jmax(attack, minimumTime);
@@ -149,6 +153,29 @@ void ADSRVisualizer::paint(juce::Graphics& g) {
         )
     );
 
-    g.setColour(orange1);
+    //g.setColour(orange1);
+
+    //g.setGradientFill({ 
+    //    lilac, static_cast<float>(centre.getX()), static_cast<float>(top),
+    //    background1, static_cast<float>(centre.getX()), static_cast<float>(bottom),
+    //    false 
+    //});
+
+    //g.fillPath(path);
+
+    g.setGradientFill({
+        fillColour, static_cast<float>(right), static_cast<float>(top),
+        background1, static_cast<float>(left), static_cast<float>(bottom),
+        false
+        });
+
     g.fillPath(path);
+
+    //g.setGradientFill({
+    //    transparentPink, static_cast<float>(left), static_cast<float>(top),
+    //    background1, static_cast<float>(right), static_cast<float>(bottom),
+    //    false
+    //    });
+
+    //g.fillPath(path);
 }

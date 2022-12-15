@@ -8,7 +8,13 @@ void ParallelLowPassFilter::processBlock(
 	const auto tan = std::tan(PI * cutOffFrequency / sampleRate);
 	const auto a1 = (tan - 1.0f) / (tan + 1.0f);
 
+	const auto originalLeftDnBuffer = leftDnBuffer;
+	const auto originalRightDnBuffer = rightDnBuffer;
+
 	for (int k = 0; k < (int)f_order; k++) {
+		leftDnBuffer = originalLeftDnBuffer;
+		rightDnBuffer = originalRightDnBuffer;
+
 		for (int i = 0; i < bufferSize; i++) {
 			const auto leftInputSample = leftBuffer[i];
 			const auto rightInputSample = rightBuffer[i];

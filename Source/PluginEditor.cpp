@@ -25,9 +25,11 @@ BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
 
     lowPassADSRVisualizer = new ADSRVisualizer();
     addAndMakeVisible(lowPassADSRVisualizer);
+    lowPassADSRVisualizer->fillColour = lowPassFillColour;
 
     highPassADSRVisualizer = new ADSRVisualizer();
     addAndMakeVisible(highPassADSRVisualizer);
+    highPassADSRVisualizer->fillColour = highPassFillColour;
 
     //const auto& params = audioProcessor.getParameters();
     //for (auto param : params)
@@ -451,7 +453,7 @@ BreaQAudioProcessorEditor::~BreaQAudioProcessorEditor() {
 
 //==============================================================================
 void BreaQAudioProcessorEditor::paint (juce::Graphics& g) {
-    //g.fillAll(background1);
+    g.fillAll(background1);
     
     g.setColour(background2);
 
@@ -475,7 +477,7 @@ void BreaQAudioProcessorEditor::paint (juce::Graphics& g) {
         audioProcessor.highPassFrequency
     );
     
-    g.setColour(orange3);
+    //g.setColour(orange3);
     // DrawADSRCurve(g, lowPassADSRVisualizerBounds, audioProcessor.lowPassADSR);
     // DrawADSRCurve(g, highPassADSRVisualizerBounds, audioProcessor.highPassADSR);
 }
@@ -666,10 +668,14 @@ void BreaQAudioProcessorEditor::DrawFrequencyResponseCurve(
         lowPassEndFrequency *= 2;
     }
 
-    int highPassEndFrequencyX = (int)juce::jmap(
-        juce::mapFromLog10((double)highPassEndFrequency, 20.0, 20000.0),
+    int highPassEndFrequencyX = (int) juce::jlimit(
         left,
-        right
+        right,
+        juce::jmap(
+            juce::mapFromLog10((double)highPassEndFrequency, 20.0, 20000.0),
+            left,
+            right
+        )
     );
 
     int highPassControlX = (int)juce::jmap(
@@ -678,10 +684,14 @@ void BreaQAudioProcessorEditor::DrawFrequencyResponseCurve(
         (double)highPassEndFrequencyX
     );
 
-    int lowPassEndFrequencyX = (int)juce::jmap(
-        juce::mapFromLog10((double)lowPassEndFrequency, 20.0, 20000.0),
+    int lowPassEndFrequencyX = (int)juce::jlimit(
         left,
-        right
+        right,
+        juce::jmap(
+            juce::mapFromLog10((double)lowPassEndFrequency, 20.0, 20000.0),
+            left,
+            right
+        )
     );
 
     int lowPassControlX = (int)juce::jmap(
@@ -694,13 +704,36 @@ void BreaQAudioProcessorEditor::DrawFrequencyResponseCurve(
     highPassPath.startNewSubPath(right, zeroY);
     highPassPath.lineTo(highPassCutOffFrequencyX, zeroY);
     highPassPath.quadraticTo(highPassControlX, zeroY, highPassEndFrequencyX, bottom);
+    highPassPath.lineTo(right, bottom);
+    highPassPath.lineTo(right, zeroY);
 
     juce::Path lowPassPath;
     lowPassPath.startNewSubPath(left, zeroY);
     lowPassPath.lineTo(lowPassCutOffFrequencyX, zeroY);
     lowPassPath.quadraticTo(lowPassControlX, zeroY, lowPassEndFrequencyX, bottom);
+    lowPassPath.lineTo(left, bottom);
+    lowPassPath.lineTo(left, zeroY);
+
+    
+
+    g.setGradientFill({
+        transparentCitron, static_cast<float>(highPassEndFrequencyX), static_cast<float>(zeroY),
+        background1, static_cast<float>(right), static_cast<float>(bottom),
+        false
+        });
+
+    g.fillPath(highPassPath);
+
+    g.setGradientFill({
+        transparentPink, static_cast<float>(lowPassEndFrequencyX), static_cast<float>(zeroY),
+        background1, static_cast<float>(left), static_cast<float>(bottom),
+        false
+        });
+
+    g.fillPath(lowPassPath);
 
     g.setColour(lilac);
+
     g.strokePath(
         highPassPath,
         juce::PathStrokeType(
@@ -878,6 +911,6 @@ void BreaQAudioProcessorEditor::decorateBounds(juce::Graphics& g, juce::Rectangl
     //g.setColour(fillColour);
     //g.fillRect(bounds);
 
-    //g.setColour(borderColour);
-    //g.drawRect(bounds, 3.0f);
+    g.setColour(borderColour);
+    g.drawRect(bounds, 5.0f);
 }
