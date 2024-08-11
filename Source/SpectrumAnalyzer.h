@@ -1,6 +1,6 @@
 #pragma once
 
-#include <JuceHeader.h>
+#include <JuceLibraryCode/JuceHeader.h>
 
 class SpectrumAnalyzer : public juce::Component, public juce::AudioSource, public juce::Timer {
 public:

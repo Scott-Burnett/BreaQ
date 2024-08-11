@@ -18,8 +18,8 @@ BreaQAudioProcessor::BreaQAudioProcessor()
     #if ! JucePlugin_IsSynth
         .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
     #endif
-        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
 #endif
+        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
         )
 #endif
 {
@@ -281,72 +281,90 @@ void BreaQAudioProcessor::processBlock(
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         audioBuffer.clear(i, 0, audioBuffer.getNumSamples());
 
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    auto leftInputChannel = audioBuffer.getReadPointer(0);
-    auto rightInputChannel = audioBuffer.getReadPointer(1);
+    //auto leftInputChannel = audioBuffer.getReadPointer(0);
+    //auto rightInputChannel = audioBuffer.getReadPointer(1);
 
-    int bufferSize = audioBuffer.getNumSamples();
-    float* leftHighPassOutputChannel = new float[bufferSize];
-    float* rightHighPassOutputChannel = new float[bufferSize];
-    float* leftLowPassOutputChannel = new float[bufferSize];
-    float* rightLowPassOutputChannel = new float[bufferSize];
+    //int bufferSize = audioBuffer.getNumSamples();
+    //float* leftHighPassOutputChannel = new float[bufferSize];
+    //float* rightHighPassOutputChannel = new float[bufferSize];
+    //float* leftLowPassOutputChannel = new float[bufferSize];
+    //float* rightLowPassOutputChannel = new float[bufferSize];
 
-    for (int i = 0; i < bufferSize; i++) {
-        leftLowPassOutputChannel[i] = leftInputChannel[i];
-        rightLowPassOutputChannel[i] = rightInputChannel[i];
-        leftHighPassOutputChannel[i] = leftInputChannel[i];
-        rightHighPassOutputChannel[i] = rightInputChannel[i];
+    //for (int i = 0; i < bufferSize; i++) {
+    //    leftLowPassOutputChannel[i] = leftInputChannel[i];
+    //    rightLowPassOutputChannel[i] = rightInputChannel[i];
+    //    leftHighPassOutputChannel[i] = leftInputChannel[i];
+    //    rightHighPassOutputChannel[i] = rightInputChannel[i];
+    //}
+
+    //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    //lowPassFilter.processBlock(
+    //    leftLowPassOutputChannel,
+    //    rightLowPassOutputChannel,
+    //    bufferSize
+    //);
+
+    //lowPassADSR.processBlock(
+    //    midiBuffer,
+    //    leftLowPassOutputChannel,
+    //    rightLowPassOutputChannel,
+    //    bufferSize
+    //);
+
+    //highPassFilter.processBlock(
+    //    leftHighPassOutputChannel,
+    //    rightHighPassOutputChannel,
+    //    bufferSize
+    //);
+
+    //highPassADSR.processBlock(
+    //    midiBuffer,
+    //    leftHighPassOutputChannel,
+    //    rightHighPassOutputChannel,
+    //    bufferSize
+    //);
+
+    //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    //auto leftOutputChannel = audioBuffer.getWritePointer(0);
+    //auto rightOutputChannel = audioBuffer.getWritePointer(1);
+
+    //for (auto i = 0; i < bufferSize; i++) {
+    //    float leftSample = 0.5f * (leftLowPassOutputChannel[i] + leftHighPassOutputChannel[i]);
+    //    leftOutputChannel[i] = leftSample;
+
+    //    float rightSample = 0.5f * (rightLowPassOutputChannel[i] + rightHighPassOutputChannel[i]);
+    //    rightOutputChannel[i] = rightSample;
+    //}
+
+    //spectrumAnalyzer.processBuffer(leftOutputChannel, bufferSize);
+
+    //// ??
+    //delete(leftHighPassOutputChannel);
+    //delete(rightHighPassOutputChannel);
+    //delete(leftLowPassOutputChannel);
+    //delete(rightLowPassOutputChannel);
+
+    processedBuffer.clear();
+
+    juce::MidiBuffer::Iterator it(midiBuffer);
+
+    juce::MidiMessage current;
+    int samplePos;
+
+    while (it.getNextEvent(current, samplePos)) {
+        if (current.isNoteOnOrOff()) {
+            current.setNoteNumber(50);
+
+            
+        }
+
     }
 
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    lowPassFilter.processBlock(
-        leftLowPassOutputChannel,
-        rightLowPassOutputChannel,
-        bufferSize
-    );
-
-    lowPassADSR.processBlock(
-        midiBuffer,
-        leftLowPassOutputChannel,
-        rightLowPassOutputChannel,
-        bufferSize
-    );
-
-    highPassFilter.processBlock(
-        leftHighPassOutputChannel,
-        rightHighPassOutputChannel,
-        bufferSize
-    );
-
-    highPassADSR.processBlock(
-        midiBuffer,
-        leftHighPassOutputChannel,
-        rightHighPassOutputChannel,
-        bufferSize
-    );
-
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    auto leftOutputChannel = audioBuffer.getWritePointer(0);
-    auto rightOutputChannel = audioBuffer.getWritePointer(1);
-
-    for (auto i = 0; i < bufferSize; i++) {
-        float leftSample = 0.5f * (leftLowPassOutputChannel[i] + leftHighPassOutputChannel[i]);
-        leftOutputChannel[i] = leftSample;
-
-        float rightSample = 0.5f * (rightLowPassOutputChannel[i] + rightHighPassOutputChannel[i]);
-        rightOutputChannel[i] = rightSample;
-    }
-
-    spectrumAnalyzer.processBuffer(leftOutputChannel, bufferSize);
-
-    // ??
-    delete(leftHighPassOutputChannel);
-    delete(rightHighPassOutputChannel);
-    delete(leftLowPassOutputChannel);
-    delete(rightLowPassOutputChannel);
+    midiBuffer.swapWith(processedBuffer);
 }
 
 //==============================================================================

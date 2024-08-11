@@ -2,10 +2,13 @@
 
 <JUCERPROJECT id="pwa3iP" name="BreaQ" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
-              pluginCharacteristicsValue="pluginWantsMidiIn" pluginManufacturer="The Breakfast Factory"
-              companyName="The Breakfast Factory" companyEmail="thebreakfastfactoryyay@gmail.com">
+              pluginCharacteristicsValue="pluginIsMidiEffectPlugin,pluginIsSynth,pluginProducesMidiOut,pluginWantsMidiIn"
+              pluginManufacturer="The Breakfast Factory" companyName="The Breakfast Factory"
+              companyEmail="thebreakfastfactoryyay@gmail.com" pluginFormats="buildVST3">
   <MAINGROUP id="a5UCxf" name="BreaQ">
     <GROUP id="{429EAC7B-C196-BF01-2C16-93E8F8D785CB}" name="Source">
+      <FILE id="XSJjCA" name="ParameterNames.h" compile="0" resource="0"
+            file="Source/ParameterNames.h"/>
       <FILE id="UyaDhu" name="ParallelHighPassFilter.h" compile="0" resource="0"
             file="Source/ParallelHighPassFilter.h"/>
       <FILE id="FNU3o9" name="ParallelLowPassFilter.cpp" compile="1" resource="0"
@@ -28,6 +31,16 @@
             file="Source/PluginEditor.cpp"/>
       <FILE id="ABtOA1" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
     </GROUP>
+    <FILE id="BRyTqY" name="ADSRVisualizer.cpp" compile="1" resource="0"
+          file="Source/ADSRVisualizer.cpp"/>
+    <FILE id="r8HfX0" name="ADSRVisualizer.h" compile="0" resource="0"
+          file="Source/ADSRVisualizer.h"/>
+    <FILE id="Cvozlc" name="ParameterNames.cpp" compile="1" resource="0"
+          file="Source/ParameterNames.cpp"/>
+    <FILE id="CYm1xK" name="SpectrumAnalyzer.cpp" compile="1" resource="0"
+          file="Source/SpectrumAnalyzer.cpp"/>
+    <FILE id="HlEwh5" name="SpectrumAnalyzer.h" compile="0" resource="0"
+          file="Source/SpectrumAnalyzer.h"/>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>
   <EXPORTFORMATS>

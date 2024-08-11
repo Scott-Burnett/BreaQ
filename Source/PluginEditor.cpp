@@ -1,916 +1,291 @@
-/*
-  ==============================================================================
-
-    This file contains the basic framework code for a JUCE plugin editor.
-
-  ==============================================================================
-*/
-
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-
+#include <JuceLibraryCode/JuceHeader.h>
+#include "ParameterNames.h"
 
 //==============================================================================
+const juce::Colour Colours::aquamarine =        
+    juce::Colour(73, 212, 157); // (49D49D);
+
+const juce::Colour Colours::teaGreen =          
+    juce::Colour(191, 215, 181); // (BFD7B5);
+
+const juce::Colour Colours::springBud =         
+    juce::Colour(231, 239, 197); // (E7EFC5);
+
+const juce::Colour Colours::champagne =         
+    juce::Colour(242, 221, 164); // (F2DDA4);
+
+const juce::Colour Colours::citron =            
+    juce::Colour(162, 159, 21); // (A29F15);
+
+const juce::Colour Colours::terraCotta =        
+    juce::Colour(226, 109, 92); // (E26D5C);
+
+const juce::Colour Colours::background1 =       
+    juce::Colour(13, 16, 22); // (0x0d1016);
+
+const juce::Colour Colours::background2 =       
+    juce::Colour(0, 1, 10); // (0x00010a);
+
+const juce::Colour Colours::lilac =             
+    juce::Colour(218, 173, 224); // (0xdaade0);
+
+const juce::Colour Colours::pink =              
+    juce::Colour(238, 104, 175); // (0xee68af);
+
+const juce::Colour Colours::orange2 =           
+    juce::Colour(245, 187, 108); // (0xf5bb6c);
+
+const juce::Colour Colours::orange1 =           
+    juce::Colour(253, 198, 138); // (0xfdc68a);
+
+const juce::Colour Colours::orange3 =           
+    juce::Colour(247, 203, 139); // (0xf7cb8b);
+
+const juce::Colour Colours::transparentPink =   
+    juce::Colour::fromRGBA(238, 104, 175, 100); // (0xee68af);
+
+const juce::Colour Colours::transparentLilac =  
+    juce::Colour::fromRGBA(218, 173, 224, 100); // (0xdaade0);
+
+const juce::Colour Colours::transparentCitron = 
+    juce::Colour::fromRGBA(162, 159, 21, 100); // (A29F15);
+
+const juce::Colour Colours::grid1 =             
+    juce::Colour::fromRGBA(41, 45, 54, 50); // (0x292d36);
+
+const juce::Colour Colours::grid2 =             
+    juce::Colour::fromRGBA(61, 66, 77, 50); // (0x3d424d);
+
+const juce::Colour Colours::grid3 =             
+    juce::Colour(179, 177, 173); // (0xb3b1ad);
+
+//==============================================================================
+static void initSlider (
+    std::string sliderName,
+    juce::Slider& slider,
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>& sliderAttachment,
+    juce::AudioProcessorValueTreeState& vts,
+    juce::AudioProcessorEditor& editor
+) {
+    editor.addAndMakeVisible(slider);
+    slider.setSliderStyle (
+        juce::Slider::SliderStyle::RotaryVerticalDrag
+    );
+
+    slider.setTextBoxStyle (
+        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
+    );
+
+    slider.hideTextBox(false);
+    sliderAttachment.reset (
+        new juce::AudioProcessorValueTreeState::SliderAttachment (
+            vts, sliderName, slider
+    ));
+
+//     /*addAndMakeVisible(crossOverFrequencyLabel);
+//     crossOverFrequencyLabel.setText(
+//         "Cross Over Frequency", juce::dontSendNotification
+//     );*/
+}
+
+//==============================================================================
+static void initButton (
+    std::string buttonName,
+    juce::ToggleButton& button,
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment>& buttonAttachment,
+    juce::AudioProcessorValueTreeState& vts,
+    juce::AudioProcessorEditor& editor
+) {
+    editor.addAndMakeVisible(button);
+
+    buttonAttachment.reset (
+        new juce::AudioProcessorValueTreeState::ButtonAttachment (
+            vts, buttonName, button
+    ));
+}
+
+//==============================================================================
+void SliceEditor::init (
+    int sliceNumber,
+    juce::AudioProcessorValueTreeState& vts,
+    juce::AudioProcessorEditor& editor
+) {
+    initSlider (
+        ParameterNames::sliceProbability[sliceNumber], 
+        probabilitySlider, 
+        probabilitySliderAttachment, 
+        vts, 
+        editor
+    );
+
+    initSlider (
+        ParameterNames::sliceLength[sliceNumber], 
+        probabilitySlider, 
+        probabilitySliderAttachment, 
+        vts, 
+        editor
+    );
+
+    initButton (
+        ParameterNames::sliceEnabled[sliceNumber], 
+        enabledButton, 
+        enabledButtonAttachment, 
+        vts, 
+        editor
+    );
+}
+
+//==============================================================================
+void SliceEditor::resized(juce::Rectangle<int> bounds) {
+    auto width = bounds.getWidth();
+    auto lengthBounds = bounds.removeFromLeft(width * 0.33f);
+    auto probabilityBounds = bounds.removeFromLeft(width * 0.33f);
+    auto enabledBounds = bounds;
+
+    lengthSlider.setBounds(lengthBounds);
+    probabilitySlider.setBounds(probabilityBounds);
+    enabledButton.setBounds(enabledBounds);
+}
+
+//==============================================================================
+void SliceEditor::paint(juce::Graphics&) {
+    
+}
+
+//==============================================================================
+void StripEditor::init (
+    int stripNumber,
+    juce::AudioProcessorValueTreeState& vts,
+    juce::AudioProcessorEditor& editor
+) {
+    initSlider (
+        ParameterNames::stripProbability[stripNumber], 
+        probabilitySlider, 
+        probabilitySliderAttachment, 
+        vts, 
+        editor
+    );
+
+    initSlider (
+        ParameterNames::stripGroup[stripNumber], 
+        groupSlider, 
+        groupSliderAttachment, 
+        vts, 
+        editor
+    );
+
+    initSlider (
+        ParameterNames::stripNote[stripNumber], 
+        noteSlider, 
+        noteSliderAttachment, 
+        vts, 
+        editor
+    );
+
+    initButton (
+        ParameterNames::stripEnabled[stripNumber], 
+        enabledButton, 
+        enabledButtonAttachment, 
+        vts, 
+        editor
+    );
+
+    initButton (
+        ParameterNames::stripBypassed[stripNumber], 
+        bypassedButton, 
+        bypassedButtonAttachment, 
+        vts, 
+        editor
+    );
+
+    slices = new SliceEditor[numSlices];
+
+    for (int i = 0; i < numSlices; i++) {
+        slices[i].init(i, vts, editor);
+    }
+}
+
+//==============================================================================
+void StripEditor::resized (juce::Rectangle<int> bounds) {
+    auto height = bounds.getHeight();
+    auto width = bounds.getWidth();
+
+    auto groupBounds = bounds.removeFromTop(height * 0.1f);
+    auto probabilityBounds = bounds.removeFromTop(height * 0.25f);
+    auto sliceBounds = bounds.removeFromTop(height * 0.5f);
+    auto enabledBypassedBounds = bounds;
+    auto enabledBounds = enabledBypassedBounds.removeFromLeft(width * 0.75f);
+    auto bypassedBounds = enabledBypassedBounds;
+
+    groupSlider.setBounds(groupBounds);
+    probabilitySlider.setBounds(probabilityBounds);
+    enabledButton.setBounds(enabledBounds);
+    bypassedButton.setBounds(bypassedBounds);
+
+    auto sliceHeight = sliceBounds.getWidth() / numSlices;
+    for (int i = 0; i < numSlices; i++) {
+        slices[i].resized(sliceBounds.removeFromTop(sliceHeight));
+    }
+}
+
+//==============================================================================
+void StripEditor::paint(juce::Graphics& g) {
+    for (int i = 0; i < numSlices; i++) {
+        slices[i].paint(g);
+    }
+}
 
 //==============================================================================
 BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
-        BreaQAudioProcessor& p, 
-        juce::AudioProcessorValueTreeState& vts,
-        SpectrumAnalyzer& analyzer
-    ) : 
-        AudioProcessorEditor (&p), 
-        audioProcessor (p) {
-    spectrumAnalyzer = &analyzer;
-    addAndMakeVisible(spectrumAnalyzer);
-
-    lowPassADSRVisualizer = new ADSRVisualizer();
-    addAndMakeVisible(lowPassADSRVisualizer);
-    lowPassADSRVisualizer->fillColour = lowPassFillColour;
-
-    highPassADSRVisualizer = new ADSRVisualizer();
-    addAndMakeVisible(highPassADSRVisualizer);
-    highPassADSRVisualizer->fillColour = highPassFillColour;
-
-    //const auto& params = audioProcessor.getParameters();
-    //for (auto param : params)
-   // {
-   //     param->addListener(lowPassADSRVisualizer);
-   //     param->addListener(highPassADSRVisualizer);
-   // }
-    
-    // Cross over Controls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    addAndMakeVisible(crossOverFrequencySlider);
-    crossOverFrequencySlider.setSliderStyle(
-        juce::Slider::SliderStyle::RotaryVerticalDrag
-    );
-    crossOverFrequencySlider.setTextBoxStyle(
-        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
-    );
-    crossOverFrequencySlider.hideTextBox(false);
-    crossOverFrequencyAttachment.reset(
-        new juce::AudioProcessorValueTreeState::SliderAttachment(
-            vts, "crossOverFrequency", crossOverFrequencySlider
-        )
-    );
-
-    /*addAndMakeVisible(crossOverFrequencyLabel);
-    crossOverFrequencyLabel.setText(
-        "Cross Over Frequency", juce::dontSendNotification
-    );*/
-    
-    addAndMakeVisible(crossOverWidthSlider);
-    crossOverWidthSlider.setSliderStyle(
-        juce::Slider::SliderStyle::RotaryVerticalDrag
-    );
-    crossOverWidthSlider.setTextBoxStyle(
-        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
-    );
-    crossOverWidthSlider.hideTextBox(false);
-    crossOverWidthAttachment.reset(
-        new juce::AudioProcessorValueTreeState::SliderAttachment(
-            vts, "crossOverWidth", crossOverWidthSlider
-        )
-    );
-
-    /*addAndMakeVisible(crossOverWidthLabel);
-    crossOverWidthLabel.setText(
-        "Cross Over Width", juce::dontSendNotification
-    );*/
-
-    addAndMakeVisible(lowPassOrderSlider);
-    lowPassOrderSlider.setSliderStyle(
-        juce::Slider::SliderStyle::RotaryVerticalDrag
-    );
-    lowPassOrderSlider.setTextBoxStyle(
-        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
-    );
-    lowPassOrderSlider.hideTextBox(false);
-    lowPassOrderAttachment.reset(
-        new juce::AudioProcessorValueTreeState::SliderAttachment(
-            vts, "lowPassRollOff", lowPassOrderSlider
-        )
-    );
-
-    addAndMakeVisible(highPassOrderSlider);
-    highPassOrderSlider.setSliderStyle(
-        juce::Slider::SliderStyle::RotaryVerticalDrag
-    );
-    highPassOrderSlider.setTextBoxStyle(
-        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
-    );
-    highPassOrderSlider.hideTextBox(false);
-    highPassOrderAttachment.reset(
-        new juce::AudioProcessorValueTreeState::SliderAttachment(
-            vts, "highPassRollOff", highPassOrderSlider
-        )
-    );
-
-    // Low Pass Envelope Controls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    addAndMakeVisible(lowPassInitialSlider);
-    lowPassInitialSlider.setSliderStyle(
-        juce::Slider::SliderStyle::RotaryVerticalDrag
-    );
-    lowPassInitialSlider.setTextBoxStyle(
-        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
-    );
-    lowPassInitialSlider.hideTextBox(false);
-    lowPassInitialAttachment.reset(
-        new juce::AudioProcessorValueTreeState::SliderAttachment(
-            vts, "lowPassInitial", lowPassInitialSlider
-        )
-    );
-
-    addAndMakeVisible(lowPassPeakSlider);
-    lowPassPeakSlider.setSliderStyle(
-        juce::Slider::SliderStyle::RotaryVerticalDrag
-    );
-    lowPassPeakSlider.setTextBoxStyle(
-        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
-    );
-    lowPassPeakSlider.hideTextBox(false);
-    lowPassPeakAttachment.reset(
-        new juce::AudioProcessorValueTreeState::SliderAttachment(
-            vts, "lowPassPeak", lowPassPeakSlider
-        )
-    );
-
-    addAndMakeVisible(lowPassAttackSlider);
-    lowPassAttackSlider.setSliderStyle(
-        juce::Slider::SliderStyle::RotaryVerticalDrag
-    );
-    lowPassAttackSlider.setTextBoxStyle(
-        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
-    );
-    lowPassAttackSlider.hideTextBox(false);
-    lowPassAttackAttachment.reset(
-        new juce::AudioProcessorValueTreeState::SliderAttachment(
-            vts, "lowPassAttack", lowPassAttackSlider
-        )
-    );
-
-    addAndMakeVisible(lowPassAttackCurveSlider);
-    lowPassAttackCurveSlider.setSliderStyle(
-        juce::Slider::SliderStyle::RotaryVerticalDrag
-    );
-    lowPassAttackCurveSlider.setTextBoxStyle(
-        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
-    );
-    lowPassAttackCurveSlider.hideTextBox(false);
-    lowPassAttackCurveAttachment.reset(
-        new juce::AudioProcessorValueTreeState::SliderAttachment(
-            vts, "lowPassAttackCurve", lowPassAttackCurveSlider
-        )
-    );
-
-    addAndMakeVisible(lowPassDecaySlider);
-    lowPassDecaySlider.setSliderStyle(
-        juce::Slider::SliderStyle::RotaryVerticalDrag
-    );
-    lowPassDecaySlider.setTextBoxStyle(
-        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
-    );
-    lowPassDecaySlider.hideTextBox(false);
-    lowPassDecayAttachment.reset(
-        new juce::AudioProcessorValueTreeState::SliderAttachment(
-            vts, "lowPassDecay", lowPassDecaySlider
-        )
-    );
-
-    addAndMakeVisible(lowPassDecayCurveSlider);
-    lowPassDecayCurveSlider.setSliderStyle(
-        juce::Slider::SliderStyle::RotaryVerticalDrag
-    );
-    lowPassDecayCurveSlider.setTextBoxStyle(
-        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
-    );
-    lowPassDecayCurveSlider.hideTextBox(false);
-    lowPassDecayCurveAttachment.reset(
-        new juce::AudioProcessorValueTreeState::SliderAttachment(
-            vts, "lowPassDecayCurve", lowPassDecayCurveSlider
-        )
-    );
-
-    addAndMakeVisible(lowPassSustainSlider);
-    lowPassSustainSlider.setSliderStyle(
-        juce::Slider::SliderStyle::RotaryVerticalDrag
-    );
-    lowPassSustainSlider.setTextBoxStyle(
-        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
-    );
-    lowPassSustainSlider.hideTextBox(false);
-    lowPassSustainAttachment.reset(
-        new juce::AudioProcessorValueTreeState::SliderAttachment(
-            vts, "lowPassSustain", lowPassSustainSlider
-        )
-    );
-
-    addAndMakeVisible(lowPassReleaseSlider);
-    lowPassReleaseSlider.setSliderStyle(
-        juce::Slider::SliderStyle::RotaryVerticalDrag
-    );
-    lowPassReleaseSlider.setTextBoxStyle(
-        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
-    );
-    lowPassReleaseSlider.hideTextBox(false);
-    lowPassReleaseAttachment.reset(
-        new juce::AudioProcessorValueTreeState::SliderAttachment(
-            vts, "lowPassRelease", lowPassReleaseSlider
-        )
-    );
-
-    addAndMakeVisible(lowPassReleaseCurveSlider);
-    lowPassReleaseCurveSlider.setSliderStyle(
-        juce::Slider::SliderStyle::RotaryVerticalDrag
-    );
-    lowPassReleaseCurveSlider.setTextBoxStyle(
-        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
-    );
-    lowPassReleaseCurveSlider.hideTextBox(false);
-    lowPassReleaseCurveAttachment.reset(
-        new juce::AudioProcessorValueTreeState::SliderAttachment(
-            vts, "lowPassReleaseCurve", lowPassReleaseCurveSlider
-        )
-    );
-
-    // High Pass Envelope Controls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    addAndMakeVisible(highPassInitialSlider);
-    highPassInitialSlider.setSliderStyle(
-        juce::Slider::SliderStyle::RotaryVerticalDrag
-    );
-    highPassInitialSlider.setTextBoxStyle(
-        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
-    );
-    highPassInitialSlider.hideTextBox(false);
-    highPassInitialAttachment.reset(
-        new juce::AudioProcessorValueTreeState::SliderAttachment(
-            vts, "highPassInitial", highPassInitialSlider
-        )
-    );
-
-    addAndMakeVisible(highPassPeakSlider);
-    highPassPeakSlider.setSliderStyle(
-        juce::Slider::SliderStyle::RotaryVerticalDrag
-    );
-    highPassPeakSlider.setTextBoxStyle(
-        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
-    );
-    highPassPeakSlider.hideTextBox(false);
-    highPassPeakAttachment.reset(
-        new juce::AudioProcessorValueTreeState::SliderAttachment(
-            vts, "highPassPeak", highPassPeakSlider
-        )
-    );
-
-    addAndMakeVisible(highPassAttackSlider);
-    highPassAttackSlider.setSliderStyle(
-        juce::Slider::SliderStyle::RotaryVerticalDrag
-    );
-    highPassAttackSlider.setTextBoxStyle(
-        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
-    );
-    highPassAttackSlider.hideTextBox(false);
-    highPassAttackAttachment.reset(
-        new juce::AudioProcessorValueTreeState::SliderAttachment(
-            vts, "highPassAttack", highPassAttackSlider
-        )
-    );
-
-    addAndMakeVisible(highPassAttackCurveSlider);
-    highPassAttackCurveSlider.setSliderStyle(
-        juce::Slider::SliderStyle::RotaryVerticalDrag
-    );
-    highPassAttackCurveSlider.setTextBoxStyle(
-        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
-    );
-    highPassAttackCurveSlider.hideTextBox(false);
-    highPassAttackCurveAttachment.reset(
-        new juce::AudioProcessorValueTreeState::SliderAttachment(
-            vts, "highPassAttackCurve", highPassAttackCurveSlider
-        )
-    );
-
-    addAndMakeVisible(highPassDecaySlider);
-    highPassDecaySlider.setSliderStyle(
-        juce::Slider::SliderStyle::RotaryVerticalDrag
-    );
-    highPassDecaySlider.setTextBoxStyle(
-        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
-    );
-    highPassDecaySlider.hideTextBox(false);
-    highPassDecayAttachment.reset(
-        new juce::AudioProcessorValueTreeState::SliderAttachment(
-            vts, "highPassDecay", highPassDecaySlider
-        )
-    );
-
-    addAndMakeVisible(highPassDecayCurveSlider);
-    highPassDecayCurveSlider.setSliderStyle(
-        juce::Slider::SliderStyle::RotaryVerticalDrag
-    );
-    highPassDecayCurveSlider.setTextBoxStyle(
-        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
-    );
-    highPassDecayCurveSlider.hideTextBox(false);
-    highPassDecayCurveAttachment.reset(
-        new juce::AudioProcessorValueTreeState::SliderAttachment(
-            vts, "highPassDecayCurve", highPassDecayCurveSlider
-        )
-    );
-
-    addAndMakeVisible(highPassSustainSlider);
-    highPassSustainSlider.setSliderStyle(
-        juce::Slider::SliderStyle::RotaryVerticalDrag
-    );
-    highPassSustainSlider.setTextBoxStyle(
-        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
-    );
-    highPassSustainSlider.hideTextBox(false);
-    highPassSustainAttachment.reset(
-        new juce::AudioProcessorValueTreeState::SliderAttachment(
-            vts, "highPassSustain", highPassSustainSlider
-        )
-    );
-
-    addAndMakeVisible(highPassReleaseSlider);
-    highPassReleaseSlider.setSliderStyle(
-        juce::Slider::SliderStyle::RotaryVerticalDrag
-    );
-    highPassReleaseSlider.setTextBoxStyle(
-        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
-    );
-    highPassReleaseSlider.hideTextBox(false);
-    highPassReleaseAttachment.reset(
-        new juce::AudioProcessorValueTreeState::SliderAttachment(
-            vts, "highPassRelease", highPassReleaseSlider
-        )
-    );
-
-    addAndMakeVisible(highPassReleaseCurveSlider);
-    highPassReleaseCurveSlider.setSliderStyle(
-        juce::Slider::SliderStyle::RotaryVerticalDrag
-    );
-    highPassReleaseCurveSlider.setTextBoxStyle(
-        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
-    );
-    highPassReleaseCurveSlider.hideTextBox(false);
-    highPassReleaseCurveAttachment.reset(
-        new juce::AudioProcessorValueTreeState::SliderAttachment(
-            vts, "highPassReleaseCurve", highPassReleaseCurveSlider
-        )
-    );
-
-    /*const auto& params = audioProcessor.getParameters();
-    for (auto param : params)
-    {
-        //switch (param->getName(20)) {
-        //case "lowPassInitial":
-        //case "lowPassAttack":
-        //case "lowPassDecay":
-        //case "lowPassSustain":
-        //case "lowPassRelease":
-        //case "lowPassAttackCurve":
-        //case "lowPassDecayCurve":
-        //case "lowPassReleaseCurve":
-            param->addListener(lowPassADSRVisualizer);
-            param->addListener(highPassADSRVisualizer);
-    }*/
-
-    vts.getParameter("lowPassInitial")->addListener(lowPassADSRVisualizer);
-    vts.getParameter("lowPassAttack")->addListener(lowPassADSRVisualizer);
-    vts.getParameter("lowPassAttackCurve")->addListener(lowPassADSRVisualizer);
-    vts.getParameter("lowPassPeak")->addListener(lowPassADSRVisualizer);
-    vts.getParameter("lowPassDecay")->addListener(lowPassADSRVisualizer);
-    vts.getParameter("lowPassDecayCurve")->addListener(lowPassADSRVisualizer);
-    vts.getParameter("lowPassSustain")->addListener(lowPassADSRVisualizer);
-    vts.getParameter("lowPassRelease")->addListener(lowPassADSRVisualizer);
-    vts.getParameter("lowPassReleaseCurve")->addListener(lowPassADSRVisualizer);
-
-    vts.getParameter("highPassInitial")->addListener(highPassADSRVisualizer);
-    vts.getParameter("highPassAttack")->addListener(highPassADSRVisualizer);
-    vts.getParameter("highPassAttackCurve")->addListener(highPassADSRVisualizer);
-    vts.getParameter("highPassPeak")->addListener(highPassADSRVisualizer);
-    vts.getParameter("highPassDecay")->addListener(highPassADSRVisualizer);
-    vts.getParameter("highPassDecayCurve")->addListener(highPassADSRVisualizer);
-    vts.getParameter("highPassSustain")->addListener(highPassADSRVisualizer);
-    vts.getParameter("highPassRelease")->addListener(highPassADSRVisualizer);
-    vts.getParameter("highPassReleaseCurve")->addListener(highPassADSRVisualizer);
-
-    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+    BreaQAudioProcessor& p, 
+    juce::AudioProcessorValueTreeState& vts,
+    SpectrumAnalyzer& analyzer
+) : 
+    AudioProcessorEditor (&p), 
+    audioProcessor (p) 
+{
     setSize (970, 600);
     juce::LookAndFeel::setDefaultLookAndFeel(&breaQLookAndFeel);
+
+    strips = new StripEditor[numStrips];
+
+    for (int i = 0; i < numStrips; i++) {
+        strips[i].init(i, vts, *this);
+    }
 }
 
-void BreaQAudioProcessorEditor::loadParameters(
-        float crossOverFrequency,
-        float crossOverWidth,
-        float highPassOrder,
-        float lowPassOrder,
-        float lowPassInitial,
-        float lowPassAttack,
-        float lowPassAttackCurve,
-        float lowPassPeak,
-        float lowPassDecay,
-        float lowPassDecayCurve,
-        float lowPassSustain,
-        float lowPassRelease,
-        float lowPassReleaseCurve,
-        float highPassInitial,
-        float highPassAttack,
-        float highPassAttackCurve,
-        float highPassPeak,
-        float highPassDecay,
-        float highPassDecayCurve,
-        float highPassSustain,
-        float highPassRelease,
-        float highPassReleaseCurve) {
-    lowPassADSRVisualizer->initial = lowPassInitial;
-    lowPassADSRVisualizer->attack = lowPassAttack;
-    lowPassADSRVisualizer->attackCurve = lowPassAttackCurve;
-    lowPassADSRVisualizer->peak = lowPassPeak;
-    lowPassADSRVisualizer->decay = lowPassDecay;
-    lowPassADSRVisualizer->decayCurve = lowPassDecayCurve;
-    lowPassADSRVisualizer->sustain = lowPassSustain;
-    lowPassADSRVisualizer->release = lowPassRelease;
-    lowPassADSRVisualizer->releaseCurve = lowPassReleaseCurve;
-
-    highPassADSRVisualizer->initial = highPassInitial;
-    highPassADSRVisualizer->attack = highPassAttack;
-    highPassADSRVisualizer->attackCurve = highPassAttackCurve;
-    highPassADSRVisualizer->peak = highPassPeak;
-    highPassADSRVisualizer->decay = highPassDecay;
-    highPassADSRVisualizer->decayCurve = highPassDecayCurve;
-    highPassADSRVisualizer->sustain = highPassSustain;
-    highPassADSRVisualizer->release = highPassRelease;
-    highPassADSRVisualizer->releaseCurve = highPassReleaseCurve;
-}
-
+//==============================================================================
 BreaQAudioProcessorEditor::~BreaQAudioProcessorEditor() {
     juce::LookAndFeel::setDefaultLookAndFeel(nullptr);
 }
 
 //==============================================================================
 void BreaQAudioProcessorEditor::paint (juce::Graphics& g) {
-    g.fillAll(background1);
-    
-    g.setColour(background2);
+    g.fillAll(Colours::background1);
 
-    decorateBounds(g, leftPanelDecorationBounds, grid1, background1);
-    decorateBounds(g, centrePanelDecorationBounds, grid1, background1);
-    decorateBounds(g, rightPanelDecorationBounds, grid1, background1);
-
-    decorateBounds(g, spectrumAnalyzerDecorationBounds, grid2, background2);
-    decorateBounds(g, lowPassADSRVisualizerDecorationBounds, grid2, background2);
-    decorateBounds(g, highPassADSRVisualizerDecorationBounds, grid2, background2);
-
-    // g.fillRect(spectrumAnalyzerBounds);
-    // g.fillRect(lowPassADSRVisualizerBounds);
-    // g.fillRect(highPassADSRVisualizerBounds);
-
-    DrawFrequencyResponseCurve(
-        g,
-        spectrumAnalyzerBounds,
-        audioProcessor.crossOverFequency,
-        audioProcessor.lowPassFrequency,
-        audioProcessor.highPassFrequency
-    );
-    
-    //g.setColour(orange3);
-    // DrawADSRCurve(g, lowPassADSRVisualizerBounds, audioProcessor.lowPassADSR);
-    // DrawADSRCurve(g, highPassADSRVisualizerBounds, audioProcessor.highPassADSR);
+    for (int i = 0; i < numStrips; i++) {
+        strips[i].paint(g);
+    }
 }
 
-void BreaQAudioProcessorEditor::resized() {
+//==============================================================================
+void BreaQAudioProcessorEditor::resized () {
     auto bounds = getLocalBounds();
 
-    auto mainMargin = 20;
+    const int mainMargin = 20;
     bounds.removeFromTop(mainMargin);
     bounds.removeFromRight(mainMargin);
     bounds.removeFromBottom(mainMargin);
     bounds.removeFromLeft(mainMargin);
 
-    spectrumAnalyzerDecorationBounds = bounds.removeFromTop(bounds.getHeight() * 0.45f);
-    spectrumAnalyzerDecorationBounds.reduce(3, 3);
+    auto titleBounds = bounds.removeFromTop(bounds.getHeight() * 0.15f);
+    auto groupBounds = bounds.removeFromTop(bounds.getHeight() * 0.4f);
+    auto stripBounds = bounds;
 
-    spectrumAnalyzerBounds = spectrumAnalyzerDecorationBounds.reduced(4, 4);
-
-    spectrumAnalyzer->setBounds(spectrumAnalyzerBounds);
-
-    auto envelopePanelWidth = bounds.getWidth() * 0.42f;
-
-    leftPanelDecorationBounds = bounds.removeFromLeft(envelopePanelWidth).reduced(3, 3);
-    auto leftPanelBounds = leftPanelDecorationBounds;
-
-    rightPanelDecorationBounds = bounds.removeFromRight(envelopePanelWidth).reduced(3, 3);
-    auto rightPanelBounds = rightPanelDecorationBounds;
-    
-    // Centre Panel %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    centrePanelDecorationBounds = bounds.reduced(3, 3);
-    auto centrePanelBounds = centrePanelDecorationBounds.reduced(7, 7);
-    auto peripheralControlsWidth = centrePanelBounds.getWidth() * 0.3f;
-    auto leftPeripheralControlsPanel = centrePanelBounds.removeFromLeft(peripheralControlsWidth).expanded(3);
-    auto rightPeripheralControlsPanel = centrePanelBounds.removeFromRight(peripheralControlsWidth).expanded(3);
-
-    lowPassOrderSlider.setBounds(leftPeripheralControlsPanel.removeFromTop(peripheralControlsWidth).expanded(8));
-    highPassOrderSlider.setBounds(rightPeripheralControlsPanel.removeFromTop(peripheralControlsWidth).expanded(8));
-
-    auto crossOverFrequencyControlBounds = 
-        centrePanelBounds.removeFromTop(centrePanelBounds.getHeight() * 0.5f).expanded(20);
-    crossOverFrequencySlider.setBounds(crossOverFrequencyControlBounds);
-    /*auto crossOverFrequencyLabelBounds =
-        crossOverFrequencyControlBounds.removeFromBottom(bounds.getHeight() * 0.2f);*/
-    /*crossOverFrequencyLabel.setBounds(crossOverFrequencyLabelBounds);*/
-
-    auto crossOverWidthControlBounds = centrePanelBounds.expanded(20);
-    crossOverWidthSlider.setBounds(crossOverWidthControlBounds);
-    /*auto crossOverWidthLabelBounds =
-        crossOverWidthControlBounds.removeFromBottom(bounds.getHeight() * 0.2f);*/
-    /*crossOverWidthLabel.setBounds(crossOverWidthLabelBounds);*/
-
-    // Left Panel %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    lowPassADSRVisualizerDecorationBounds = leftPanelBounds.removeFromTop(leftPanelBounds.getHeight() * 0.5f).reduced(3, 3).reduced(7, 7);
-    lowPassADSRVisualizerBounds = lowPassADSRVisualizerDecorationBounds.reduced(4, 4);
-    lowPassADSRVisualizer->setBounds(lowPassADSRVisualizerBounds);
-
-    auto controlHeight = leftPanelBounds.getHeight() / 3;
-    int controlWidth = leftPanelBounds.getWidth() / 6;
-    int indent = controlWidth / 2;
-    const auto controlExpansion = 8;
-
-    auto leftEnvelopeControlsBounds = leftPanelBounds.removeFromTop(controlHeight);
-    auto leftInitialBounds = leftEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
-    leftEnvelopeControlsBounds.removeFromLeft(controlWidth);
-    auto leftPeakBounds = leftEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
-    leftEnvelopeControlsBounds.removeFromLeft(controlWidth);
-    auto leftSustainBounds = leftEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
-
-    leftEnvelopeControlsBounds = leftPanelBounds.removeFromTop(controlHeight);
-    leftEnvelopeControlsBounds.removeFromLeft(indent);
-    auto leftAttackBounds = leftEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
-    leftEnvelopeControlsBounds.removeFromLeft(controlWidth);
-    auto leftDecayBounds = leftEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
-    leftEnvelopeControlsBounds.removeFromLeft(controlWidth);
-    auto leftReleaseBounds = leftEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
-    leftEnvelopeControlsBounds.removeFromLeft(controlWidth);
-
-    leftEnvelopeControlsBounds = leftPanelBounds.removeFromTop(controlHeight);
-    leftEnvelopeControlsBounds.removeFromLeft(indent);
-    leftEnvelopeControlsBounds.removeFromLeft(indent);
-    auto leftAttackCurveBounds = leftEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
-    leftEnvelopeControlsBounds.removeFromLeft(controlWidth);
-    auto leftDecayCurveBounds = leftEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
-    leftEnvelopeControlsBounds.removeFromLeft(controlWidth);
-    auto leftReleaseCurveBounds = leftEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
-    
-    lowPassInitialSlider.setBounds(leftInitialBounds);
-    lowPassPeakSlider.setBounds(leftPeakBounds);
-    lowPassSustainSlider.setBounds(leftSustainBounds);
-
-    lowPassAttackSlider.setBounds(leftAttackBounds);
-    lowPassDecaySlider.setBounds(leftDecayBounds);
-    lowPassReleaseSlider.setBounds(leftReleaseBounds);
-
-    lowPassAttackCurveSlider.setBounds(leftAttackCurveBounds);
-    lowPassDecayCurveSlider.setBounds(leftDecayCurveBounds);
-    lowPassReleaseCurveSlider.setBounds(leftReleaseCurveBounds);
-
-    // Right Panel %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    highPassADSRVisualizerDecorationBounds = rightPanelBounds.removeFromTop(rightPanelBounds.getHeight() * 0.5f).reduced(3, 3).reduced(7, 7);
-    highPassADSRVisualizerBounds = highPassADSRVisualizerDecorationBounds.reduced(4, 4);
-    highPassADSRVisualizer->setBounds(highPassADSRVisualizerBounds);
-
-    auto rightEnvelopeControlsBounds = rightPanelBounds.removeFromTop(controlHeight);
-    auto rightInitialBounds = rightEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
-    rightEnvelopeControlsBounds.removeFromLeft(controlWidth);
-    auto rightPeakBounds = rightEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
-    rightEnvelopeControlsBounds.removeFromLeft(controlWidth);
-    auto rightSustainBounds = rightEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
-
-    rightEnvelopeControlsBounds = rightPanelBounds.removeFromTop(controlHeight);
-    rightEnvelopeControlsBounds.removeFromLeft(indent);
-    auto rightAttackBounds = rightEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
-    rightEnvelopeControlsBounds.removeFromLeft(controlWidth);
-    auto rightDecayBounds = rightEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
-    rightEnvelopeControlsBounds.removeFromLeft(controlWidth);
-    auto rightReleaseBounds = rightEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
-    rightEnvelopeControlsBounds.removeFromLeft(controlWidth);
-
-    rightEnvelopeControlsBounds = rightPanelBounds.removeFromTop(controlHeight);
-    rightEnvelopeControlsBounds.removeFromLeft(indent);
-    rightEnvelopeControlsBounds.removeFromLeft(indent);
-    auto rightAttackCurveBounds = rightEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
-    rightEnvelopeControlsBounds.removeFromLeft(controlWidth);
-    auto rightDecayCurveBounds = rightEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
-    rightEnvelopeControlsBounds.removeFromLeft(controlWidth);
-    auto rightReleaseCurveBounds = rightEnvelopeControlsBounds.removeFromLeft(controlWidth).expanded(controlExpansion);
-
-    highPassInitialSlider.setBounds(rightInitialBounds);
-    highPassPeakSlider.setBounds(rightPeakBounds);
-    highPassSustainSlider.setBounds(rightSustainBounds);
-
-    highPassAttackSlider.setBounds(rightAttackBounds);
-    highPassDecaySlider.setBounds(rightDecayBounds);
-    highPassReleaseSlider.setBounds(rightReleaseBounds);
-
-    highPassAttackCurveSlider.setBounds(rightAttackCurveBounds);
-    highPassDecayCurveSlider.setBounds(rightDecayCurveBounds);
-    highPassReleaseCurveSlider.setBounds(rightReleaseCurveBounds);
-}
-
-void BreaQAudioProcessorEditor::DrawFrequencyResponseCurve(
-        juce::Graphics& g, 
-        juce::Rectangle<int> bounds,
-        float crossOverFrequency,
-        float lowPassCutOffFrequency,
-        float highPassCutOffFrequency) {
-    auto left = (double)bounds.getTopLeft().getX();
-    auto right = (double)bounds.getTopRight().getX();
-    auto top = (double)bounds.getTopLeft().getY();
-    auto bottom = (double)bounds.getBottomLeft().getY();
-
-    int crossOverFrequencyX = (int)juce::jmap(
-        juce::mapFromLog10((double)crossOverFrequency, 20.0, 20000.0),
-        left,
-        right
-    );
-
-    int lowPassCutOffFrequencyX = (int)juce::jmap(
-        juce::mapFromLog10((double)lowPassCutOffFrequency, 20.0, 20000.0),
-        left,
-        right
-    );
-
-    int highPassCutOffFrequencyX = (int)juce::jmap(
-        juce::mapFromLog10((double)highPassCutOffFrequency, 20.0, 20000.0),
-        left,
-        right
-    );
-
-    //g.setColour(grid1);
-    //g.drawVerticalLine(crossOverFrequencyX, top, bottom);
-    //g.drawVerticalLine(lowPassCutOffFrequencyX, top, bottom);
-    //g.drawVerticalLine(highPassCutOffFrequencyX, top, bottom);
-
-    int zeroY = (int)juce::jmap(0.5, top, bottom);
-
-    float highPassEndFrequency = highPassCutOffFrequency;
-    for (int i = 5; i > audioProcessor.highPassFilter.f_order; i--) {
-        highPassEndFrequency /= 2;
+    auto stripWidth = stripBounds.getWidth() / numStrips;
+    for (int i = 0; i < numStrips; i++) {
+        strips[i].resized(bounds.removeFromLeft(stripWidth));
     }
-
-    float lowPassEndFrequency = lowPassCutOffFrequency;
-    for (int i = 5; i > audioProcessor.lowPassFilter.f_order; i--) {
-        lowPassEndFrequency *= 2;
-    }
-
-    int highPassEndFrequencyX = (int) juce::jlimit(
-        left,
-        right,
-        juce::jmap(
-            juce::mapFromLog10((double)highPassEndFrequency, 20.0, 20000.0),
-            left,
-            right
-        )
-    );
-
-    int highPassControlX = (int)juce::jmap(
-        0.5,
-        (double)highPassCutOffFrequencyX,
-        (double)highPassEndFrequencyX
-    );
-
-    int lowPassEndFrequencyX = (int)juce::jlimit(
-        left,
-        right,
-        juce::jmap(
-            juce::mapFromLog10((double)lowPassEndFrequency, 20.0, 20000.0),
-            left,
-            right
-        )
-    );
-
-    int lowPassControlX = (int)juce::jmap(
-        0.5,
-        (double)lowPassCutOffFrequencyX,
-        (double)lowPassEndFrequencyX
-    );
-
-    juce::Path highPassPath;
-    highPassPath.startNewSubPath(right, zeroY);
-    highPassPath.lineTo(highPassCutOffFrequencyX, zeroY);
-    highPassPath.quadraticTo(highPassControlX, zeroY, highPassEndFrequencyX, bottom);
-    highPassPath.lineTo(right, bottom);
-    highPassPath.lineTo(right, zeroY);
-
-    juce::Path lowPassPath;
-    lowPassPath.startNewSubPath(left, zeroY);
-    lowPassPath.lineTo(lowPassCutOffFrequencyX, zeroY);
-    lowPassPath.quadraticTo(lowPassControlX, zeroY, lowPassEndFrequencyX, bottom);
-    lowPassPath.lineTo(left, bottom);
-    lowPassPath.lineTo(left, zeroY);
-
-    
-
-    g.setGradientFill({
-        transparentCitron, static_cast<float>(highPassEndFrequencyX), static_cast<float>(zeroY),
-        background1, static_cast<float>(right), static_cast<float>(bottom),
-        false
-        });
-
-    g.fillPath(highPassPath);
-
-    g.setGradientFill({
-        transparentPink, static_cast<float>(lowPassEndFrequencyX), static_cast<float>(zeroY),
-        background1, static_cast<float>(left), static_cast<float>(bottom),
-        false
-        });
-
-    g.fillPath(lowPassPath);
-
-    g.setColour(lilac);
-
-    g.strokePath(
-        highPassPath,
-        juce::PathStrokeType(
-            2,
-            juce::PathStrokeType::curved,
-            juce::PathStrokeType::rounded
-        )
-    );
-
-    g.strokePath(
-        lowPassPath,
-        juce::PathStrokeType(
-            2,
-            juce::PathStrokeType::curved,
-            juce::PathStrokeType::rounded
-        )
-    );
-}
-
-void BreaQAudioProcessorEditor::DrawADSRCurve(
-        juce::Graphics& g,
-        juce::Rectangle<int> bounds,
-        ADSR adsr) {
-    auto left = (double)bounds.getTopLeft().getX();
-    auto right = (double)bounds.getTopRight().getX();
-    auto top = (double)bounds.getTopLeft().getY();
-    auto bottom = (double)bounds.getBottomLeft().getY();
-
-    const float minimumTime = 0.05f;
-    const auto attackTime = (double)juce::jmax(adsr.attackTime, minimumTime);
-    const auto decayTime = (double)juce::jmax(adsr.decayTime, minimumTime);
-    const auto sustainTime = 0.25f;
-    const auto releaseTime = (double)juce::jmax(adsr.releaseTime, minimumTime);
-
-    const auto totalLength = attackTime + decayTime + sustainTime + releaseTime;
-
-    int initialY = (int)juce::jmap(
-        (double)adsr.initialLevel,
-        bottom,
-        top
-    );
-
-    int attackX = (int)juce::jmap(
-        attackTime, 
-        0.0, 
-        totalLength, 
-        left, 
-        right
-    );
-
-    int attackY = (int)juce::jmap(
-        (double)adsr.peakLevel,
-        bottom,
-        top
-    );
-
-    int decayX = (int)juce::jmap(
-        attackTime + decayTime,
-        0.0,
-        totalLength,
-        left,
-        right
-    );
-
-    int decayY = (int)juce::jmap(
-        (double)adsr.sustainLevel,
-        bottom,
-        top
-    );
-
-    int sustainX = (int)juce::jmap(
-        attackTime + decayTime + sustainTime,
-        0.0,
-        totalLength,
-        left,
-        right
-    );
-
-    int releaseX = right;
-    int releaseY = bottom;
-
-    auto attackCurveX = juce::jmap(
-        (double)adsr.attackCurve, 
-        0.0, 
-        2.0, 
-        left, 
-        (double)attackX
-    );
-
-    auto attackCurveY = juce::jmap(
-        (double)adsr.attackCurve,
-        0.0,
-        2.0,
-        (double)attackY,
-        (double)initialY
-    );
-
-    auto decayCurveX = juce::jmap(
-        (double)adsr.decayCurve,
-        0.0,
-        2.0,
-        (double)attackX,
-        (double)decayX
-    );
-
-    auto decayCurveY = juce::jmap(
-        (double)adsr.decayCurve,
-        0.0,
-        2.0,
-        (double)decayY,
-        (double)attackY
-    );
-
-    auto releaseCurveX = juce::jmap(
-        (double)adsr.releaseCurve,
-        0.0,
-        2.0,
-        (double)sustainX,
-        (double)releaseX
-    );
-
-    auto releaseCurveY = juce::jmap(
-        (double)adsr.releaseCurve,
-        0.0,
-        2.0,
-        (double)releaseY,
-        (double)decayY
-    );
-
-    //g.setColour(grid1);
-    //g.drawVerticalLine(attackX, top, bottom);
-    //g.drawVerticalLine(decayX, top, bottom);
-    //g.drawVerticalLine(sustainX, top, bottom);
-
-    juce::Path path;
-    path.startNewSubPath(left, initialY);
-    path.quadraticTo(attackCurveX, attackCurveY, attackX, attackY);
-    path.quadraticTo(decayCurveX, decayCurveY, decayX, decayY);
-    path.lineTo(sustainX, decayY);
-    path.quadraticTo(releaseCurveX, releaseCurveY, releaseX, releaseY);
-
-    g.setColour(lilac);
-    g.strokePath(
-        path,
-        juce::PathStrokeType(
-            2,
-            juce::PathStrokeType::curved,
-            juce::PathStrokeType::rounded
-        )
-    );
-}
-
-void BreaQAudioProcessorEditor::decorateBounds(juce::Graphics& g, juce::Rectangle<int> bounds, juce::Colour borderColour, juce::Colour fillColour) {
-    //auto left = bounds.getTopLeft().getX();
-    //auto right = bounds.getTopRight().getX();
-    //auto top = bounds.getTopLeft().getY();
-    //auto bottom = bounds.getBottomLeft().getY();/
-
-    //juce::Path path;
-    //path.startNewSubPath(left, top);
-    //path.lineTo(left, bottom);
-    //path.lineTo(right, bottom);
-    //path.lineTo(right, top);
-
-    //g.setColour(lilac);
-    //g.strokePath(
-    //    path,
-    //    juce::PathStrokeType(
-    //        2,
-    //        juce::PathStrokeType::curved,
-    //        juce::PathStrokeType::rounded
-    //    )
-    //);
-
-    //g.setColour(fillColour);
-    //g.fillRect(bounds);
-
-    g.setColour(borderColour);
-    g.drawRect(bounds, 5.0f);
 }

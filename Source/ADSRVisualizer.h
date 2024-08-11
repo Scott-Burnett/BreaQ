@@ -1,5 +1,5 @@
 #pragma once
-#include <JuceHeader.h>
+#include <JuceLibraryCode/JuceHeader.h>
 #include "ADSR.h"
 
 class ADSRVisualizer : public juce::Component, public juce::AudioProcessorParameter::Listener, public juce::Timer {

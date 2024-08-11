@@ -1,15 +1,6 @@
-/*
-  ==============================================================================
-
-    This file contains the basic framework code for a JUCE plugin processor.
-
-  ==============================================================================
-*/
-
 #pragma once
 
-
-#include <JuceHeader.h>
+#include <JuceLibraryCode/JuceHeader.h>
 #include "ParallelLowPassFilter.h"
 #include "ParallelHighPassFilter.h"
 #include "ADSR.h"
@@ -18,7 +9,59 @@
 //==============================================================================
 /**
 */
+class Slice {
+public:
+  float probability;
+  int length;
+  int progress;
+  bool enabled;
+  bool isOn;
 
+private:
+  std::atomic<float>* probabilityParameter = nullptr;
+  std::atomic<float>* lengthParameter = nullptr;
+  std::atomic<float>* progressParameter = nullptr;
+  std::atomic<float>* enabledParameter = nullptr;
+  std::atomic<float>* isOnParameter = nullptr;
+};
+
+//==============================================================================
+/**
+*/
+class Strip {
+public:
+  float probability;
+  int group;
+  int noteNumber;
+  bool enabled;
+  bool isOn;
+
+private:
+  Slice* slices;
+  Slice* currentSlice;
+
+  std::atomic<float>* probabilityParameter = nullptr;
+  std::atomic<float>* groupParameter = nullptr;
+  std::atomic<float>* noteNumberParameter = nullptr;     
+  std::atomic<float>* enabledParameter = nullptr;
+  std::atomic<float>* isOnParameter = nullptr;
+};
+
+//==============================================================================
+/**
+*/
+class Group {
+public:
+  int id;
+  bool shed;
+
+private:
+  std::atomic<float>* shedParameter = nullptr;
+};
+
+//==============================================================================
+/**
+*/
 enum Slope {
     DbOct12,
     DbOct24,
@@ -26,18 +69,28 @@ enum Slope {
     DbOct48
 };
 
+//==============================================================================
+/**
+*/
 class BreaQAudioProcessorEditor;
 
 //==============================================================================
 /**
 */
-class BreaQAudioProcessor  : public juce::AudioProcessor, public juce::AudioProcessorParameter::Listener, public juce::Timer
-                            #if JucePlugin_Enable_ARA
-                             , public juce::AudioProcessorARAExtension
-                            #endif
+class BreaQAudioProcessor  : 
+    public juce::AudioProcessor, 
+    public juce::AudioProcessorParameter::Listener, 
+    public juce::Timer
+    #if JucePlugin_Enable_ARA
+    , public juce::AudioProcessorARAExtension
+    #endif
 {
 public:
     BreaQAudioProcessorEditor* editor;
+
+    Group* groups;
+    Strip* strips;
+
     float crossOverFequency;
     float lowPassFrequency;
     float highPassFrequency;
@@ -93,13 +146,14 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
 private:
-
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::AudioProcessorValueTreeState parameters {
         *this, nullptr, "Parameters", createParameterLayout()
     };
 
     bool parametersChanged;
+
+    juce::MidiBuffer processedBuffer;
 
     std::atomic<float>* crossOverFrequencyParameter = nullptr;
     std::atomic<float>* crossOverWidthParameter = nullptr;
@@ -125,12 +179,6 @@ private:
     std::atomic<float>* highPassSustainParameter = nullptr;
     std::atomic<float>* highPassReleaseParameter = nullptr;
     std::atomic<float>* highPassReleaseCurveParameter = nullptr;
-
-    
-    // Slope lowPassOrder;
-    // Slope highPassOrder;
-
-    
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BreaQAudioProcessor)

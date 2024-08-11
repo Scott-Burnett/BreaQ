@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include "JuceHeader.h"
+#include "JuceLibraryCode/JuceHeader.h"
 
 class ParallelLowPassFilter
 {
