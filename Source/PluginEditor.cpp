@@ -69,25 +69,25 @@ static void initSlider (
     juce::AudioProcessorValueTreeState& vts,
     juce::AudioProcessorEditor& editor
 ) {
-    editor.addAndMakeVisible(slider);
-    slider.setSliderStyle (
-        juce::Slider::SliderStyle::RotaryVerticalDrag
-    );
+//     editor.addAndMakeVisible(slider);
+//     slider.setSliderStyle (
+//         juce::Slider::SliderStyle::RotaryVerticalDrag
+//     );
 
-    slider.setTextBoxStyle (
-        juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
-    );
+//     slider.setTextBoxStyle (
+//         juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
+//     );
 
-    slider.hideTextBox(false);
-    sliderAttachment.reset (
-        new juce::AudioProcessorValueTreeState::SliderAttachment (
-            vts, sliderName, slider
-    ));
+//     slider.hideTextBox(false);
+//     sliderAttachment.reset (
+//         new juce::AudioProcessorValueTreeState::SliderAttachment (
+//             vts, sliderName, slider
+//     ));
 
-//     /*addAndMakeVisible(crossOverFrequencyLabel);
-//     crossOverFrequencyLabel.setText(
-//         "Cross Over Frequency", juce::dontSendNotification
-//     );*/
+// //     /*addAndMakeVisible(crossOverFrequencyLabel);
+// //     crossOverFrequencyLabel.setText(
+// //         "Cross Over Frequency", juce::dontSendNotification
+// //     );*/
 }
 
 //==============================================================================
@@ -98,12 +98,12 @@ static void initButton (
     juce::AudioProcessorValueTreeState& vts,
     juce::AudioProcessorEditor& editor
 ) {
-    editor.addAndMakeVisible(button);
+    // editor.addAndMakeVisible(button);
 
-    buttonAttachment.reset (
-        new juce::AudioProcessorValueTreeState::ButtonAttachment (
-            vts, buttonName, button
-    ));
+    // buttonAttachment.reset (
+    //     new juce::AudioProcessorValueTreeState::ButtonAttachment (
+    //         vts, buttonName, button
+    // ));
 }
 
 //==============================================================================
@@ -285,9 +285,9 @@ BreaQAudioProcessorEditor::~BreaQAudioProcessorEditor() {
 void BreaQAudioProcessorEditor::paint (juce::Graphics& g) {
     g.fillAll(Colours::background1);
 
-    for (int i = 0; i < numStrips; i++) {
-        strips[i].paint(g);
-    }
+    // for (int i = 0; i < numStrips; i++) {
+    //     strips[i].paint(g);
+    // }
 }
 
 //==============================================================================

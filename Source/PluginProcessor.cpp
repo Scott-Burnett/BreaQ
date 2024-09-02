@@ -61,9 +61,9 @@ void Slice::createParameterLayout (
 
 //==============================================================================
 void Slice::loadParameters() {
-    probability = probabilityParameter->load();
-    length = lengthParameter->load();
-    enabled = (bool) enabledParameter->load();
+    // probability = probabilityParameter->load();
+    // length = lengthParameter->load();
+    // enabled = (bool) enabledParameter->load();
 }
 
 //==============================================================================
@@ -98,9 +98,9 @@ void Strip::init(
 
     slices = new Slice[numSlices];
 
-    for (int i = 0, offset = stripId * numSlices; i < numSlices; i++) {
-        slices[i].init(i + offset, vts, listener);
-    }
+    // for (int i = 0, offset = stripId * numSlices; i < numSlices; i++) {
+    //     slices[i].init(i + offset, vts, listener);
+    // }
 }
 
 //==============================================================================
@@ -144,10 +144,10 @@ void Strip::createParameterLayout(
 
 //==============================================================================
 void Strip::loadParameters() {
-    probability = probabilityParameter->load();
-    group = groupParameter->load();
-    enabled = (bool) enabledParameter->load();
-    bypassed = (bool) bypassedParameter->load();
+    // probability = probabilityParameter->load();
+    // group = groupParameter->load();
+    // enabled = (bool) enabledParameter->load();
+    // bypassed = (bool) bypassedParameter->load();
 }
 
 //==============================================================================
@@ -164,11 +164,11 @@ BreaQAudioProcessor::BreaQAudioProcessor()
         )
 #endif
 {
-    strips = new Strip[numStrips];
+    /*strips = new Strip[numStrips];
 
     for (int i = 0; i < numStrips; i++) {
         strips[i].init(i, parameters, *this);
-    }
+    }*/
 
     parametersChanged = false;
 
@@ -192,15 +192,15 @@ void BreaQAudioProcessor::parameterGestureChanged(int parameterIndex, bool gestu
 
 //==============================================================================
 void BreaQAudioProcessor::timerCallback() {
-    if (parametersChanged) {
-        for (int i = 0; i < numStrips; i++) {
-            strips[i].loadParameters();
-        }
+    // if (parametersChanged) {
+    //     for (int i = 0; i < numStrips; i++) {
+    //         strips[i].loadParameters();
+    //     }
 
-        // TODO: Load Editor State
+    //     // TODO: Load Editor State
 
-        parametersChanged = false;
-    }
+    //     parametersChanged = false;
+    // }
 }
 
 //==============================================================================
@@ -354,6 +354,12 @@ void BreaQAudioProcessor::setStateInformation (const void* data, int sizeInBytes
 //==============================================================================
 juce::AudioProcessorValueTreeState::ParameterLayout BreaQAudioProcessor::createParameterLayout() {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
+
+    strips = new Strip[numStrips];
+
+    for (int i = 0; i < numStrips; i++) {
+        strips[i].init(i, parameters, *this);
+    }
 
     for (int i = 0; i < numStrips; i++) {
         strips[i].createParameterLayout(layout);
