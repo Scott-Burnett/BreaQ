@@ -9,20 +9,10 @@
     <GROUP id="{429EAC7B-C196-BF01-2C16-93E8F8D785CB}" name="Source">
       <FILE id="XSJjCA" name="ParameterNames.h" compile="0" resource="0"
             file="Source/ParameterNames.h"/>
-      <FILE id="UyaDhu" name="ParallelHighPassFilter.h" compile="0" resource="0"
-            file="Source/ParallelHighPassFilter.h"/>
-      <FILE id="FNU3o9" name="ParallelLowPassFilter.cpp" compile="1" resource="0"
-            file="Source/ParallelLowPassFilter.cpp"/>
-      <FILE id="oGx0FO" name="ParallelLowPassFilter.h" compile="0" resource="0"
-            file="Source/ParallelLowPassFilter.h"/>
-      <FILE id="vjYc0W" name="ParallelHighPassFilter.cpp" compile="1" resource="0"
-            file="Source/ParallelHighPassFilter.cpp"/>
       <FILE id="xt3S16" name="BreaQLookAndFeel.cpp" compile="1" resource="0"
             file="Source/BreaQLookAndFeel.cpp"/>
       <FILE id="R1S6lG" name="BreaQLookAndFeel.h" compile="0" resource="0"
             file="Source/BreaQLookAndFeel.h"/>
-      <FILE id="eyZ3Rh" name="ADSR.cpp" compile="1" resource="0" file="Source/ADSR.cpp"/>
-      <FILE id="iBXLjy" name="ADSR.h" compile="0" resource="0" file="Source/ADSR.h"/>
       <FILE id="xqI4KJ" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="VlzYuX" name="PluginProcessor.h" compile="0" resource="0"
@@ -31,16 +21,8 @@
             file="Source/PluginEditor.cpp"/>
       <FILE id="ABtOA1" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
     </GROUP>
-    <FILE id="BRyTqY" name="ADSRVisualizer.cpp" compile="1" resource="0"
-          file="Source/ADSRVisualizer.cpp"/>
-    <FILE id="r8HfX0" name="ADSRVisualizer.h" compile="0" resource="0"
-          file="Source/ADSRVisualizer.h"/>
     <FILE id="Cvozlc" name="ParameterNames.cpp" compile="1" resource="0"
           file="Source/ParameterNames.cpp"/>
-    <FILE id="CYm1xK" name="SpectrumAnalyzer.cpp" compile="1" resource="0"
-          file="Source/SpectrumAnalyzer.cpp"/>
-    <FILE id="HlEwh5" name="SpectrumAnalyzer.h" compile="0" resource="0"
-          file="Source/SpectrumAnalyzer.h"/>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>
   <EXPORTFORMATS>

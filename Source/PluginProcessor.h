@@ -1,28 +1,29 @@
 #pragma once
 
-#include <JuceLibraryCode/JuceHeader.h>
-#include "ParallelLowPassFilter.h"
-#include "ParallelHighPassFilter.h"
-#include "ADSR.h"
-#include "SpectrumAnalyzer.h"
+#include <../JuceLibraryCode/JuceHeader.h>
 
 //==============================================================================
 /**
 */
 class Slice {
 public:
-  float probability;
-  int length;
-  int progress;
-  bool enabled;
-  bool isOn;
+    float probability;
+    int length;
+    int progress;
+    int sliceId;
+    bool enabled;
+    bool isOn;
+
+    void init(int, juce::AudioProcessorValueTreeState&, juce::AudioProcessorParameter::Listener&);
+    void createParameterLayout(juce::AudioProcessorValueTreeState::ParameterLayout&);
+    void loadParameters();
 
 private:
-  std::atomic<float>* probabilityParameter = nullptr;
-  std::atomic<float>* lengthParameter = nullptr;
-  std::atomic<float>* progressParameter = nullptr;
-  std::atomic<float>* enabledParameter = nullptr;
-  std::atomic<float>* isOnParameter = nullptr;
+    std::atomic<float>* probabilityParameter = nullptr;
+    std::atomic<float>* lengthParameter = nullptr;
+    std::atomic<float>* progressParameter = nullptr;
+    std::atomic<float>* enabledParameter = nullptr;
+    std::atomic<float>* isOnParameter = nullptr;
 };
 
 //==============================================================================
@@ -30,21 +31,29 @@ private:
 */
 class Strip {
 public:
-  float probability;
-  int group;
-  int noteNumber;
-  bool enabled;
-  bool isOn;
+    float probability;
+    int group;
+    int noteNumber;
+    int stripId;
+    bool enabled;
+    bool bypassed;
+    bool isOn;
+
+    void init(int, juce::AudioProcessorValueTreeState&, juce::AudioProcessorParameter::Listener&);
+    void createParameterLayout(juce::AudioProcessorValueTreeState::ParameterLayout&);
+    void loadParameters();
 
 private:
-  Slice* slices;
-  Slice* currentSlice;
+    const int numSlices = 4;
+    Slice* slices;
+    Slice* currentSlice;
 
-  std::atomic<float>* probabilityParameter = nullptr;
-  std::atomic<float>* groupParameter = nullptr;
-  std::atomic<float>* noteNumberParameter = nullptr;     
-  std::atomic<float>* enabledParameter = nullptr;
-  std::atomic<float>* isOnParameter = nullptr;
+    std::atomic<float>* probabilityParameter = nullptr;
+    std::atomic<float>* groupParameter = nullptr;
+    //std::atomic<float>* noteNumberParameter = nullptr;     
+    std::atomic<float>* enabledParameter = nullptr;
+    std::atomic<float>* bypassedParameter = nullptr;
+    //std::atomic<float>* isOnParameter = nullptr;
 };
 
 //==============================================================================
@@ -52,21 +61,11 @@ private:
 */
 class Group {
 public:
-  int id;
-  bool shed;
+    int id;
+    bool shed;
 
 private:
-  std::atomic<float>* shedParameter = nullptr;
-};
-
-//==============================================================================
-/**
-*/
-enum Slope {
-    DbOct12,
-    DbOct24,
-    DbOct36,
-    DbOct48
+    std::atomic<float>* shedParameter = nullptr;
 };
 
 //==============================================================================
@@ -88,20 +87,11 @@ class BreaQAudioProcessor  :
 public:
     BreaQAudioProcessorEditor* editor;
 
+    const int numGroups = 4;
     Group* groups;
+
+    const int numStrips = 32;
     Strip* strips;
-
-    float crossOverFequency;
-    float lowPassFrequency;
-    float highPassFrequency;
-
-    ParallelLowPassFilter lowPassFilter;
-    ParallelHighPassFilter highPassFilter;
-
-    ADSR lowPassADSR;
-    ADSR highPassADSR;
-
-    SpectrumAnalyzer spectrumAnalyzer;
 
     //==============================================================================
     BreaQAudioProcessor();
@@ -146,7 +136,7 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
 private:
-    static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::AudioProcessorValueTreeState parameters {
         *this, nullptr, "Parameters", createParameterLayout()
     };
@@ -154,31 +144,6 @@ private:
     bool parametersChanged;
 
     juce::MidiBuffer processedBuffer;
-
-    std::atomic<float>* crossOverFrequencyParameter = nullptr;
-    std::atomic<float>* crossOverWidthParameter = nullptr;
-    std::atomic<float>* highPassOrderParameter = nullptr;
-    std::atomic<float>* lowPassOrderParameter = nullptr;
-
-    std::atomic<float>* lowPassInitialParameter = nullptr;
-    std::atomic<float>* lowPassAttackParameter = nullptr;
-    std::atomic<float>* lowPassAttackCurveParameter = nullptr;
-    std::atomic<float>* lowPassPeakParameter = nullptr;
-    std::atomic<float>* lowPassDecayParameter = nullptr;
-    std::atomic<float>* lowPassDecayCurveParameter = nullptr;
-    std::atomic<float>* lowPassSustainParameter = nullptr;
-    std::atomic<float>* lowPassReleaseParameter = nullptr;
-    std::atomic<float>* lowPassReleaseCurveParameter = nullptr;
-
-    std::atomic<float>* highPassInitialParameter = nullptr;
-    std::atomic<float>* highPassAttackParameter = nullptr;
-    std::atomic<float>* highPassAttackCurveParameter = nullptr;
-    std::atomic<float>* highPassPeakParameter = nullptr;
-    std::atomic<float>* highPassDecayParameter = nullptr;
-    std::atomic<float>* highPassDecayCurveParameter = nullptr;
-    std::atomic<float>* highPassSustainParameter = nullptr;
-    std::atomic<float>* highPassReleaseParameter = nullptr;
-    std::atomic<float>* highPassReleaseCurveParameter = nullptr;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BreaQAudioProcessor)

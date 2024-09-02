@@ -1,10 +1,8 @@
 #pragma once
 
-#include <JuceLibraryCode/JuceHeader.h>
+#include <../JuceLibraryCode/JuceHeader.h>
 #include "PluginProcessor.h"
 #include "BreaQLookAndFeel.h"
-#include "SpectrumAnalyzer.h"
-#include "ADSRVisualizer.h"
 
 //==============================================================================
 /*
@@ -68,7 +66,7 @@ public:
     void init(int, juce::AudioProcessorValueTreeState&, juce::AudioProcessorEditor&);
     void paint(juce::Graphics&);
     void resized(juce::Rectangle<int>);
-    void loadParameters(SliceDto&);
+    //void loadParameters(SliceDto&);
 
 private:
     juce::Slider probabilitySlider;
@@ -89,9 +87,15 @@ public:
     StripEditor();
     ~StripEditor();
     
-    void init(int, juce::AudioProcessorValueTreeState&, juce::AudioProcessorEditor&);
+    void init (
+        int, 
+        juce::AudioProcessorValueTreeState&, 
+        juce::AudioProcessorEditor&
+    );
+
     void paint(juce::Graphics&);
     void resized(juce::Rectangle<int>);
+
     void loadParameters(StripDto&);
 
 private:
@@ -121,13 +125,14 @@ class BreaQAudioProcessorEditor : public juce::AudioProcessorEditor {
 public:
     BreaQAudioProcessorEditor(
         BreaQAudioProcessor&, 
-        juce::AudioProcessorValueTreeState&, 
-        SpectrumAnalyzer&
+        juce::AudioProcessorValueTreeState&
     );
     ~BreaQAudioProcessorEditor() override;
 
     void paint(juce::Graphics&) override;
     void resized() override;
+
+    void LoadState(StripDto*);
 
 private:
     BreaQAudioProcessor& audioProcessor;

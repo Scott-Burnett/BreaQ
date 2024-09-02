@@ -1,6 +1,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-#include <JuceLibraryCode/JuceHeader.h>
+#include <../JuceLibraryCode/JuceHeader.h>
 #include "ParameterNames.h"
 
 //==============================================================================
@@ -107,6 +107,16 @@ static void initButton (
 }
 
 //==============================================================================
+SliceEditor::SliceEditor() {
+
+}
+
+//==============================================================================
+SliceEditor::~SliceEditor() {
+    
+}
+
+//==============================================================================
 void SliceEditor::init (
     int sliceNumber,
     juce::AudioProcessorValueTreeState& vts,
@@ -151,6 +161,16 @@ void SliceEditor::resized(juce::Rectangle<int> bounds) {
 
 //==============================================================================
 void SliceEditor::paint(juce::Graphics&) {
+    
+}
+
+//==============================================================================
+StripEditor::StripEditor() {
+
+}
+
+//==============================================================================
+StripEditor::~StripEditor() {
     
 }
 
@@ -203,6 +223,7 @@ void StripEditor::init (
     slices = new SliceEditor[numSlices];
 
     for (int i = 0; i < numSlices; i++) {
+        //slices[i] = SliceEditor();
         slices[i].init(i, vts, editor);
     }
 }
@@ -240,13 +261,12 @@ void StripEditor::paint(juce::Graphics& g) {
 //==============================================================================
 BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
     BreaQAudioProcessor& p, 
-    juce::AudioProcessorValueTreeState& vts,
-    SpectrumAnalyzer& analyzer
+    juce::AudioProcessorValueTreeState& vts
 ) : 
     AudioProcessorEditor (&p), 
     audioProcessor (p) 
 {
-    setSize (970, 600);
+    setSize (1200, 600);
     juce::LookAndFeel::setDefaultLookAndFeel(&breaQLookAndFeel);
 
     strips = new StripEditor[numStrips];

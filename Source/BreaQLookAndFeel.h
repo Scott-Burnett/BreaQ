@@ -1,17 +1,9 @@
 #pragma once
-#include <JuceLibraryCode/JuceHeader.h>
+#include <../JuceLibraryCode/JuceHeader.h>
 
 class BreaQLookAndFeel : public juce::LookAndFeel_V4
 {
 public:
-	// aquamarine: 49D49D
-	// tea green: #BFD7B5
-	// spring bud: #E7EFC5
-	// champagne: #F2DDA4
-
-	// citron: #A29F15
-	// terra cotta: #E26D5C
-
 	const juce::Colour aquamarine = juce::Colour(73, 212, 157); // (49D49D);
 	const juce::Colour teaGreen = juce::Colour(191, 215, 181); // (BFD7B5);
 	const juce::Colour springBud = juce::Colour(231, 239, 197); // (E7EFC5);
@@ -50,10 +42,4 @@ public:
 		const float rotaryEndAngle, 
 		juce::Slider& slider
 	);
-
-private:
-	const juce::Colour usedArcColour = 
-		juce::Colour(255, 255, 255);
-	const juce::Colour unusedArcColour = 
-		juce::Colour(0, 0, 0);
 };
