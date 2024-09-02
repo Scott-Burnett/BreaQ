@@ -14,6 +14,7 @@ public:
     bool enabled;
     bool isOn;
 
+    void setSliceId(int);
     void init(int, juce::AudioProcessorValueTreeState&, juce::AudioProcessorParameter::Listener&);
     void createParameterLayout(juce::AudioProcessorValueTreeState::ParameterLayout&);
     void loadParameters();
@@ -39,6 +40,7 @@ public:
     bool bypassed;
     bool isOn;
 
+    void setStrpId(int);
     void init(int, juce::AudioProcessorValueTreeState&, juce::AudioProcessorParameter::Listener&);
     void createParameterLayout(juce::AudioProcessorValueTreeState::ParameterLayout&);
     void loadParameters();

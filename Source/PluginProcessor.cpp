@@ -3,6 +3,11 @@
 #include "ParameterNames.h"
 
 //==============================================================================
+void Slice::setSliceId(int id) {
+    sliceId = id;
+}
+
+//==============================================================================
 void Slice::init(
     int id, 
     juce::AudioProcessorValueTreeState& vts, 
@@ -61,9 +66,20 @@ void Slice::createParameterLayout (
 
 //==============================================================================
 void Slice::loadParameters() {
-    // probability = probabilityParameter->load();
-    // length = lengthParameter->load();
-    // enabled = (bool) enabledParameter->load();
+    probability = probabilityParameter->load();
+    length = lengthParameter->load();
+    enabled = (bool) enabledParameter->load();
+}
+
+//==============================================================================
+void Strip::setStrpId(int id) {
+    stripId = id;
+
+    slices = new Slice[numSlices];
+
+     for (int i = 0, offset = stripId * numSlices; i < numSlices; i++) {
+         slices[i].setSliceId(i + offset);
+     }
 }
 
 //==============================================================================
@@ -72,7 +88,7 @@ void Strip::init(
     juce::AudioProcessorValueTreeState& vts, 
     juce::AudioProcessorParameter::Listener& listener
 ) {
-    stripId = id;
+    //stripId = id;
 
     probabilityParameter = vts.getRawParameterValue(
         ParameterNames::stripProbability[stripId]
@@ -96,11 +112,11 @@ void Strip::init(
     vts.getParameter(ParameterNames::stripBypassed[stripId])->
         addListener(&listener);
 
-    slices = new Slice[numSlices];
+    //slices = new Slice[numSlices];
 
-    // for (int i = 0, offset = stripId * numSlices; i < numSlices; i++) {
-    //     slices[i].init(i + offset, vts, listener);
-    // }
+    for (int i = 0, offset = stripId * numSlices; i < numSlices; i++) {
+        slices[i].init(i + offset, vts, listener);
+    }
 }
 
 //==============================================================================
@@ -144,10 +160,10 @@ void Strip::createParameterLayout(
 
 //==============================================================================
 void Strip::loadParameters() {
-    // probability = probabilityParameter->load();
-    // group = groupParameter->load();
-    // enabled = (bool) enabledParameter->load();
-    // bypassed = (bool) bypassedParameter->load();
+    probability = probabilityParameter->load();
+    group = groupParameter->load();
+    enabled = (bool) enabledParameter->load();
+    bypassed = (bool) bypassedParameter->load();
 }
 
 //==============================================================================
@@ -164,11 +180,10 @@ BreaQAudioProcessor::BreaQAudioProcessor()
         )
 #endif
 {
-    /*strips = new Strip[numStrips];
 
     for (int i = 0; i < numStrips; i++) {
         strips[i].init(i, parameters, *this);
-    }*/
+    }
 
     parametersChanged = false;
 
@@ -357,11 +372,13 @@ juce::AudioProcessorValueTreeState::ParameterLayout BreaQAudioProcessor::createP
 
     strips = new Strip[numStrips];
 
-    for (int i = 0; i < numStrips; i++) {
+
+    /*for (int i = 0; i < numStrips; i++) {
         strips[i].init(i, parameters, *this);
-    }
+    }*/
 
     for (int i = 0; i < numStrips; i++) {
+        strips[i].setStrpId(i);
         strips[i].createParameterLayout(layout);
     }
 

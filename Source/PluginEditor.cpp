@@ -69,25 +69,25 @@ static void initSlider (
     juce::AudioProcessorValueTreeState& vts,
     juce::AudioProcessorEditor& editor
 ) {
-//     editor.addAndMakeVisible(slider);
-//     slider.setSliderStyle (
-//         juce::Slider::SliderStyle::RotaryVerticalDrag
-//     );
+     editor.addAndMakeVisible(slider);
+     slider.setSliderStyle (
+         juce::Slider::SliderStyle::RotaryVerticalDrag
+     );
 
-//     slider.setTextBoxStyle (
-//         juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
-//     );
+     slider.setTextBoxStyle (
+         juce::Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0
+     );
 
-//     slider.hideTextBox(false);
-//     sliderAttachment.reset (
-//         new juce::AudioProcessorValueTreeState::SliderAttachment (
-//             vts, sliderName, slider
-//     ));
+     slider.hideTextBox(false);
+     sliderAttachment.reset (
+         new juce::AudioProcessorValueTreeState::SliderAttachment (
+             vts, sliderName, slider
+     ));
 
-// //     /*addAndMakeVisible(crossOverFrequencyLabel);
-// //     crossOverFrequencyLabel.setText(
-// //         "Cross Over Frequency", juce::dontSendNotification
-// //     );*/
+ //     /*addAndMakeVisible(crossOverFrequencyLabel);
+ //     crossOverFrequencyLabel.setText(
+ //         "Cross Over Frequency", juce::dontSendNotification
+ //     );*/
 }
 
 //==============================================================================
@@ -98,12 +98,12 @@ static void initButton (
     juce::AudioProcessorValueTreeState& vts,
     juce::AudioProcessorEditor& editor
 ) {
-    // editor.addAndMakeVisible(button);
+     editor.addAndMakeVisible(button);
 
-    // buttonAttachment.reset (
-    //     new juce::AudioProcessorValueTreeState::ButtonAttachment (
-    //         vts, buttonName, button
-    // ));
+     buttonAttachment.reset (
+         new juce::AudioProcessorValueTreeState::ButtonAttachment (
+             vts, buttonName, button
+     ));
 }
 
 //==============================================================================
@@ -196,13 +196,13 @@ void StripEditor::init (
         editor
     );
 
-    initSlider (
+    /*initSlider (
         ParameterNames::stripNote[stripNumber], 
         noteSlider, 
         noteSliderAttachment, 
         vts, 
         editor
-    );
+    );*/
 
     initButton (
         ParameterNames::stripEnabled[stripNumber], 
@@ -222,9 +222,9 @@ void StripEditor::init (
 
     slices = new SliceEditor[numSlices];
 
-    for (int i = 0; i < numSlices; i++) {
-        //slices[i] = SliceEditor();
-        slices[i].init(i, vts, editor);
+    for (int i = 0, offset = stripNumber * numSlices; i < numSlices; i++) {
+        // slices[i] = SliceEditor();
+        slices[i].init(i + offset, vts, editor);
     }
 }
 
@@ -266,7 +266,7 @@ BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
     AudioProcessorEditor (&p), 
     audioProcessor (p) 
 {
-    setSize (1200, 600);
+    
     juce::LookAndFeel::setDefaultLookAndFeel(&breaQLookAndFeel);
 
     strips = new StripEditor[numStrips];
@@ -274,6 +274,8 @@ BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
     for (int i = 0; i < numStrips; i++) {
         strips[i].init(i, vts, *this);
     }
+
+    setSize(1200, 800);
 }
 
 //==============================================================================
