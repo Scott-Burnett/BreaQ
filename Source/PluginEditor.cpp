@@ -252,8 +252,8 @@ void SliceEditor::paint(juce::Graphics& g) {
     DrawLabels(ParameterOptions::lengthOptions, 16, progress, &lengthSlider, g);
 
     if (isOn) {
-        g.setColour(Colours::champagne);
-        g.drawRect(bounds);
+        g.setColour(Colours::orange3);
+        g.drawRect(bounds, 4);
     }
 
     needsRepaint = false;
@@ -336,29 +336,20 @@ void StripEditor::init (
 
 //==============================================================================
 void StripEditor::resized (juce::Rectangle<int> bounds) {
-
-
     const float probabilityFactor = 0.6f;
     const float enabledFactor = 0.375f;
     const float groupFactor = 0.5f;
     const float plusSixteenFactor = 1.0f - probabilityFactor;
     const float extraControlsFactor = 0.15f;
 
-    //this->bounds = bounds;
-
-    // bounds = bounds.reduced(2);
-
     auto sliceBounds = bounds.removeFromTop(bounds.getHeight() * 0.66f);
 
-    bounds = bounds.reduced(2);
     this->bounds = bounds;
+    bounds = bounds.reduced(2);
+    bounds = bounds.reduced(4);
     bounds = bounds.reduced(4);
 
     // auto extraControlsBounds = bounds.removeFromRight(bounds.getWidth() * extraControlsFactor);
-
-    
-
-    bounds = bounds.reduced(4);
 
     auto enabledBounds = bounds;
     enabledBounds = enabledBounds.removeFromLeft(enabledBounds.getWidth() * enabledFactor);
@@ -382,19 +373,14 @@ void StripEditor::resized (juce::Rectangle<int> bounds) {
     auto plusSixteenbounds = bounds;
     plusSixteenbounds = plusSixteenbounds.removeFromRight(plusSixteenbounds.getWidth() * plusSixteenFactor);
     plusSixteenbounds = plusSixteenbounds.removeFromTop(plusSixteenbounds.getWidth() * plusSixteenFactor);
-
     // TODO: Set PlusSixteen Bounds
 
     auto groupBounds = bounds;
     groupBounds = groupBounds.removeFromRight(groupBounds.getWidth() * groupFactor);
     groupBounds = groupBounds.removeFromBottom(groupBounds.getHeight() * groupFactor);
-    // groupBounds = groupBounds.reduced(6);
     groupBounds.setPosition(groupBounds.getX() + 10, groupBounds.getY() - 10);
 
     groupSlider.setBounds(groupBounds);
-
-
-
 
     // _________________________________________________
 
@@ -406,17 +392,15 @@ void StripEditor::resized (juce::Rectangle<int> bounds) {
 
 //==============================================================================
 void StripEditor::paint(juce::Graphics& g) {
-    //// Paint Slices
-    //for (int i = 0; i < NUM_SLICES; i++) {
-    //    slices[i].paint(g);
-    //}
-
     /*if (!needsRepaint) {
         return;
     }*/
 
     DrawArc(&probabilitySlider, g);
     DrawLabels(ParameterOptions::groupOptions, 4, -1, &groupSlider, g);
+
+    g.setColour(Colours::transparentBackground2);
+    g.fillRect(bounds);
 
     if (isOn) {
         g.setColour(Colours::champagne);
@@ -471,7 +455,6 @@ BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
     AudioProcessorEditor (&p), 
     audioProcessor (p) 
 {
-    
     juce::LookAndFeel::setDefaultLookAndFeel(&breaQLookAndFeel);
 
     strips = new StripEditor[NUM_STRIPS];

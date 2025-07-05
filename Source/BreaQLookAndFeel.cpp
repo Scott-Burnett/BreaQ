@@ -70,15 +70,20 @@ void BreaQLookAndFeel::drawRotarySlider(
     auto centreToThumb = fillDiameter * 0.25f;
     auto thumbDiameter = centreToThumb * 1.0f;
 
-    juce::Point<float> thumbPoint(
+    /*juce::Point<float> thumbPoint(
         bounds.getCentreX() + centreToThumb * std::cos(toAngle - juce::MathConstants<float>::halfPi),
         bounds.getCentreY() + centreToThumb * std::sin(toAngle - juce::MathConstants<float>::halfPi)
-    );
+    );*/
 
-    juce::Rectangle thumbRect = 
+    juce::Point<float> thumbStart = fillRect.getCentre().getPointOnCircumference(radius * 0.5f, toAngle);
+    juce::Point<float> thumbEnd = fillRect.getCentre().getPointOnCircumference(radius * 0.3f, toAngle);
+
+
+
+    /*juce::Rectangle thumbRect = 
         juce::Rectangle<float>(thumbDiameter * 0.2f, thumbDiameter * 0.2f)
         .withCentre(thumbPoint)
-    ;
+    ;*/
 
     /*g.setGradientFill ({
         Colours::background1, thumbRect.getCentre(),
@@ -122,7 +127,9 @@ void BreaQLookAndFeel::drawRotarySlider(
         )
     );*/
 
-    g.drawEllipse(thumbRect, lineW);
+    //g.drawEllipse(thumbRect, lineW);
+
+    g.drawLine(thumbStart.getX(), thumbStart.getY(), thumbEnd.getX(), thumbEnd.getY(), lineW * 2.0f);
 }
 
 void BreaQLookAndFeel::drawToggleButton(
