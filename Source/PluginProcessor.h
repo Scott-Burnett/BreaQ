@@ -1,6 +1,7 @@
 #pragma once
 
 #include <../JuceLibraryCode/JuceHeader.h>
+// #include "PluginEditor.h"
 
 //==============================================================================
 /**
@@ -14,8 +15,11 @@ public:
     bool enabled;
     bool isOn;
 
+    Slice();
+    ~Slice();
+
     void setSliceId(int);
-    void init(int, juce::AudioProcessorValueTreeState&, juce::AudioProcessorParameter::Listener&);
+    void init(juce::AudioProcessorValueTreeState&, juce::AudioProcessorParameter::Listener&);
     void createParameterLayout(juce::AudioProcessorValueTreeState::ParameterLayout&);
     void loadParameters();
 
@@ -32,6 +36,10 @@ private:
 */
 class Strip {
 public:
+    // const int numSlices = NUM_SLICES;
+    Slice* slices;
+    Slice* currentSlice;
+
     float probability;
     int group;
     int noteNumber;
@@ -40,22 +48,19 @@ public:
     bool bypassed;
     bool isOn;
 
+    Strip();
+    ~Strip();
+
     void setStrpId(int);
-    void init(int, juce::AudioProcessorValueTreeState&, juce::AudioProcessorParameter::Listener&);
+    void init(juce::AudioProcessorValueTreeState&, juce::AudioProcessorParameter::Listener&);
     void createParameterLayout(juce::AudioProcessorValueTreeState::ParameterLayout&);
     void loadParameters();
 
 private:
-    const int numSlices = 4;
-    Slice* slices;
-    Slice* currentSlice;
-
     std::atomic<float>* probabilityParameter = nullptr;
-    std::atomic<float>* groupParameter = nullptr;
-    //std::atomic<float>* noteNumberParameter = nullptr;     
+    std::atomic<float>* groupParameter = nullptr;   
     std::atomic<float>* enabledParameter = nullptr;
     std::atomic<float>* bypassedParameter = nullptr;
-    //std::atomic<float>* isOnParameter = nullptr;
 };
 
 //==============================================================================
@@ -65,15 +70,28 @@ class Group {
 public:
     int id;
     bool shed;
+    bool enabled;
+
+    Strip* currentStrip;
+
+    void setGroupId(int);
+    void init(juce::AudioProcessorValueTreeState&, juce::AudioProcessorParameter::Listener&);
+    void createParameterLayout(juce::AudioProcessorValueTreeState::ParameterLayout&);
+    void loadParameters();
 
 private:
     std::atomic<float>* shedParameter = nullptr;
+    // TODO: Enabled Parameter
 };
 
 //==============================================================================
 /**
 */
 class BreaQAudioProcessorEditor;
+
+class GroupDto;
+class StripDto;
+class SliceDto;
 
 //==============================================================================
 /**
@@ -89,11 +107,13 @@ class BreaQAudioProcessor  :
 public:
     BreaQAudioProcessorEditor* editor;
 
-    const int numGroups = 4;
+    // const int numGroups = NUM_GROUPS;
     Group* groups;
+    GroupDto* groupDtos;
 
-    const int numStrips = 32;
+    // const int numStrips = NUM_STRIPS;
     Strip* strips;
+    StripDto* stripDtos;
 
     //==============================================================================
     BreaQAudioProcessor();
@@ -143,7 +163,9 @@ private:
         *this, nullptr, "Parameters", createParameterLayout()
     };
 
-    bool parametersChanged;
+    bool needsRepaint;
+
+    juce::Random random;
 
     juce::MidiBuffer processedBuffer;
 

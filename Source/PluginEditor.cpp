@@ -4,64 +4,6 @@
 #include "ParameterNames.h"
 
 //==============================================================================
-const juce::Colour Colours::aquamarine =        
-    juce::Colour(73, 212, 157); // (49D49D);
-
-const juce::Colour Colours::teaGreen =          
-    juce::Colour(191, 215, 181); // (BFD7B5);
-
-const juce::Colour Colours::springBud =         
-    juce::Colour(231, 239, 197); // (E7EFC5);
-
-const juce::Colour Colours::champagne =         
-    juce::Colour(242, 221, 164); // (F2DDA4);
-
-const juce::Colour Colours::citron =            
-    juce::Colour(162, 159, 21); // (A29F15);
-
-const juce::Colour Colours::terraCotta =        
-    juce::Colour(226, 109, 92); // (E26D5C);
-
-const juce::Colour Colours::background1 =       
-    juce::Colour(13, 16, 22); // (0x0d1016);
-
-const juce::Colour Colours::background2 =       
-    juce::Colour(0, 1, 10); // (0x00010a);
-
-const juce::Colour Colours::lilac =             
-    juce::Colour(218, 173, 224); // (0xdaade0);
-
-const juce::Colour Colours::pink =              
-    juce::Colour(238, 104, 175); // (0xee68af);
-
-const juce::Colour Colours::orange2 =           
-    juce::Colour(245, 187, 108); // (0xf5bb6c);
-
-const juce::Colour Colours::orange1 =           
-    juce::Colour(253, 198, 138); // (0xfdc68a);
-
-const juce::Colour Colours::orange3 =           
-    juce::Colour(247, 203, 139); // (0xf7cb8b);
-
-const juce::Colour Colours::transparentPink =   
-    juce::Colour::fromRGBA(238, 104, 175, 100); // (0xee68af);
-
-const juce::Colour Colours::transparentLilac =  
-    juce::Colour::fromRGBA(218, 173, 224, 100); // (0xdaade0);
-
-const juce::Colour Colours::transparentCitron = 
-    juce::Colour::fromRGBA(162, 159, 21, 100); // (A29F15);
-
-const juce::Colour Colours::grid1 =             
-    juce::Colour::fromRGBA(41, 45, 54, 50); // (0x292d36);
-
-const juce::Colour Colours::grid2 =             
-    juce::Colour::fromRGBA(61, 66, 77, 50); // (0x3d424d);
-
-const juce::Colour Colours::grid3 =             
-    juce::Colour(179, 177, 173); // (0xb3b1ad);
-
-//==============================================================================
 static void initSlider (
     std::string sliderName,
     juce::Slider& slider,
@@ -83,32 +25,124 @@ static void initSlider (
          new juce::AudioProcessorValueTreeState::SliderAttachment (
              vts, sliderName, slider
      ));
-
- //     /*addAndMakeVisible(crossOverFrequencyLabel);
- //     crossOverFrequencyLabel.setText(
- //         "Cross Over Frequency", juce::dontSendNotification
- //     );*/
 }
 
 //==============================================================================
-static void initButton (
+static void initButton(
     std::string buttonName,
     juce::ToggleButton& button,
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment>& buttonAttachment,
     juce::AudioProcessorValueTreeState& vts,
     juce::AudioProcessorEditor& editor
 ) {
-     editor.addAndMakeVisible(button);
+    editor.addAndMakeVisible(button);
 
-     buttonAttachment.reset (
-         new juce::AudioProcessorValueTreeState::ButtonAttachment (
-             vts, buttonName, button
-     ));
+    buttonAttachment.reset(
+        new juce::AudioProcessorValueTreeState::ButtonAttachment(
+            vts, buttonName, button
+        ));
+}
+
+//==============================================================================
+static void DrawArc(
+    juce::Slider* slider,
+    juce::Graphics& g
+) {
+    const float rotaryStartAngle = slider->getRotaryParameters().startAngleRadians;
+    const float rotaryEndAngle = slider->getRotaryParameters().endAngleRadians;
+
+    auto bounds = slider->getBounds();
+    auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) / 2.0f;
+    auto lineW = 1.2f;
+    auto arcRadius = radius - lineW * 0.5f;
+
+    juce::Path arc;
+    arc.addCentredArc(
+        bounds.getCentreX(),
+        bounds.getCentreY(),
+        arcRadius,
+        arcRadius,
+        0.0f,
+        rotaryStartAngle,
+        rotaryEndAngle,
+        true
+    );
+
+    g.setColour(Colours::transparentOrange3);
+    g.strokePath(
+        arc,
+        juce::PathStrokeType(
+            lineW,
+            juce::PathStrokeType::curved,
+            juce::PathStrokeType::rounded
+        )
+    );
+}
+
+//==============================================================================
+static void DrawLabels(
+    const juce::StringArray labels,
+    int numLabels,
+    int highlight,
+    juce::Slider *slider,
+    juce::Graphics& g
+) {
+    auto bounds = slider->getBounds();
+    auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) / 2.0f;
+
+    float rotaryStartAngle = slider->getRotaryParameters().startAngleRadians;
+    float rotaryEndAngle = slider->getRotaryParameters().endAngleRadians;
+
+    float sliderPos = slider->getValue();
+
+    float pos = 0;
+    float inc = 1.0f / (float)(numLabels - 1);
+
+    for (int i = 0; i < numLabels; i++, pos += inc) {
+        auto ang = juce::jmap(pos, 0.0f, 1.0f, rotaryStartAngle, rotaryEndAngle);
+        auto c = bounds.getCentre().getPointOnCircumference(radius + 1.0f, ang);
+
+        juce::Rectangle<float> r;
+        juce::String str = labels[i];
+
+        r.setSize(g.getCurrentFont().getStringWidthFloat(str), g.getCurrentFont().getStringWidthFloat(str));
+        r.setCentre(c);
+
+        if (int(sliderPos) == i) {
+            g.setColour(Colours::orange3);
+        }
+        else if (highlight >= i) {
+            g.setColour(Colours::lilac);
+        }
+        else {
+            g.setColour(Colours::transparentOrange3);
+        }
+
+        g.drawFittedText(str, r.toNearestInt(), juce::Justification::centred, 1);
+    }
+}
+
+//==============================================================================
+SliceDto::SliceDto() {
+    isOn = false;
+    isEnabled = false;
+    length = 0;
+    progress = 0;
+}
+
+//==============================================================================
+SliceDto::~SliceDto() {
+
 }
 
 //==============================================================================
 SliceEditor::SliceEditor() {
+    isOn = false;
+    isEnabled = false;
+    length = 0;
+    progress = 0;
 
+    needsRepaint = false;
 }
 
 //==============================================================================
@@ -132,8 +166,8 @@ void SliceEditor::init (
 
     initSlider (
         ParameterNames::sliceLength[sliceNumber], 
-        probabilitySlider, 
-        probabilitySliderAttachment, 
+        lengthSlider, 
+        lengthSliderAttachment, 
         vts, 
         editor
     );
@@ -149,24 +183,107 @@ void SliceEditor::init (
 
 //==============================================================================
 void SliceEditor::resized(juce::Rectangle<int> bounds) {
-    auto width = bounds.getWidth();
-    auto lengthBounds = bounds.removeFromLeft(width * 0.33f);
-    auto probabilityBounds = bounds.removeFromLeft(width * 0.33f);
+    const float probabilityFactor = 0.6f;
+    const float enabledFactor = 0.4f;
+    const float lengthFactor = 0.6f;
+    const float plusSixteenFactor = 1.0f - probabilityFactor;
+    const float extraControlsFactor = 0.15f;
+
+    this->bounds = bounds;
+
+    bounds = bounds.reduced(6);
+
+    // auto extraControlsBounds = bounds.removeFromRight(bounds.getWidth() * extraControlsFactor);
+
     auto enabledBounds = bounds;
+    enabledBounds = enabledBounds.removeFromLeft(enabledBounds.getWidth() * enabledFactor);
+    enabledBounds = enabledBounds.removeFromBottom(enabledBounds.getHeight() * enabledFactor);
+    enabledBounds = enabledBounds.reduced(10);
+    enabledButton.setBounds(enabledBounds);
+
+    auto probabilityBounds = bounds;
+    probabilityBounds = probabilityBounds.removeFromLeft(probabilityBounds.getWidth() * probabilityFactor);
+    probabilityBounds = probabilityBounds.removeFromTop(probabilityBounds.getHeight() * probabilityFactor);
+
+    probabilitySlider.setBounds(probabilityBounds);
+
+    auto plusSixteenbounds = bounds;
+    plusSixteenbounds = plusSixteenbounds.removeFromRight(plusSixteenbounds.getWidth() * plusSixteenFactor);
+    plusSixteenbounds = plusSixteenbounds.removeFromTop(plusSixteenbounds.getWidth() * plusSixteenFactor);
+
+    // TODO: Set PlusSixteen Bounds
+
+    auto lengthBounds = bounds;
+    lengthBounds = lengthBounds.removeFromRight(lengthBounds.getWidth() * lengthFactor);
+    lengthBounds = lengthBounds.removeFromBottom(lengthBounds.getHeight() * lengthFactor);
 
     lengthSlider.setBounds(lengthBounds);
-    probabilitySlider.setBounds(probabilityBounds);
-    enabledButton.setBounds(enabledBounds);
 }
 
 //==============================================================================
-void SliceEditor::paint(juce::Graphics&) {
-    
+void SliceEditor::loadParameters(SliceDto& dto) {
+    if (isOn != dto.isOn) {
+        needsRepaint = true;
+        isOn = dto.isOn;
+    }
+    if (isOn != dto.isEnabled) {
+        needsRepaint = true;
+        isEnabled = dto.isEnabled;
+    }
+
+    if (isOn != dto.length) {
+        needsRepaint = true;
+        length = dto.length;
+    }
+
+    if (isOn != dto.progress) {
+        needsRepaint = true;
+        progress = dto.progress;
+    }
+}
+
+//==============================================================================
+void SliceEditor::paint(juce::Graphics& g) {
+    /*if (!needsRepaint) {
+        return;
+    }*/
+
+    DrawArc(&probabilitySlider, g);
+    DrawLabels(ParameterOptions::lengthOptions, 16, progress, &lengthSlider, g);
+
+    if (isOn) {
+        g.setColour(Colours::champagne);
+        g.drawRect(bounds);
+    }
+
+    needsRepaint = false;
+}
+
+//==============================================================================
+StripDto::StripDto() {
+    isOn = false;
+    isEnabled = false;
+    isBypassed = false;
+    group = 0;
+
+    sliceDtos = new SliceDto[NUM_SLICES];
+}
+
+//==============================================================================
+StripDto::~StripDto() {
+
 }
 
 //==============================================================================
 StripEditor::StripEditor() {
+    isOn = false;
+    isEnabled = false;
+    isBypassed = false;
+    group = 0;
 
+    needsRepaint = false;
+
+    slices = new SliceEditor[NUM_SLICES];
 }
 
 //==============================================================================
@@ -196,14 +313,6 @@ void StripEditor::init (
         editor
     );
 
-    /*initSlider (
-        ParameterNames::stripNote[stripNumber], 
-        noteSlider, 
-        noteSliderAttachment, 
-        vts, 
-        editor
-    );*/
-
     initButton (
         ParameterNames::stripEnabled[stripNumber], 
         enabledButton, 
@@ -220,41 +329,137 @@ void StripEditor::init (
         editor
     );
 
-    slices = new SliceEditor[numSlices];
-
-    for (int i = 0, offset = stripNumber * numSlices; i < numSlices; i++) {
-        // slices[i] = SliceEditor();
+    for (int i = 0, offset = stripNumber * NUM_SLICES; i < NUM_SLICES; i++) {
         slices[i].init(i + offset, vts, editor);
     }
 }
 
 //==============================================================================
 void StripEditor::resized (juce::Rectangle<int> bounds) {
-    auto height = bounds.getHeight();
-    auto width = bounds.getWidth();
 
-    auto groupBounds = bounds.removeFromTop(height * 0.1f);
-    auto probabilityBounds = bounds.removeFromTop(height * 0.25f);
-    auto sliceBounds = bounds.removeFromTop(height * 0.5f);
-    auto enabledBypassedBounds = bounds;
-    auto enabledBounds = enabledBypassedBounds.removeFromLeft(width * 0.75f);
-    auto bypassedBounds = enabledBypassedBounds;
 
-    groupSlider.setBounds(groupBounds);
-    probabilitySlider.setBounds(probabilityBounds);
+    const float probabilityFactor = 0.6f;
+    const float enabledFactor = 0.375f;
+    const float groupFactor = 0.5f;
+    const float plusSixteenFactor = 1.0f - probabilityFactor;
+    const float extraControlsFactor = 0.15f;
+
+    //this->bounds = bounds;
+
+    // bounds = bounds.reduced(2);
+
+    auto sliceBounds = bounds.removeFromTop(bounds.getHeight() * 0.66f);
+
+    bounds = bounds.reduced(2);
+    this->bounds = bounds;
+    bounds = bounds.reduced(4);
+
+    // auto extraControlsBounds = bounds.removeFromRight(bounds.getWidth() * extraControlsFactor);
+
+    
+
+    bounds = bounds.reduced(4);
+
+    auto enabledBounds = bounds;
+    enabledBounds = enabledBounds.removeFromLeft(enabledBounds.getWidth() * enabledFactor);
+    enabledBounds = enabledBounds.removeFromBottom(enabledBounds.getHeight() * enabledFactor);
+    enabledBounds = enabledBounds.reduced(10);
     enabledButton.setBounds(enabledBounds);
+
+    auto bypassedBounds = bounds;
+    bypassedBounds = bypassedBounds.removeFromLeft(bypassedBounds.getWidth() * enabledFactor);
+    bypassedBounds = bypassedBounds.removeFromBottom(bypassedBounds.getHeight() * enabledFactor);
+    bypassedBounds = bypassedBounds.reduced(10);
+    bypassedBounds.setPosition(bypassedBounds.getX() + enabledBounds.getWidth(), bypassedBounds.getY());
     bypassedButton.setBounds(bypassedBounds);
 
-    auto sliceHeight = sliceBounds.getWidth() / numSlices;
-    for (int i = 0; i < numSlices; i++) {
+    auto probabilityBounds = bounds;
+    probabilityBounds = probabilityBounds.removeFromLeft(probabilityBounds.getWidth() * probabilityFactor);
+    probabilityBounds = probabilityBounds.removeFromTop(probabilityBounds.getHeight() * probabilityFactor);
+
+    probabilitySlider.setBounds(probabilityBounds);
+
+    auto plusSixteenbounds = bounds;
+    plusSixteenbounds = plusSixteenbounds.removeFromRight(plusSixteenbounds.getWidth() * plusSixteenFactor);
+    plusSixteenbounds = plusSixteenbounds.removeFromTop(plusSixteenbounds.getWidth() * plusSixteenFactor);
+
+    // TODO: Set PlusSixteen Bounds
+
+    auto groupBounds = bounds;
+    groupBounds = groupBounds.removeFromRight(groupBounds.getWidth() * groupFactor);
+    groupBounds = groupBounds.removeFromBottom(groupBounds.getHeight() * groupFactor);
+    // groupBounds = groupBounds.reduced(6);
+    groupBounds.setPosition(groupBounds.getX() + 10, groupBounds.getY() - 10);
+
+    groupSlider.setBounds(groupBounds);
+
+
+
+
+    // _________________________________________________
+
+    auto sliceHeight = sliceBounds.getHeight() / NUM_SLICES;
+    for (int i = 0; i < NUM_SLICES; i++) {
         slices[i].resized(sliceBounds.removeFromTop(sliceHeight));
     }
 }
 
 //==============================================================================
 void StripEditor::paint(juce::Graphics& g) {
-    for (int i = 0; i < numSlices; i++) {
+    //// Paint Slices
+    //for (int i = 0; i < NUM_SLICES; i++) {
+    //    slices[i].paint(g);
+    //}
+
+    /*if (!needsRepaint) {
+        return;
+    }*/
+
+    DrawArc(&probabilitySlider, g);
+    DrawLabels(ParameterOptions::groupOptions, 4, -1, &groupSlider, g);
+
+    if (isOn) {
+        g.setColour(Colours::champagne);
+        
+    }
+    else {
+        g.setColour(Colours::transparentOrange4);
+    }
+
+    g.drawRect(bounds, 4);
+
+    // Paint Slices
+    for (int i = 0; i < NUM_SLICES; i++) {
         slices[i].paint(g);
+    }
+
+    needsRepaint = false;
+}
+
+//==============================================================================
+void StripEditor::loadParameters(StripDto& dto) {
+    if (isOn != dto.isOn) {
+        needsRepaint = true;
+        isOn = dto.isOn;
+    }
+
+    if (isEnabled != dto.isEnabled) {
+        needsRepaint = true;
+        isEnabled = dto.isEnabled;
+    }
+
+    if (isBypassed != dto.isBypassed) {
+        needsRepaint = true;
+        isBypassed = dto.isBypassed;
+    }
+
+    if (group != dto.group) {
+        needsRepaint = true;
+        group = dto.group;
+    }
+
+    for (int i = 0; i < NUM_SLICES; i++) {
+        slices[i].loadParameters(dto.sliceDtos[i]);
     }
 }
 
@@ -269,13 +474,14 @@ BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
     
     juce::LookAndFeel::setDefaultLookAndFeel(&breaQLookAndFeel);
 
-    strips = new StripEditor[numStrips];
+    strips = new StripEditor[NUM_STRIPS];
 
-    for (int i = 0; i < numStrips; i++) {
+    for (int i = 0; i < NUM_STRIPS; i++) {
         strips[i].init(i, vts, *this);
     }
 
-    setSize(1200, 800);
+    setSize(2000, 1000);
+    startTimer(30);
 }
 
 //==============================================================================
@@ -287,9 +493,14 @@ BreaQAudioProcessorEditor::~BreaQAudioProcessorEditor() {
 void BreaQAudioProcessorEditor::paint (juce::Graphics& g) {
     g.fillAll(Colours::background1);
 
-    // for (int i = 0; i < numStrips; i++) {
-    //     strips[i].paint(g);
-    // }
+    for (int i = 0; i < NUM_STRIPS; i++) {
+        strips[i].paint(g);
+    }
+}
+
+//==============================================================================
+void BreaQAudioProcessorEditor::timerCallback() {
+    // repaint();
 }
 
 //==============================================================================
@@ -306,8 +517,22 @@ void BreaQAudioProcessorEditor::resized () {
     auto groupBounds = bounds.removeFromTop(bounds.getHeight() * 0.4f);
     auto stripBounds = bounds;
 
-    auto stripWidth = stripBounds.getWidth() / numStrips;
-    for (int i = 0; i < numStrips; i++) {
+    auto stripWidth = stripBounds.getWidth() / NUM_STRIPS;
+    for (int i = 0; i < NUM_STRIPS; i++) {
         strips[i].resized(bounds.removeFromLeft(stripWidth));
     }
+}
+
+//==============================================================================
+void BreaQAudioProcessorEditor::LoadState(GroupDto* groupDtos, StripDto* stripDtos) {
+    // TODO: Group Editors
+    /*for (int i = 0; i < NUM_GROUPS; i++) {
+        groups[i].loadParameters(groupDtos[i]);
+    }*/
+
+    for (int i = 0; i < NUM_STRIPS; i++) {
+        strips[i].loadParameters(stripDtos[i]);
+    }
+
+    repaint();
 }
