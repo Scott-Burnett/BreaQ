@@ -10,7 +10,9 @@ class Slice {
 public:
     float probability;
     int length;
+    int plusSixteen;
     int progress;
+    int plusSixteenProgress;
     int sliceId;
     bool enabled;
     bool isOn;
@@ -26,6 +28,7 @@ public:
 private:
     std::atomic<float>* probabilityParameter = nullptr;
     std::atomic<float>* lengthParameter = nullptr;
+    std::atomic<float>* plusSixteenParameter = nullptr;
     std::atomic<float>* progressParameter = nullptr;
     std::atomic<float>* enabledParameter = nullptr;
     std::atomic<float>* isOnParameter = nullptr;
@@ -36,12 +39,12 @@ private:
 */
 class Strip {
 public:
-    // const int numSlices = NUM_SLICES;
     Slice* slices;
     Slice* currentSlice;
 
     float probability;
     int group;
+    int choice;
     int noteNumber;
     int stripId;
     bool enabled;
@@ -58,7 +61,8 @@ public:
 
 private:
     std::atomic<float>* probabilityParameter = nullptr;
-    std::atomic<float>* groupParameter = nullptr;   
+    std::atomic<float>* groupParameter = nullptr;  
+    std::atomic<float>* choiceParameter = nullptr;
     std::atomic<float>* enabledParameter = nullptr;
     std::atomic<float>* bypassedParameter = nullptr;
 };
@@ -107,11 +111,9 @@ class BreaQAudioProcessor  :
 public:
     BreaQAudioProcessorEditor* editor;
 
-    // const int numGroups = NUM_GROUPS;
     Group* groups;
     GroupDto* groupDtos;
 
-    // const int numStrips = NUM_STRIPS;
     Strip* strips;
     StripDto* stripDtos;
 

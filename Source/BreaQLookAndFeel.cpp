@@ -2,6 +2,7 @@
 #include "BreaQLookAndFeel.h"
 #include "ParameterNames.h"
 
+//==============================================================================
 void BreaQLookAndFeel::drawRotarySlider(
 		juce::Graphics& g,
 		int x,
@@ -18,46 +19,12 @@ void BreaQLookAndFeel::drawRotarySlider(
     auto toAngle = rotaryStartAngle + sliderPos * (rotaryEndAngle - rotaryStartAngle);
     auto lineW = 1.2f;
     auto arcRadius = radius - lineW * 0.5f;
-
-    /*juce::Path backgroundArc;
-    backgroundArc.addCentredArc(bounds.getCentreX(),
-        bounds.getCentreY(),
-        arcRadius,
-        arcRadius,
-        0.0f,
-        rotaryStartAngle,
-        rotaryEndAngle,
-        true
-    );
-
-    g.setColour(orange3);
-    g.strokePath(
-        backgroundArc,
-        juce::PathStrokeType(
-            lineW,
-            juce::PathStrokeType::curved,
-            juce::PathStrokeType::rounded
-        )
-    );*/
-
-
-    // ---------------------------------------------------
-
-    //auto fillDiameter = 2.0f * (arcRadius - 6.0f * lineW);
     auto fillDiameter = arcRadius;
 
     juce::Rectangle fillRect = 
         juce::Rectangle<float>(fillDiameter, fillDiameter)
         .withCentre(bounds.getCentre())
     ;
-
-    /*g.setGradientFill ({
-        Colours::transparentCitron, fillRect.getTopRight(),
-        Colours::background1, fillRect.getCentre(),
-        false
-    });
-
-    g.fillEllipse(fillRect);*/
 
     g.setGradientFill({
         Colours::transparentPink, fillRect.getTopLeft(),
@@ -70,68 +37,17 @@ void BreaQLookAndFeel::drawRotarySlider(
     auto centreToThumb = fillDiameter * 0.25f;
     auto thumbDiameter = centreToThumb * 1.0f;
 
-    /*juce::Point<float> thumbPoint(
-        bounds.getCentreX() + centreToThumb * std::cos(toAngle - juce::MathConstants<float>::halfPi),
-        bounds.getCentreY() + centreToThumb * std::sin(toAngle - juce::MathConstants<float>::halfPi)
-    );*/
-
     juce::Point<float> thumbStart = fillRect.getCentre().getPointOnCircumference(radius * 0.5f, toAngle);
     juce::Point<float> thumbEnd = fillRect.getCentre().getPointOnCircumference(radius * 0.3f, toAngle);
 
-
-
-    /*juce::Rectangle thumbRect = 
-        juce::Rectangle<float>(thumbDiameter * 0.2f, thumbDiameter * 0.2f)
-        .withCentre(thumbPoint)
-    ;*/
-
-    /*g.setGradientFill ({
-        Colours::background1, thumbRect.getCentre(),
-        Colours::transparentCitron, thumbRect.getBottomLeft(),
-        false
-    });
-
-    g.fillEllipse(thumbRect);*/
-
-    /*g.setGradientFill ({
-        Colours::transparentBackground2, thumbRect.getCentre(),
-        Colours::transparentPink, thumbRect.getBottomRight(),
-        false
-    });
-
-    g.fillEllipse(thumbRect);*/
-
     g.setColour(Colours::orange3);
 
-    /*juce::Path fillOutline;
-    fillOutline.addEllipse(fillRect);
-    g.strokePath (
-        fillOutline,
-        juce::PathStrokeType(
-            lineW * 2,
-            juce::PathStrokeType::curved,
-            juce::PathStrokeType::rounded
-        )
-    );*/
-
     g.drawEllipse(fillRect, lineW);
-
-    /*juce::Path thumbOutline;
-    thumbOutline.addEllipse(thumbRect);
-    g.strokePath (
-        thumbOutline,
-        juce::PathStrokeType (
-            lineW * 2,
-            juce::PathStrokeType::curved,
-            juce::PathStrokeType::rounded
-        )
-    );*/
-
-    //g.drawEllipse(thumbRect, lineW);
 
     g.drawLine(thumbStart.getX(), thumbStart.getY(), thumbEnd.getX(), thumbEnd.getY(), lineW * 2.0f);
 }
 
+//==============================================================================
 void BreaQLookAndFeel::drawToggleButton(
     juce::Graphics& g,
     juce::ToggleButton& button,
@@ -161,8 +77,6 @@ void BreaQLookAndFeel::drawToggleButton(
             Colours::transparentOrange1, fillRect.getBottomRight(),
             false
         });
-
-        //g.setColour(Colours::transparentOrange3);
     }
 
     g.fillRect(fillRect);
@@ -174,6 +88,4 @@ void BreaQLookAndFeel::drawToggleButton(
         });
 
     g.drawRect(fillRect.reduced(lineW), lineW);
-
-
 }

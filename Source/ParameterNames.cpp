@@ -596,6 +596,41 @@ const std::string ParameterNames::stripGroup[32] = {
     "StripGroup31"
 };
 
+const std::string ParameterNames::stripChoice[32] = {
+    "StripChoice0",
+    "StripChoice1",
+    "StripChoice2",
+    "StripChoice3",
+    "StripChoice4",
+    "StripChoice5",
+    "StripChoice6",
+    "StripChoice7",
+    "StripChoice8",
+    "StripChoice9",
+    "StripChoice10",
+    "StripChoice11",
+    "StripChoice12",
+    "StripChoice13",
+    "StripChoice14",
+    "StripChoice15",
+    "StripChoice16",
+    "StripChoice17",
+    "StripChoice18",
+    "StripChoice19",
+    "StripChoice20",
+    "StripChoice21",
+    "StripChoice22",
+    "StripChoice23",
+    "StripChoice24",
+    "StripChoice25",
+    "StripChoice26",
+    "StripChoice27",
+    "StripChoice28",
+    "StripChoice29",
+    "StripChoice30",
+    "StripChoice31"
+};
+
 const std::string ParameterNames::stripNote[32] = {
     "StripNote0",
     "StripNote1",
@@ -711,9 +746,17 @@ const juce::StringArray ParameterOptions::groupOptions = {
     "1", "2", "3", "4"
 };
 
+const juce::StringArray ParameterOptions::choiceOptions = {
+    "1", "2", "3", "4", "5", "6", "7", "8"
+};
+
 const juce::StringArray ParameterOptions::lengthOptions = {
     "1", "2", "3", "4", "5", "6", "7", "8", 
     "9", "10", "11", "12", "13", "14", "15", "16"
+};
+
+const juce::StringArray ParameterOptions::plusSixteenOptions = {
+    "+0", "+16", "+32", "+48", "+64"
 };
 
 // Colours

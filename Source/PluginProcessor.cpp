@@ -7,6 +7,8 @@ Slice::Slice() {
     probability = 0.0f;
     length = 0;
     progress = -1;
+    plusSixteenProgress = -1;
+    plusSixteen = 0;
     sliceId = 0;
     enabled = false;
     isOn = false;
@@ -33,6 +35,9 @@ void Slice::init (
     lengthParameter = vts.getRawParameterValue(
         ParameterNames::sliceLength[sliceId]
     );
+    plusSixteenParameter = vts.getRawParameterValue(
+        ParameterNames::slicePlusSixteen[sliceId]
+    );
     enabledParameter = vts.getRawParameterValue(
         ParameterNames::sliceEnabled[sliceId]
     );
@@ -40,6 +45,8 @@ void Slice::init (
     vts.getParameter(ParameterNames::sliceProbability[sliceId])->
         addListener(&listener);
     vts.getParameter(ParameterNames::sliceLength[sliceId])->
+        addListener(&listener);
+    vts.getParameter(ParameterNames::slicePlusSixteen[sliceId])->
         addListener(&listener);
     vts.getParameter(ParameterNames::sliceEnabled[sliceId])->
         addListener(&listener);
@@ -66,6 +73,13 @@ void Slice::createParameterLayout (
     ));
 
     layout.add(std::make_unique<juce::AudioParameterChoice> (
+        ParameterNames::slicePlusSixteen[sliceId], 
+        "plusSixteen", 
+        ParameterOptions::plusSixteenOptions,
+        0
+    ));
+
+    layout.add(std::make_unique<juce::AudioParameterChoice> (
         ParameterNames::sliceEnabled[sliceId], 
         "Enabled", 
         ParameterOptions::toggleButtonOptions,
@@ -77,6 +91,7 @@ void Slice::createParameterLayout (
 void Slice::loadParameters() {
     probability = probabilityParameter->load();
     length = lengthParameter->load();
+    plusSixteen = plusSixteenParameter->load();
     enabled = (bool) enabledParameter->load();
 }
 
@@ -84,6 +99,7 @@ void Slice::loadParameters() {
 Strip::Strip() {
     probability = 0.0f;
     group = 0;
+    choice = 0;
     noteNumber = 0;
     stripId = 0;
     enabled = false;
@@ -105,8 +121,6 @@ void Strip::setStrpId(int id) {
     stripId = id;
     noteNumber = 60 + id;
 
-    // slices = new Slice[NUM_SLICES];
-
      for (int i = 0, offset = stripId * NUM_SLICES; i < NUM_SLICES; i++) {
          slices[i].setSliceId(i + offset);
      }
@@ -123,6 +137,9 @@ void Strip::init (
     groupParameter = vts.getRawParameterValue(
         ParameterNames::stripGroup[stripId]
     );
+    choiceParameter = vts.getRawParameterValue(
+        ParameterNames::stripChoice[stripId]
+    );
     enabledParameter = vts.getRawParameterValue(
         ParameterNames::stripEnabled[stripId]
     );
@@ -133,6 +150,8 @@ void Strip::init (
     vts.getParameter(ParameterNames::stripProbability[stripId])->
         addListener(&listener);
     vts.getParameter(ParameterNames::stripGroup[stripId])->
+        addListener(&listener);
+    vts.getParameter(ParameterNames::stripChoice[stripId])->
         addListener(&listener);
     vts.getParameter(ParameterNames::stripEnabled[stripId])->
         addListener(&listener);
@@ -164,6 +183,13 @@ void Strip::createParameterLayout (
         0
     ));
 
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        ParameterNames::stripChoice[stripId],
+        "Choice",
+        ParameterOptions::choiceOptions,
+        0
+    ));
+
     layout.add(std::make_unique<juce::AudioParameterChoice> (
         ParameterNames::stripEnabled[stripId], 
         "Enabled", 
@@ -187,8 +213,11 @@ void Strip::createParameterLayout (
 void Strip::loadParameters() {
     probability = probabilityParameter->load();
     group = (int) groupParameter->load();
+    choice = (int) choiceParameter->load();
     enabled = (bool) enabledParameter->load();
     bypassed = (bool) bypassedParameter->load();
+
+    // TODO: Set Note based on choice, or schedule refresh
 
     for (int i = 0; i < NUM_SLICES; i++) {
         slices[i].loadParameters();
@@ -240,11 +269,10 @@ BreaQAudioProcessor::BreaQAudioProcessor()
     for (int i = 0; i < NUM_STRIPS; i++) {
         strips[i].init(parameters, *this);
     }
-
-    needsRepaint = false;
-
+    
     random = juce::Random::getSystemRandom();
-
+    
+    needsRepaint = false;
     startTimer(30);
 }
 
@@ -273,10 +301,6 @@ void BreaQAudioProcessor::timerCallback() {
             strips[i].loadParameters();
         }
 
-        // TODO: Load Editor State
-        // GroupDto groupDtos[NUM_GROUPS];
-
-        // StripDto stripDtos[NUM_STRIPS];
         StripDto* stripDto = nullptr;
         Strip* strip = nullptr;
         SliceDto* sliceDto = nullptr;
@@ -290,6 +314,7 @@ void BreaQAudioProcessor::timerCallback() {
             stripDto->isEnabled = strip->enabled;
             stripDto->isBypassed = strip->bypassed;
             stripDto->group = strip->group;
+            stripDto->choice = strip->choice;
 
             for (int j = 0; j < NUM_SLICES; j++) {
                 sliceDto = &stripDto->sliceDtos[j];
@@ -298,11 +323,15 @@ void BreaQAudioProcessor::timerCallback() {
                 sliceDto->isEnabled = slice->enabled;
                 sliceDto->isOn = slice->isOn;
                 sliceDto->length = slice->length;
+                sliceDto->plusSixteen = slice->plusSixteen;
                 sliceDto->progress = slice->progress;
+                sliceDto->plusSixteenProgress = slice->plusSixteenProgress;
             }
         }
 
-        editor->LoadState(groupDtos, stripDtos);
+        if (editor != nullptr) {
+            editor->LoadState(groupDtos, stripDtos);
+        }
 
         needsRepaint = false;
     }
@@ -587,11 +616,12 @@ void BreaQAudioProcessor::processBlock (
                 processedBuffer.addEvent(juce::MidiMessage::noteOff(1, currentStrip->noteNumber), samplePos);
             }
 
-            // -> POINT Current to new
             if (slice == nullptr) {
                 // no new slice
                 continue;
             }
+
+            // -> POINT Current to new
             currentSlice = slice;
 
             currentStrip = strip;
@@ -660,8 +690,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout BreaQAudioProcessor::createP
     for (int i = 0; i < NUM_STRIPS; i++) {
         strips[i].setStrpId(i);
         strips[i].createParameterLayout(layout);
-
-        //stripDtos[i]->sliceDtos = new SliceDto[NUM_SLICES];
     }
 
     return layout;

@@ -19,6 +19,7 @@ public:
     // Strips
     const static std::string stripProbability[32];
     const static std::string stripGroup[32];
+    const static std::string stripChoice[32];
     const static std::string stripNote[32];
     const static std::string stripEnabled[32];
     const static std::string stripBypassed[32];
@@ -31,7 +32,9 @@ static class ParameterOptions {
 public:
     const static juce::StringArray toggleButtonOptions;
     const static juce::StringArray groupOptions;
+    const static juce::StringArray choiceOptions;
     const static juce::StringArray lengthOptions;
+    const static juce::StringArray plusSixteenOptions;
 };
 
 //==============================================================================

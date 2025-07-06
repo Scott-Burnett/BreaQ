@@ -13,7 +13,9 @@ public:
     bool isOn;
     bool isEnabled;
     int length;
+    int plusSixteen;
     int progress;
+    int plusSixteenProgress;
 
     SliceDto();
     ~SliceDto();
@@ -42,7 +44,9 @@ private:
     bool isOn;
     bool isEnabled;
     int length;
+    int plusSixteen;
     int progress;
+    int plusSixteenProgress;
 
     bool needsRepaint;
     juce::Rectangle<int> bounds;
@@ -69,6 +73,7 @@ public:
     bool isEnabled;
     bool isBypassed;
     int group;
+    int choice;
 
     SliceDto* sliceDtos;
 
@@ -100,6 +105,7 @@ private:
     bool isEnabled;
     bool isBypassed;
     int group;
+    int choice;
 
     bool needsRepaint;
     juce::Rectangle<int> bounds;
@@ -111,6 +117,9 @@ private:
 
     juce::Slider groupSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> groupSliderAttachment;
+
+    juce::Slider choiceSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> choiceSliderAttachment;
 
     juce::Slider noteSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> noteSliderAttachment;
