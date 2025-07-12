@@ -12,7 +12,7 @@ public:
     int length;
     int plusSixteen;
     int progress;
-    int plusSixteenProgress;
+    long plusSixteenProgress;
     int sliceId;
     bool enabled;
     bool isOn;

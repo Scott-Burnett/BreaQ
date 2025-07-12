@@ -114,6 +114,7 @@ static void DrawLabels(
     const juce::StringArray labels,
     int numLabels,
     int highlight,
+    bool doubleHighlightAtFull,
     juce::Slider *slider,
     juce::Graphics& g
 ) {
@@ -138,7 +139,8 @@ static void DrawLabels(
         r.setSize(g.getCurrentFont().getStringWidthFloat(str), g.getCurrentFont().getStringWidthFloat(str));
         r.setCentre(c);
 
-        if ((int) sliderPos == i &&
+        if (doubleHighlightAtFull &&
+            (int) sliderPos == i &&
             highlight == i) {
             g.setColour(Colours::aquamarine);
         }
@@ -168,7 +170,7 @@ SliceDto::SliceDto() {
     length = 0;
     plusSixteen = 0;
     progress = -1;
-    plusSixteenProgress = -1;
+    plusSixteenProgress = -1l;
 }
 
 //==============================================================================
@@ -183,7 +185,7 @@ SliceEditor::SliceEditor() {
     length = 0;
     plusSixteen = 0;
     progress = -1;
-    plusSixteenProgress = -1;
+    plusSixteenProgress = -1l;
 
     needsRepaint = false;
 }
@@ -312,10 +314,25 @@ void SliceEditor::paint(juce::Graphics& g) {
     /*if (!needsRepaint) {
         return;
     }*/
+    long plusSixteenLength = (long)plusSixteen * 16l;
+    bool isPlusSixteen =
+        plusSixteen > 0 &&
+        plusSixteenProgress < plusSixteenLength;
+
+    int psp =
+        isPlusSixteen ||
+        plusSixteenProgress == plusSixteenLength
+        ? (int) (plusSixteenProgress / 16l) 
+        : -1l;
+
+    int p = isPlusSixteen
+        ? (int) (plusSixteenProgress % 16l)
+        : progress;
+
 
     DrawArc(&probabilitySlider, g);
-    DrawLabels(ParameterOptions::lengthOptions, 16, progress, &lengthSlider, g);
-    DrawLabels(ParameterOptions::plusSixteenOptions, 5, -1, &plusSixteenSlider, g);
+    DrawLabels(ParameterOptions::lengthOptions, 16, p, !isPlusSixteen, &lengthSlider, g);
+    DrawLabels(ParameterOptions::plusSixteenOptions, 9, psp, true, &plusSixteenSlider, g);
 
     if (isOn) {
         g.setColour(Colours::orange3);
@@ -481,8 +498,8 @@ void StripEditor::paint(juce::Graphics& g) {
     }*/
 
     DrawArc(&probabilitySlider, g);
-    DrawLabels(ParameterOptions::groupOptions, 4, -1, &groupSlider, g);
-    DrawLabels(ParameterOptions::choiceOptions, 8, -1, &choiceSlider, g);
+    DrawLabels(ParameterOptions::groupOptions, NUM_GROUPS, -1, false, &groupSlider, g);
+    DrawLabels(ParameterOptions::choiceOptions, NUM_CHOICES, -1, false, &choiceSlider, g);
 
     g.setColour(Colours::transparentBackground2);
     g.fillRect(bounds);

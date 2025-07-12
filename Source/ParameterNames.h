@@ -5,6 +5,7 @@
 #define NUM_GROUPS 4
 #define NUM_STRIPS 8
 #define NUM_SLICES 2
+#define NUM_CHOICES 8
 
 //==============================================================================
 /*

@@ -15,7 +15,7 @@ public:
     int length;
     int plusSixteen;
     int progress;
-    int plusSixteenProgress;
+    long plusSixteenProgress;
 
     SliceDto();
     ~SliceDto();
@@ -46,7 +46,7 @@ private:
     int length;
     int plusSixteen;
     int progress;
-    int plusSixteenProgress;
+    long plusSixteenProgress;
 
     bool needsRepaint;
     juce::Rectangle<int> bounds;

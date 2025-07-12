@@ -7,7 +7,7 @@ Slice::Slice() {
     probability = 0.0f;
     length = 0;
     progress = -1;
-    plusSixteenProgress = -1;
+    plusSixteenProgress = -1l;
     plusSixteen = 0;
     sliceId = 0;
     enabled = false;
@@ -213,7 +213,7 @@ void Strip::createParameterLayout (
 void Strip::loadParameters() {
     probability = probabilityParameter->load();
     group = (int) groupParameter->load();
-    choice = (int) choiceParameter->load();
+    choice = choiceParameter->load();
     enabled = (bool) enabledParameter->load();
     bypassed = (bool) bypassedParameter->load();
 
@@ -467,7 +467,6 @@ void BreaQAudioProcessor::processBlock (
     Slice *workingSlices[NUM_SLICES];
 
     float maxProbability = 0;
-    /*juce::Random random = juce::Random::getSystemRandom();*/
 
     while (iterator.getNextEvent(current, samplePos)) {
         if (!current.isNoteOn()) {
@@ -494,6 +493,7 @@ void BreaQAudioProcessor::processBlock (
                         currentStrip->isOn = false;
                         currentSlice->isOn = false;
                         currentSlice->progress = -1;
+                        currentSlice->plusSixteenProgress = -1;
                         processedBuffer.addEvent(juce::MidiMessage::noteOff(1, currentStrip->noteNumber), samplePos);
 
                         group->currentStrip = nullptr;
@@ -508,11 +508,21 @@ void BreaQAudioProcessor::processBlock (
                 !currentSlice->enabled) {
                     currentStrip->isOn = false;
                     currentSlice->isOn = false;
+                    currentSlice->progress = -1;
+                    currentSlice->plusSixteenProgress = -1;
                     processedBuffer.addEvent(juce::MidiMessage::noteOff(1, currentStrip->noteNumber), samplePos);
 
                     group->currentStrip = nullptr;
 
                     continue;
+            }
+
+            if (currentSlice != nullptr &&
+                currentSlice->plusSixteen > 0 &&
+                currentSlice->plusSixteenProgress < (long) currentSlice->plusSixteen * 16l) {
+                // +sixteen not accounted for, here increment inside block so as to not overshoot, then break
+                currentSlice->plusSixteenProgress++;
+                continue;
             }
 
             if (currentSlice != nullptr && 
@@ -534,18 +544,18 @@ void BreaQAudioProcessor::processBlock (
                     continue;
                 }
 
-                bool noSlicesEnabled = true;
+                bool atLeastOneCandidate = true;
                 for (int sl = 0; sl < NUM_SLICES; sl++) {
                     slice = &strip->slices[sl];
                     if (slice->enabled &&
                         slice->probability > 0.0f) {
                         // At least one slice is a candidate
-                        noSlicesEnabled = false;
+                        atLeastOneCandidate = false;
                         break;
                     }
                 }
 
-                if (noSlicesEnabled) {
+                if (atLeastOneCandidate) {
                     // No slices enabled for this strip, not a candidate
                     continue;
                 }
@@ -555,7 +565,15 @@ void BreaQAudioProcessor::processBlock (
             }
 
             if (numWorkingStrips == 0) {
+                currentStrip->isOn = false;
+                currentSlice->isOn = false;
+                currentSlice->progress = -1;
+                currentSlice->plusSixteenProgress = -1;
+
+                processedBuffer.addEvent(juce::MidiMessage::noteOff(1, currentStrip->noteNumber), samplePos);
+
                 group->currentStrip = nullptr;
+
                 continue;
             }
             
@@ -610,6 +628,7 @@ void BreaQAudioProcessor::processBlock (
             if (currentSlice != nullptr) {
                 currentSlice->isOn = false;
                 currentSlice->progress = -1;
+                currentSlice->plusSixteenProgress = -1l;
                 
                 // TODO: UGLY
                 // Add Note Off Event for current note
@@ -634,6 +653,10 @@ void BreaQAudioProcessor::processBlock (
             currentStrip->isOn = true;
 
             currentSlice->progress = 0;
+            currentSlice->plusSixteenProgress = 0l;
+
+            // Update Note numbe based on choice
+            currentStrip->noteNumber = 60 + currentStrip->choice + (currentStrip->stripId * NUM_CHOICES);
 
             // Add Note On Event for current Note
             processedBuffer.addEvent(juce::MidiMessage::noteOn(1, currentStrip->noteNumber, (juce::uint8) 127), samplePos);
