@@ -565,14 +565,18 @@ void BreaQAudioProcessor::processBlock (
             }
 
             if (numWorkingStrips == 0) {
-                currentStrip->isOn = false;
-                currentSlice->isOn = false;
-                currentSlice->progress = -1;
-                currentSlice->plusSixteenProgress = -1;
+                // No candidates for Strip, end current note and break
+                if (currentStrip != nullptr && 
+                    currentSlice != nullptr) {
+                        currentStrip->isOn = false;
+                        currentSlice->isOn = false;
+                        currentSlice->progress = -1;
+                        currentSlice->plusSixteenProgress = -1;
 
-                processedBuffer.addEvent(juce::MidiMessage::noteOff(1, currentStrip->noteNumber), samplePos);
+                        processedBuffer.addEvent(juce::MidiMessage::noteOff(1, currentStrip->noteNumber), samplePos);
 
-                group->currentStrip = nullptr;
+                        group->currentStrip = nullptr;
+                    }
 
                 continue;
             }
