@@ -6,6 +6,7 @@
 #define NUM_STRIPS 8
 #define NUM_SLICES 2
 #define NUM_CHOICES 8
+#define MAX_STEPS 144
 
 //==============================================================================
 /*

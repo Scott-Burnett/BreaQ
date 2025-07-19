@@ -225,6 +225,42 @@ void Strip::loadParameters() {
 }
 
 //==============================================================================
+Step::Step() {
+    stripId = -1;
+    sliceId = -1;
+    noteNumber = 0;
+    channel = 1;
+    velocity = (juce::uint8) 127;
+}
+
+//==============================================================================
+Step::~Step() {
+
+}
+
+//==============================================================================
+Group::Group() {
+    id = 01;
+    // bool shed;
+    length = 0;
+    plusSixteen = 0;
+    progress = -1;
+    plusSixteenProgress = -1l;
+    enabled = true;
+    isOn = false;
+
+    currentStrip = nullptr;
+
+    sequence = new Step[MAX_STEPS];
+    currentStep = nullptr;
+}
+
+//==============================================================================
+Group::~Group() {
+
+}
+
+//==============================================================================
 void Group::setGroupId(int id) {
     this->id = id;
 }

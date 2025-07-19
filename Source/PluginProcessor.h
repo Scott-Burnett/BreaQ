@@ -69,6 +69,21 @@ private:
 //==============================================================================
 /**
 */
+class Step {
+public:
+    int stripId;
+    int sliceId;
+    int noteNumber;
+    int channel;
+    juce::uint8 velocity;
+
+    Step();
+    ~Step();
+};
+
+//==============================================================================
+/**
+*/
 class Group {
 public:
     int id;
@@ -81,6 +96,12 @@ public:
     bool isOn;
 
     Strip* currentStrip;
+
+    Step* sequence;
+    Step* currentStep;
+
+    Group();
+    ~Group();
 
     void setGroupId(int);
     void init(juce::AudioProcessorValueTreeState&, juce::AudioProcessorParameter::Listener&);
