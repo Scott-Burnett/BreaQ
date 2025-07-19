@@ -69,7 +69,7 @@ static void DrawArc(
     );
 
     g.setColour(Colours::transparentOrange3);
-    g.strokePath(
+    g.strokePath (
         arc,
         juce::PathStrokeType(
             lineW,
@@ -78,7 +78,10 @@ static void DrawArc(
         )
     );
 
-    auto ang = juce::jmap((float)slider->getValue(), 0.0f, 1.0f, rotaryStartAngle, rotaryEndAngle);
+    auto ang = juce::jmap((float) slider->getValue(), 
+        0.0f, 1.0f, 
+        rotaryStartAngle, rotaryEndAngle
+    );
 
     juce::Path filledArc;
     filledArc.addCentredArc(
@@ -92,14 +95,13 @@ static void DrawArc(
         true
     );
 
-    // g.setColour(Colours::orange3);
-    g.setGradientFill({
+    g.setGradientFill ({
         Colours::pink, bounds.getTopLeft().toFloat(),
         Colours::orange3, bounds.getBottomRight().toFloat(),
         false
-        });
+    });
 
-    g.strokePath(
+    g.strokePath (
         filledArc,
         juce::PathStrokeType(
             1.2f,
@@ -148,7 +150,6 @@ static void DrawLabels(
             g.setColour(Colours::orange3);
         }
         else if (highlight >= i) {
-            // g.setColour(Colours::lilac);
             g.setGradientFill({
                 Colours::pink, bounds.getTopLeft().toFloat(),
                 Colours::orange3, bounds.getBottomRight().toFloat(),
@@ -555,6 +556,175 @@ void StripEditor::loadParameters(StripDto& dto) {
 }
 
 //==============================================================================
+GroupDto::GroupDto() {
+    isOn = false;
+    isEnabled = false;
+    length = 0;
+    plusSixteen = 0;
+    progress = -1;
+    plusSixteenProgress = -1l;
+}
+
+//==============================================================================
+GroupDto::~GroupDto() {
+}
+
+//==============================================================================
+GroupEditor::GroupEditor() {
+    isOn = false;
+    isEnabled = false;
+    length = 0;
+    plusSixteen = 0;
+    progress = -1;
+    plusSixteenProgress = -1l;
+
+    needsRepaint = false;
+}
+
+//==============================================================================
+GroupEditor::~GroupEditor() {
+
+}
+
+//==============================================================================
+void GroupEditor::init(
+    int groupNumber,
+    juce::AudioProcessorValueTreeState& vts,
+    juce::AudioProcessorEditor& editor
+) {
+    initSlider(
+        ParameterNames::groupLength[groupNumber],
+        lengthSlider,
+        lengthSliderAttachment,
+        vts,
+        editor
+    );
+
+    initSlider(
+        ParameterNames::groupPlusSixteen[groupNumber],
+        plusSixteenSlider,
+        plusSixteenSliderAttachment,
+        vts,
+        editor
+    );
+
+    initButton(
+        ParameterNames::groupEnabled[groupNumber],
+        enabledButton,
+        enabledButtonAttachment,
+        vts,
+        editor
+    );
+}
+
+//==============================================================================
+void GroupEditor::paint(juce::Graphics& g) {
+
+    auto blockHeight = this->sequenceBounds.getHeight() / NUM_STRIPS;
+    auto blockWidth = this->sequenceBounds.getWidth() / 144;
+
+    auto workingBounds = sequenceBounds;
+
+    g.setColour(Colours::transparentOrange3);
+    for (int row = 0; row < NUM_STRIPS; row++) {
+        auto blockRect = workingBounds.removeFromBottom(blockHeight);
+        for (int column = 0; column < 4; column++) {
+            auto nextBlock = blockRect.removeFromLeft(blockWidth);
+
+            g.fillRect(nextBlock);
+        }
+
+        workingBounds.removeFromLeft(blockWidth * 18);
+    }
+
+
+    g.setColour(Colours::transparentBackground2);
+    g.fillRect(bounds);
+
+    g.setColour(Colours::transparentOrange4);
+    g.drawRect(bounds);
+}
+
+//==============================================================================
+void GroupEditor::resized(juce::Rectangle<int> bounds) {
+    this->sequenceBounds = bounds.removeFromLeft(bounds.getWidth() * 0.75f);
+    this->bounds = bounds;
+
+
+    // const float probabilityFactor = 0.6f;
+    const float enabledFactor = 0.1f;
+    const float lengthFactor = 0.6f;
+    const float plusSixteenFactor = 0.4f;
+
+    const int columns = 8;
+
+    // this->bounds = bounds;
+
+    bounds = bounds.reduced(6);
+
+    float columnWidth = bounds.getWidth() / (float) columns;
+    float topRowHeight = bounds.getHeight() * 0.4f;
+    float bottomRowHeight = bounds.getHeight() * 0.6f;
+
+    auto enabledBounds = bounds.removeFromRight(columnWidth);
+    enabledBounds =
+        enabledBounds
+        .reduced(5)
+    ;
+    enabledButton.setBounds(enabledBounds);
+
+    auto plusSixteenbounds = bounds.removeFromRight(columnWidth);
+    plusSixteenbounds =
+        plusSixteenbounds
+        .removeFromTop(topRowHeight)
+        .expanded(8)
+        .translated(0, +10)
+    ;
+    plusSixteenSlider.setBounds(plusSixteenbounds);
+
+    auto lengthBounds = bounds.removeFromRight(columnWidth);
+    lengthBounds =
+        lengthBounds
+        .removeFromBottom(bottomRowHeight)
+        .expanded(8)
+        .translated(0, +2)
+    ;
+    lengthSlider.setBounds(lengthBounds);
+}
+
+//==============================================================================
+void GroupEditor::loadParameters(GroupDto& dto) {
+    if (isOn != dto.isOn) {
+        needsRepaint = true;
+        isOn = dto.isOn;
+    }
+    if (isEnabled != dto.isEnabled) {
+        needsRepaint = true;
+        isEnabled = dto.isEnabled;
+    }
+
+    if (length != dto.length) {
+        needsRepaint = true;
+        length = dto.length;
+    }
+
+    if (plusSixteen != dto.plusSixteen) {
+        needsRepaint = true;
+        plusSixteen = dto.plusSixteen;
+    }
+
+    if (progress != dto.progress) {
+        needsRepaint = true;
+        progress = dto.progress;
+    }
+
+    if (plusSixteenProgress != dto.plusSixteenProgress) {
+        needsRepaint = true;
+        plusSixteenProgress = dto.plusSixteenProgress;
+    }
+}
+
+//==============================================================================
 BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
     BreaQAudioProcessor& p, 
     juce::AudioProcessorValueTreeState& vts
@@ -563,6 +733,11 @@ BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
     audioProcessor (p) 
 {
     juce::LookAndFeel::setDefaultLookAndFeel(&breaQLookAndFeel);
+
+    groups = new GroupEditor[NUM_GROUPS];
+    for (int i = 0; i < NUM_GROUPS; i++) {
+        groups[i].init(i, vts, *this);
+    }
 
     strips = new StripEditor[NUM_STRIPS];
 
@@ -582,6 +757,10 @@ BreaQAudioProcessorEditor::~BreaQAudioProcessorEditor() {
 //==============================================================================
 void BreaQAudioProcessorEditor::paint (juce::Graphics& g) {
     g.fillAll(Colours::background1);
+
+    for (int i = 0; i < NUM_GROUPS; i++) {
+        groups[i].paint(g);
+    }
 
     for (int i = 0; i < NUM_STRIPS; i++) {
         strips[i].paint(g);
@@ -603,8 +782,17 @@ void BreaQAudioProcessorEditor::resized () {
     bounds.removeFromBottom(mainMargin);
     bounds.removeFromLeft(mainMargin);
 
-    auto titleBounds = bounds.removeFromTop(bounds.getHeight() * 0.15f);
-    auto groupBounds = bounds.removeFromTop(bounds.getHeight() * 0.4f);
+    auto titleBounds = bounds.removeFromTop(bounds.getHeight() * 0.05f);
+    auto topBounds = bounds.removeFromTop(bounds.getHeight() * 0.5f);
+    auto globalControlsBounds = topBounds.removeFromRight(topBounds.getWidth() * 0.12f);
+
+    auto groupBounds = topBounds;
+
+    auto groupHeight = groupBounds.getHeight() / NUM_GROUPS;
+    for (int i = 0; i < NUM_GROUPS; i++) {
+        groups[i].resized(groupBounds.removeFromTop(groupHeight));
+    }
+
     auto stripBounds = bounds;
 
     auto stripWidth = stripBounds.getWidth() / NUM_STRIPS;

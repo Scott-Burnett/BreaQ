@@ -29,9 +29,8 @@ private:
     std::atomic<float>* probabilityParameter = nullptr;
     std::atomic<float>* lengthParameter = nullptr;
     std::atomic<float>* plusSixteenParameter = nullptr;
-    std::atomic<float>* progressParameter = nullptr;
+    // std::atomic<float>* progressParameter = nullptr;
     std::atomic<float>* enabledParameter = nullptr;
-    std::atomic<float>* isOnParameter = nullptr;
 };
 
 //==============================================================================
@@ -73,8 +72,13 @@ private:
 class Group {
 public:
     int id;
-    bool shed;
+    // bool shed;
+    int length;
+    int plusSixteen;
+    int progress;
+    long plusSixteenProgress;
     bool enabled;
+    bool isOn;
 
     Strip* currentStrip;
 
@@ -84,8 +88,11 @@ public:
     void loadParameters();
 
 private:
-    std::atomic<float>* shedParameter = nullptr;
-    // TODO: Enabled Parameter
+    // std::atomic<float>* shedParameter = nullptr;
+    std::atomic<float>* lengthParameter = nullptr;
+    std::atomic<float>* plusSixteenParameter = nullptr;
+    // std::atomic<float>* progressParameter = nullptr;
+    std::atomic<float>* enabledParameter = nullptr;
 };
 
 //==============================================================================

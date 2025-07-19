@@ -33,8 +33,7 @@ public:
         int, 
         juce::AudioProcessorValueTreeState&, 
         juce::AudioProcessorEditor&
-    )
-        ;
+    );
     void paint(juce::Graphics&);
     void resized(juce::Rectangle<int>);
     
@@ -136,7 +135,15 @@ private:
 */
 class GroupDto {
 public:
+    bool isOn;
+    bool isEnabled;
+    int length;
+    int plusSixteen;
+    int progress;
+    long plusSixteenProgress;
 
+    GroupDto();
+    ~GroupDto();
 };
 
 //==============================================================================
@@ -158,7 +165,62 @@ public:
 
     void loadParameters(GroupDto&);
 
+private:
+    bool isOn;
+    bool isEnabled;
+    int length;
+    int plusSixteen;
+    int progress;
+    long plusSixteenProgress;
+
+    bool needsRepaint;
+    juce::Rectangle<int> bounds;
+
+    juce::Rectangle<int> sequenceBounds;
+
+    juce::Slider lengthSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> lengthSliderAttachment;
+
+    juce::Slider plusSixteenSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> plusSixteenSliderAttachment;
+
+    juce::ToggleButton enabledButton;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> enabledButtonAttachment;
 };
+
+////==============================================================================
+///*
+//*/
+//class GlobalDto {
+//public:
+//
+//};
+//
+////==============================================================================
+///*
+//*/
+//class GlobalEditor {
+//    GlobalEditor();
+//    ~GlobalEditor();
+//
+//    void init(
+//        int,
+//        juce::AudioProcessorValueTreeState&,
+//        juce::AudioProcessorEditor&
+//    );
+//
+//    void paint(juce::Graphics&);
+//    void resized(juce::Rectangle<int>);
+//
+//    void loadParameters(GlobalDto&);
+//
+//    int sixteenthCount;
+//    int quarterCount;
+//    int wholeCount;
+//
+//    bool needsRepaint;
+//    juce::Rectangle<int> bounds;
+//};
 
 //==============================================================================
 /*
@@ -182,6 +244,8 @@ private:
     BreaQAudioProcessor& audioProcessor;
     BreaQLookAndFeel breaQLookAndFeel;
 
+    // GlobalEditor* global;
+    GroupEditor* groups;
     StripEditor* strips;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BreaQAudioProcessorEditor)

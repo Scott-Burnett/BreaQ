@@ -736,6 +736,27 @@ const std::string ParameterNames::stripBypassed[32] = {
     "StripBypassed31"
 };
 
+const std::string ParameterNames::groupLength[NUM_GROUPS] = {
+    "groupLength0",
+    "groupLength1",
+    "groupLength2",
+    "groupLength3"
+};
+
+const std::string ParameterNames::groupPlusSixteen[NUM_GROUPS] = {
+    "groupPlusSixteen0",
+    "groupPlusSixteen1",
+    "groupPlusSixteen2",
+    "groupPlusSixteen3"
+};
+
+const std::string ParameterNames::groupEnabled[NUM_GROUPS] = {
+    "groupEnabled0",
+    "groupEnabled1",
+    "groupEnabled2",
+    "groupEnabled3"
+};
+
 // Parameter Options
 const juce::StringArray ParameterOptions::toggleButtonOptions = {
     "On",

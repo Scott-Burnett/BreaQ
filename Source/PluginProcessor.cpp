@@ -226,7 +226,7 @@ void Strip::loadParameters() {
 
 //==============================================================================
 void Group::setGroupId(int id) {
-    id = id;
+    this->id = id;
 }
 
 //==============================================================================
@@ -235,17 +235,57 @@ void Group::init(
     juce::AudioProcessorParameter::Listener& listener
 ) {
     enabled = true;
-    currentStrip = nullptr;
+    currentStrip = nullptr; 
+    
+    lengthParameter = vts.getRawParameterValue(
+        ParameterNames::groupLength[id]
+    );
+    plusSixteenParameter = vts.getRawParameterValue(
+        ParameterNames::groupPlusSixteen[id]
+    );
+    enabledParameter = vts.getRawParameterValue(
+        ParameterNames::groupEnabled[id]
+    );
+
+    vts.getParameter(ParameterNames::groupLength[id])->
+        addListener(&listener);
+    vts.getParameter(ParameterNames::groupPlusSixteen[id])->
+        addListener(&listener);
+    vts.getParameter(ParameterNames::groupEnabled[id])->
+        addListener(&listener);
 }
 
 //==============================================================================
 void Group::createParameterLayout(
     juce::AudioProcessorValueTreeState::ParameterLayout& layout
 ) {
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        ParameterNames::groupLength[id],
+        "Length",
+        ParameterOptions::lengthOptions,
+        0
+    ));
+
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        ParameterNames::groupPlusSixteen[id],
+        "plusSixteen",
+        ParameterOptions::plusSixteenOptions,
+        0
+    ));
+
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        ParameterNames::groupEnabled[id],
+        "Enabled",
+        ParameterOptions::toggleButtonOptions,
+        0
+    ));
 }
 
 //==============================================================================
 void Group::loadParameters() {
+    length = lengthParameter->load();
+    plusSixteen = plusSixteenParameter->load();
+    enabled = (bool) enabledParameter->load();
 }
 
 //==============================================================================
@@ -544,18 +584,18 @@ void BreaQAudioProcessor::processBlock (
                     continue;
                 }
 
-                bool atLeastOneCandidate = true;
+                bool atLeastOneCandidate = false;
                 for (int sl = 0; sl < NUM_SLICES; sl++) {
                     slice = &strip->slices[sl];
                     if (slice->enabled &&
                         slice->probability > 0.0f) {
                         // At least one slice is a candidate
-                        atLeastOneCandidate = false;
+                        atLeastOneCandidate = true;
                         break;
                     }
                 }
 
-                if (atLeastOneCandidate) {
+                if (!atLeastOneCandidate) {
                     // No slices enabled for this strip, not a candidate
                     continue;
                 }

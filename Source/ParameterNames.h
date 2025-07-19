@@ -24,6 +24,10 @@ public:
     const static std::string stripNote[32];
     const static std::string stripEnabled[32];
     const static std::string stripBypassed[32];
+    // Groups
+    const static std::string groupEnabled[NUM_GROUPS];
+    const static std::string groupLength[NUM_GROUPS];
+    const static std::string groupPlusSixteen[NUM_GROUPS];
 };
 
 //==============================================================================
