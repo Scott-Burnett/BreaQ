@@ -1,7 +1,6 @@
 #pragma once
 
 #include <../JuceLibraryCode/JuceHeader.h>
-// #include "PluginEditor.h"
 
 //==============================================================================
 /**
@@ -29,7 +28,6 @@ private:
     std::atomic<float>* probabilityParameter = nullptr;
     std::atomic<float>* lengthParameter = nullptr;
     std::atomic<float>* plusSixteenParameter = nullptr;
-    // std::atomic<float>* progressParameter = nullptr;
     std::atomic<float>* enabledParameter = nullptr;
 };
 
@@ -77,8 +75,12 @@ public:
     int channel;
     juce::uint8 velocity;
 
+    bool hasValue;
+
     Step();
     ~Step();
+
+    void loadFrom(Strip*, Slice*);
 };
 
 //==============================================================================
@@ -97,6 +99,7 @@ public:
 
     Strip* currentStrip;
 
+    int numSteps;
     Step* sequence;
     Step* currentStep;
 
@@ -108,11 +111,12 @@ public:
     void createParameterLayout(juce::AudioProcessorValueTreeState::ParameterLayout&);
     void loadParameters();
 
+    void createSequence(Strip* strips, juce::Random random);
+
 private:
     // std::atomic<float>* shedParameter = nullptr;
     std::atomic<float>* lengthParameter = nullptr;
     std::atomic<float>* plusSixteenParameter = nullptr;
-    // std::atomic<float>* progressParameter = nullptr;
     std::atomic<float>* enabledParameter = nullptr;
 };
 

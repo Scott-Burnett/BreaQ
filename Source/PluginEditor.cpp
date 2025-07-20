@@ -507,7 +507,6 @@ void StripEditor::paint(juce::Graphics& g) {
 
     if (isOn) {
         g.setColour(Colours::champagne);
-        
     }
     else {
         g.setColour(Colours::transparentOrange4);
@@ -621,7 +620,7 @@ void GroupEditor::init(
 void GroupEditor::paint(juce::Graphics& g) {
 
     auto blockHeight = this->sequenceBounds.getHeight() / NUM_STRIPS;
-    auto blockWidth = this->sequenceBounds.getWidth() / 144;
+    auto blockWidth = this->sequenceBounds.getWidth() / MAX_STEPS;
 
     auto workingBounds = sequenceBounds;
 
@@ -636,6 +635,9 @@ void GroupEditor::paint(juce::Graphics& g) {
 
         workingBounds.removeFromLeft(blockWidth * 18);
     }
+
+    // Draw Sequence
+    // for (int i = 0; i < numSteps)
 
 
     g.setColour(Colours::transparentBackground2);

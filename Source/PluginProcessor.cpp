@@ -3,6 +3,62 @@
 #include "ParameterNames.h"
 
 //==============================================================================
+static Slice* choose (
+    juce::Random random,
+    Slice* items,
+    std::function<bool(Slice*)> predicate
+) {
+    int candidates = 0;
+    int lookup[NUM_SLICES];
+    float maxProbability = 0.0f;
+    for (int i = 0; i < NUM_SLICES; i++) {
+        if (predicate(&items[i])) {
+            lookup[candidates++] = i;
+            maxProbability += items[i].probability;
+        }
+    }
+
+    float r = random.nextFloat() * maxProbability;
+    float p = 0.0f;
+    for (int i = 0; i < candidates; i++) {
+        p += items[lookup[i]].probability;
+        if (p >= r) {
+            return &items[lookup[i]];
+        }
+    }
+
+    return nullptr;
+}
+
+//==============================================================================
+static Strip* choose (
+    juce::Random random,
+    Strip* items,
+    std::function<bool(Strip*)> predicate
+) {
+    int candidates = 0;
+    int lookup[NUM_STRIPS];
+    float maxProbability = 0.0f;
+    for (int i = 0; i < NUM_STRIPS; i++) {
+        if (predicate(&items[i])) {
+            lookup[candidates++] = i;
+            maxProbability += items[i].probability;
+        }
+    }
+
+    float r = random.nextFloat() * maxProbability;
+    float p = 0.0f;
+    for (int i = 0; i < candidates; i++) {
+        p += items[lookup[i]].probability;
+        if (p >= r) {
+            return &items[lookup[i]];
+        }
+    }
+
+    return nullptr;
+}
+
+//==============================================================================
 Slice::Slice() {
     probability = 0.0f;
     length = 0;
@@ -231,6 +287,8 @@ Step::Step() {
     noteNumber = 0;
     channel = 1;
     velocity = (juce::uint8) 127;
+
+    hasValue = false;
 }
 
 //==============================================================================
@@ -239,8 +297,24 @@ Step::~Step() {
 }
 
 //==============================================================================
+void Step::loadFrom(Strip *strip, Slice *slice) {
+    // TODO: Dont do this every the time
+    int noteNumber = 60 + strip->choice + (strip->stripId * NUM_CHOICES);
+    int channel = 1;
+    juce::uint8 velocity = (juce::uint8) 127;
+
+    noteNumber = noteNumber;
+    channel = channel;
+    velocity = velocity;
+    stripId = strip->stripId;
+    sliceId = slice->sliceId;
+
+    hasValue = true;
+}
+
+//==============================================================================
 Group::Group() {
-    id = 01;
+    id = -1;
     // bool shed;
     length = 0;
     plusSixteen = 0;
@@ -251,8 +325,65 @@ Group::Group() {
 
     currentStrip = nullptr;
 
+    numSteps = 0;
     sequence = new Step[MAX_STEPS];
     currentStep = nullptr;
+}
+
+//==============================================================================
+void Group::createSequence(
+    Strip* strips, 
+    juce::Random random
+) {
+    this->numSteps = length + plusSixteen * 16;
+
+    int step = 0;
+    while (step < numSteps) {
+        Strip* strip = choose (
+            random,
+            strips,
+            [this] (Strip* strip) -> bool {
+                return
+                    // TODO: Locking Mechanism
+                    strip->group == this->id &&
+                    strip->enabled &&
+                    strip->probability > 0.0f;
+            }
+        );
+
+        if (strip == nullptr) {
+            goto FillToEndWithEmpty;
+        }
+
+        Slice* slice = choose (
+            random,
+            strip->slices,
+            [] (Slice* slice) -> bool {
+                return
+                    slice->enabled &&
+                    slice->probability > 0.0f;
+            }
+        );
+
+        if (slice == nullptr) {
+            goto FillToEndWithEmpty;
+        }
+
+        int length = slice->length + slice->plusSixteen * 16;
+
+        for (
+            int i = 0; 
+            i < length && step < numSteps; 
+            i++, step++ // Not sure if this skips a step?
+        ) {
+            sequence[step].loadFrom(strip, slice);
+        }
+    }
+
+FillToEndWithEmpty:
+    while (step < MAX_STEPS) {
+        sequence[step++].hasValue = false;
+    }
 }
 
 //==============================================================================

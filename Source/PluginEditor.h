@@ -93,7 +93,6 @@ public:
         juce::AudioProcessorValueTreeState&, 
         juce::AudioProcessorEditor&
     );
-
     void paint(juce::Graphics&);
     void resized(juce::Rectangle<int>);
 
@@ -133,6 +132,24 @@ private:
 //==============================================================================
 /*
 */
+class SequenceEditor {
+public:
+    SequenceEditor();
+    ~SequenceEditor();
+
+    void paint(juce::Graphics&);
+    void resized(juce::Rectangle<int>);
+
+private:
+    Step *steps;
+
+    bool needsRepaint;
+    juce::Rectangle<int> bounds;
+};
+
+//==============================================================================
+/*
+*/
 class GroupDto {
 public:
     bool isOn;
@@ -154,7 +171,7 @@ public:
     GroupEditor();
     ~GroupEditor();
 
-    void init(
+    void init (
         int,
         juce::AudioProcessorValueTreeState&,
         juce::AudioProcessorEditor&
