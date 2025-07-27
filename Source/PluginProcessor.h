@@ -95,7 +95,7 @@ private:
 //==============================================================================
 /**
 */
-class Step {
+struct Step {
 public:
     bool hasValue;
 
@@ -109,11 +109,23 @@ public:
     Step();
     ~Step();
 
-    void loadFrom(Strip*, Slice*);
+    static Step loadFrom(Strip*, Slice*);
+    static bool differs(Step*, Step*);
 
-    void addNoteOnEvent(juce::MidiBuffer&);
-    void addNoteOffEvent(juce::MidiBuffer&);
+    void clear();
+
+    void addNoteOnEvent(juce::MidiBuffer&, int);
+    void addNoteOffEvent(juce::MidiBuffer&, int);
 };
+
+//==============================================================================
+/**
+*/
+enum State {
+    off,
+    playing
+};
+
 
 //==============================================================================
 /**
@@ -121,7 +133,6 @@ public:
 class Group {
 public:
     int id;
-    // bool shed;
     int length;
     int plusSixteen;
     int progress;
@@ -134,7 +145,7 @@ public:
     int step;
     int numSteps;
     Step* sequence;
-    Step* currentStep;
+    // Step* currentStep;
 
     Group();
     ~Group();
@@ -145,10 +156,10 @@ public:
     void loadParameters();
 
     void createSequence(Strip* strips, juce::Random random);
-    void takeStep(juce::MidiBuffer&);
+    void takeStep(juce::MidiBuffer&, int);
+    void newNote(Step*, Step*, juce::MidiBuffer&, int);
 
 private:
-    // std::atomic<float>* shedParameter = nullptr;
     std::atomic<float>* lengthParameter = nullptr;
     std::atomic<float>* plusSixteenParameter = nullptr;
     std::atomic<float>* enabledParameter = nullptr;

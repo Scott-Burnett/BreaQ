@@ -365,8 +365,6 @@ void Strip::loadParameters() {
     enabled = (bool) enabledParameter->load();
     bypassed = (bool) bypassedParameter->load();
 
-    // TODO: Set Note based on choice, or schedule refresh
-
     for (int i = 0; i < NUM_SLICES; i++) {
         slices[i].loadParameters();
     }
@@ -374,13 +372,14 @@ void Strip::loadParameters() {
 
 //==============================================================================
 Step::Step() {
-    stripId = -1;
-    sliceId = -1;
+    hasValue = false;
+
     noteNumber = 0;
     channel = 1;
     velocity = (juce::uint8) 127;
 
-    hasValue = false;
+    strip = nullptr;
+    slice = nullptr;
 }
 
 //==============================================================================
@@ -389,25 +388,70 @@ Step::~Step() {
 }
 
 //==============================================================================
-void Step::loadFrom(Strip *strip, Slice *slice) {
-    // TODO: Dont do this every the time
+void Step::clear() {
+    hasValue = false;
+    strip = nullptr;
+    slice = nullptr;
+}
+
+//==============================================================================
+void Step::addNoteOnEvent(juce::MidiBuffer& midiBuffer, int samplePos) {
+    midiBuffer.addEvent (
+        juce::MidiMessage::noteOn (
+            channel, noteNumber, velocity
+        ),
+        samplePos
+    );
+    // Todo: set strip & slice on
+}
+
+//==============================================================================
+void Step::addNoteOffEvent(juce::MidiBuffer& midiBuffer, int samplePos) {
+    midiBuffer.addEvent (
+        juce::MidiMessage::noteOff (
+            channel, noteNumber
+        ),
+        samplePos
+    );
+    // Todo: set strip & slice off
+}
+
+//==============================================================================
+Step Step::loadFrom(Strip *strip, Slice *slice) {
     int noteNumber = 60 + strip->choice + (strip->stripId * NUM_CHOICES);
     int channel = 1;
     juce::uint8 velocity = (juce::uint8) 127;
 
-    noteNumber = noteNumber;
-    channel = channel;
-    velocity = velocity;
-    stripId = strip->stripId;
-    sliceId = slice->sliceId;
+    Step step;
+    step.noteNumber = noteNumber;
+    step.channel = channel;
+    step.velocity = velocity;
+    step.strip = strip;
+    step.slice = slice;
 
-    hasValue = true;
+    step.hasValue = true;
+
+    return step;
+}
+
+//==============================================================================
+bool Step::differs(Step *first, Step *second) {
+    if (first == nullptr) {
+        return second == nullptr;
+    }
+
+    if (second == nullptr) {
+        return false;
+    }
+
+    return
+        first->slice == second->slice
+    ;
 }
 
 //==============================================================================
 Group::Group() {
     id = -1;
-    // bool shed;
     length = 0;
     plusSixteen = 0;
     progress = -1;
@@ -419,7 +463,6 @@ Group::Group() {
 
     numSteps = 0;
     sequence = new Step[MAX_STEPS];
-    currentStep = nullptr;
 }
 
 //==============================================================================
@@ -427,16 +470,18 @@ void Group::createSequence(
     Strip* strips,
     juce::Random random
 ) {
+    // release all locks
     for (int i = 0; i < this->numSteps; i++) {
         if (sequence[i].hasValue &&
-            sequence[i].strip->lock.hasLock(this->id))
+            sequence[i].strip->lock.hasLock(this->id)) {
+            sequence[i].strip->lock.unLock(this->id);
+        }
     }
-
 
     this->numSteps = length + plusSixteen * 16;
 
-    int step = 0;
-    while (step < numSteps) {
+    int s = 0;
+    while (s < numSteps) {
         Strip* strip = choose (
             random,
             strips,
@@ -449,7 +494,7 @@ void Group::createSequence(
 
         if (strip == nullptr ||
             !strip->lock.tryLock(this->id)) {
-            goto FillToEndWithEmpty;
+            goto clearToEnd;
         }
 
         Slice* slice = choose (
@@ -460,25 +505,64 @@ void Group::createSequence(
                     slice->isPreparedToPlay();
             }
         );
-
-        if (slice == nullptr) {
-            goto FillToEndWithEmpty;
-        }
-
+        // Should always be at least 1 slice here
         int length = slice->length + slice->plusSixteen * 16;
+        Step next = Step::loadFrom(strip, slice);
 
         for (
             int i = 0; 
-            i < length && step < numSteps; 
-            i++, step++ // Not sure if this skips a step?
+            i < length && s < numSteps; 
+            i++, s++ // Not sure if this skips a step?
         ) {
-            sequence[step].loadFrom(strip, slice);
+            sequence[s] = next;
         }
+
+        // back to top ..
     }
 
-FillToEndWithEmpty:
-    while (step < MAX_STEPS) {
-        sequence[step++].hasValue = false;
+clearToEnd:
+    while (s < MAX_STEPS) {
+        sequence[s++].clear();
+    }
+}
+
+//==============================================================================
+void Group::takeStep(juce::MidiBuffer& midiBuffer, int samplePos) {
+    Step* currentStep = isOn
+        ? &sequence[step]
+        : nullptr
+    ;
+
+    if (++step >= numSteps
+        /*ToDo: and not looping*/) {
+        // todo: Create sequence here
+        step = 0;
+    }
+    
+    Step *newStep = 
+        enabled &&
+        sequence[step].strip->enabled
+        ? &sequence[step]
+        : nullptr
+    ;
+
+    newNote(currentStep, newStep, midiBuffer, samplePos);
+}
+
+//==============================================================================
+void Group::newNote(Step *currentStep, Step *newStep, juce::MidiBuffer& midiBuffer, int samplePos) {
+    if (Step::differs(currentStep, newStep)) {
+        if (currentStep != nullptr &&
+            currentStep->hasValue) {
+            currentStep->addNoteOffEvent(midiBuffer, samplePos);
+            isOn = false;
+        }
+
+        if (newStep != nullptr &&
+            newStep->hasValue) {
+            newStep->addNoteOffEvent(midiBuffer, samplePos);
+            isOn = true;
+        }
     }
 }
 
@@ -757,221 +841,16 @@ void BreaQAudioProcessor::processBlock (
     juce::MidiMessage current;
     int samplePos;
 
-    Group *group = nullptr;
-    Strip *strip = nullptr;
-    Strip *currentStrip = nullptr;
-    Slice *slice = nullptr;
-    Slice *currentSlice = nullptr;
-    
-    int numWorkingStrips = 0;
-    Strip *workingStrips[NUM_STRIPS];
-
-    int numWorkingSlices = 0;
-    Slice *workingSlices[NUM_SLICES];
-
-    float maxProbability = 0;
-
     while (iterator.getNextEvent(current, samplePos)) {
         if (!current.isNoteOn()) {
             continue;
         }
 
         for (int g = 0; g < NUM_GROUPS; g++) {
-            group = &groups[g]; 
-
-            strip = currentStrip = 
-                group->currentStrip;
-
-            slice = currentSlice = 
-                currentStrip != nullptr
-                ? currentStrip->currentSlice
-                : nullptr;
-
-            if (!group->enabled) {
-                // If note is currently on, End it
-                if (currentStrip != nullptr &&
-                    currentSlice != nullptr &&
-                    currentSlice->isOn) {
-                        // TODO: Move to method
-                        currentStrip->isOn = false;
-                        currentSlice->isOn = false;
-                        currentSlice->progress = -1;
-                        currentSlice->plusSixteenProgress = -1;
-                        processedBuffer.addEvent(juce::MidiMessage::noteOff(1, currentStrip->noteNumber), samplePos);
-
-                        group->currentStrip = nullptr;
-                }
-
-                continue;
-            }
-
-            // Group Is Enabled
-
-            if (currentSlice != nullptr &&
-                !currentSlice->enabled) {
-                    currentStrip->isOn = false;
-                    currentSlice->isOn = false;
-                    currentSlice->progress = -1;
-                    currentSlice->plusSixteenProgress = -1;
-                    processedBuffer.addEvent(juce::MidiMessage::noteOff(1, currentStrip->noteNumber), samplePos);
-
-                    group->currentStrip = nullptr;
-
-                    continue;
-            }
-
-            if (currentSlice != nullptr &&
-                currentSlice->plusSixteen > 0 &&
-                currentSlice->plusSixteenProgress < (long) currentSlice->plusSixteen * 16l) {
-                // +sixteen not accounted for, here increment inside block so as to not overshoot, then break
-                currentSlice->plusSixteenProgress++;
-                continue;
-            }
-
-            if (currentSlice != nullptr && 
-                currentSlice->progress++ < currentSlice->length) {
-                // Current Slice Not Complete, progress incremented, now break
-                continue;
-            }
-
-            // Slice is complete: Choose new Strip For Group
-            maxProbability = 0.0f;
-            numWorkingStrips = 0;
-            for (int st = 0; st < NUM_STRIPS; st++) {
-                strip = &strips[st];
-
-                if (!strip->enabled ||
-                    strip->probability == 0.0f ||
-                    strip->group != g) {
-                    // Strip not enabled, in group or probability is zero, not a candidate
-                    continue;
-                }
-
-                bool atLeastOneCandidate = false;
-                for (int sl = 0; sl < NUM_SLICES; sl++) {
-                    slice = &strip->slices[sl];
-                    if (slice->enabled &&
-                        slice->probability > 0.0f) {
-                        // At least one slice is a candidate
-                        atLeastOneCandidate = true;
-                        break;
-                    }
-                }
-
-                if (!atLeastOneCandidate) {
-                    // No slices enabled for this strip, not a candidate
-                    continue;
-                }
-
-                workingStrips[numWorkingStrips++] = strip;
-                maxProbability += strip->probability; 
-            }
-
-            if (numWorkingStrips == 0) {
-                // No candidates for Strip, end current note and break
-                if (currentStrip != nullptr && 
-                    currentSlice != nullptr) {
-                        currentStrip->isOn = false;
-                        currentSlice->isOn = false;
-                        currentSlice->progress = -1;
-                        currentSlice->plusSixteenProgress = -1;
-
-                        processedBuffer.addEvent(juce::MidiMessage::noteOff(1, currentStrip->noteNumber), samplePos);
-
-                        group->currentStrip = nullptr;
-                    }
-
-                continue;
-            }
-            
-            float r = random.nextFloat() * maxProbability;
-            float p = 0.0f;
-
-            for (int wst = 0; wst < numWorkingStrips; wst++) {
-                strip = workingStrips[wst];
-                p += strip->probability;
-
-                if (r <= p) {
-                    break;
-                }
-            }
-
-            // Choose new Slice for Strip
-            maxProbability = 0.0f;
-            numWorkingSlices = 0;
-            for (int sl = 0; sl < NUM_SLICES; sl++) {
-                slice = &strip->slices[sl];
-
-                if (!slice->enabled ||
-                    slice->probability == 0.0f) {
-                    continue;
-                }
-
-                workingSlices[numWorkingSlices++] = slice;
-                maxProbability += slice->probability;
-            }
-
-            // ToDo: Find a better way to handle No new slice found, currently just set to nullptr and check later
-            slice = nullptr;
-
-            r = random.nextFloat() * maxProbability;
-            p = 0.0f;
-            for (int wsl = 0; wsl < numWorkingSlices; wsl++) {
-                slice = workingSlices[wsl];
-                p += slice->probability;
-
-                if (r <= p) {
-                    break;
-                }
-            }
-
-            // TODO: Legato option here?
-
-            // -> Set current Note OFF
-            if (currentStrip != nullptr) {
-                currentStrip->isOn = false;
-            }
-
-            if (currentSlice != nullptr) {
-                currentSlice->isOn = false;
-                currentSlice->progress = -1;
-                currentSlice->plusSixteenProgress = -1l;
-                
-                // TODO: UGLY
-                // Add Note Off Event for current note
-                processedBuffer.addEvent(juce::MidiMessage::noteOff(1, currentStrip->noteNumber), samplePos);
-            }
-
-            if (slice == nullptr) {
-                // no new slice
-                continue;
-            }
-
-            // -> POINT Current to new
-            currentSlice = slice;
-
-            currentStrip = strip;
-            currentStrip->currentSlice = currentSlice;
-
-            group->currentStrip = currentStrip;
-            
-            // -> SET Current Slice ON
-            currentSlice->isOn = true;
-            currentStrip->isOn = true;
-
-            currentSlice->progress = 0;
-            currentSlice->plusSixteenProgress = 0l;
-
-            // Update Note numbe based on choice
-            currentStrip->noteNumber = 60 + currentStrip->choice + (currentStrip->stripId * NUM_CHOICES);
-
-            // Add Note On Event for current Note
-            processedBuffer.addEvent(juce::MidiMessage::noteOn(1, currentStrip->noteNumber, (juce::uint8) 127), samplePos);
-
+            groups[g].takeStep(processedBuffer, samplePos);
         } // ForEach Group
 
         needsRepaint = true;
-
     } // MidiMessage Iterator 
 
     midiBuffer.swapWith(processedBuffer); 
