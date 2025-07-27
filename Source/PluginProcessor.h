@@ -5,6 +5,28 @@
 //==============================================================================
 /**
 */
+struct Lock {
+public:
+    Lock();
+    Lock(int* key);
+    ~Lock();
+
+    bool isLocked();
+    bool hasLock(int key);
+    bool canLock(int key);
+    bool tryLock(int key);
+    void unLock(int key);
+
+private:
+    int* shape;
+
+    bool locked;
+    int holder;
+};
+
+//==============================================================================
+/**
+*/
 class Slice {
 public:
     float probability;
@@ -18,6 +40,8 @@ public:
 
     Slice();
     ~Slice();
+
+    bool isPreparedToPlay();
 
     void setSliceId(int);
     void init(juce::AudioProcessorValueTreeState&, juce::AudioProcessorParameter::Listener&);
@@ -39,6 +63,8 @@ public:
     Slice* slices;
     Slice* currentSlice;
 
+    Lock lock;
+
     float probability;
     int group;
     int choice;
@@ -50,6 +76,8 @@ public:
 
     Strip();
     ~Strip();
+
+    bool isPreparedToPlay();
 
     void setStrpId(int);
     void init(juce::AudioProcessorValueTreeState&, juce::AudioProcessorParameter::Listener&);
@@ -69,18 +97,22 @@ private:
 */
 class Step {
 public:
-    int stripId;
-    int sliceId;
+    bool hasValue;
+
     int noteNumber;
     int channel;
     juce::uint8 velocity;
 
-    bool hasValue;
+    Strip* strip;
+    Slice* slice;
 
     Step();
     ~Step();
 
     void loadFrom(Strip*, Slice*);
+
+    void addNoteOnEvent(juce::MidiBuffer&);
+    void addNoteOffEvent(juce::MidiBuffer&);
 };
 
 //==============================================================================
@@ -99,6 +131,7 @@ public:
 
     Strip* currentStrip;
 
+    int step;
     int numSteps;
     Step* sequence;
     Step* currentStep;
@@ -112,6 +145,7 @@ public:
     void loadParameters();
 
     void createSequence(Strip* strips, juce::Random random);
+    void takeStep(juce::MidiBuffer&);
 
 private:
     // std::atomic<float>* shedParameter = nullptr;

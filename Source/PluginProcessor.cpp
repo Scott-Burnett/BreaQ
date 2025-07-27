@@ -59,6 +59,73 @@ static Strip* choose (
 }
 
 //==============================================================================
+Lock::Lock() {
+    shape = nullptr;
+
+    locked = false;
+    holder = -1;
+}
+
+//==============================================================================
+Lock::~Lock() {
+}
+
+//==============================================================================
+bool Lock::isLocked() {
+    return locked;
+}
+
+//==============================================================================
+bool Lock::hasLock(int key) {
+    return (
+        locked &&
+        holder == key
+    );
+}
+
+//==============================================================================
+bool Lock::canLock(int key) {
+    return (
+        locked &&
+        holder == key
+    ) || (
+        !locked &&
+        *shape == key
+    );
+}
+
+//==============================================================================
+bool Lock::tryLock(int key) {
+    if (locked &&
+        holder == key) {
+        return true;
+    }
+
+    if (!locked &&
+        *shape == key) {
+        locked = true;
+        holder = key;
+        return true;
+    }
+
+    return false;
+}
+
+//==============================================================================
+void Lock::unLock(int key) {
+    locked = false;
+    holder = -1;
+}
+
+//==============================================================================
+Lock::Lock(int* key) {
+    shape = key;
+
+    locked = false;
+    holder = -1;
+}
+
+//==============================================================================
 Slice::Slice() {
     probability = 0.0f;
     length = 0;
@@ -75,6 +142,12 @@ Slice::~Slice() {
 
 }
 
+//==============================================================================
+bool Slice::isPreparedToPlay() {
+    return
+        enabled &&
+        probability > 0.0f;
+}
 //==============================================================================
 void Slice::setSliceId(int id) {
     sliceId = id;
@@ -162,6 +235,8 @@ Strip::Strip() {
     bypassed = false;
     isOn = false;
 
+    lock = Lock(&group);
+
     currentSlice = nullptr;
 
     slices = new Slice[NUM_SLICES];
@@ -170,6 +245,23 @@ Strip::Strip() {
 //==============================================================================
 Strip::~Strip() {
 
+}
+
+//==============================================================================
+bool Strip::isPreparedToPlay() {
+    if (!enabled ||
+        probability == 0.0f) {
+        return false;
+    }
+    // enabled && probability > 0.0f
+    for (int i = 0; i < NUM_SLICES; i++) {
+        if (slices[i].isPreparedToPlay()) {
+            // at least one slice is prepared to play
+            return true;
+        }
+    }
+
+    return false;
 }
 
 //==============================================================================
@@ -332,9 +424,15 @@ Group::Group() {
 
 //==============================================================================
 void Group::createSequence(
-    Strip* strips, 
+    Strip* strips,
     juce::Random random
 ) {
+    for (int i = 0; i < this->numSteps; i++) {
+        if (sequence[i].hasValue &&
+            sequence[i].strip->lock.hasLock(this->id))
+    }
+
+
     this->numSteps = length + plusSixteen * 16;
 
     int step = 0;
@@ -344,14 +442,13 @@ void Group::createSequence(
             strips,
             [this] (Strip* strip) -> bool {
                 return
-                    // TODO: Locking Mechanism
-                    strip->group == this->id &&
-                    strip->enabled &&
-                    strip->probability > 0.0f;
+                    strip->isPreparedToPlay() &&
+                    strip->lock.canLock(this->id);
             }
         );
 
-        if (strip == nullptr) {
+        if (strip == nullptr ||
+            !strip->lock.tryLock(this->id)) {
             goto FillToEndWithEmpty;
         }
 
@@ -360,8 +457,7 @@ void Group::createSequence(
             strip->slices,
             [] (Slice* slice) -> bool {
                 return
-                    slice->enabled &&
-                    slice->probability > 0.0f;
+                    slice->isPreparedToPlay();
             }
         );
 
