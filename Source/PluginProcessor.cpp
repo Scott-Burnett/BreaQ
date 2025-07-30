@@ -444,7 +444,12 @@ bool Step::differs(Step *first, Step *second) {
         return false;
     }
 
-    return
+    return // probably overboard
+        first->hasValue == second->hasValue &&
+        first->channel == second->channel &&
+        first->noteNumber == second->noteNumber &&
+        first->velocity == second->velocity &&
+        first->strip == second->strip &&
         first->slice == second->slice
     ;
 }
@@ -462,6 +467,7 @@ Group::Group() {
     currentStrip = nullptr;
 
     numSteps = 0;
+    step = 0;
     sequence = new Step[MAX_STEPS];
 }
 
@@ -527,7 +533,7 @@ clearToEnd:
 }
 
 //==============================================================================
-void Group::takeStep(juce::MidiBuffer& midiBuffer, int samplePos) {
+void Group::takeStep(juce::MidiBuffer& midiBuffer, int samplePos, Strip* strips, juce::Random random) {
     Step* currentStep = isOn
         ? &sequence[step]
         : nullptr
@@ -536,11 +542,13 @@ void Group::takeStep(juce::MidiBuffer& midiBuffer, int samplePos) {
     if (++step >= numSteps
         /*ToDo: and not looping*/) {
         // todo: Create sequence here
+        createSequence(strips, random);
         step = 0;
     }
     
     Step *newStep = 
         enabled &&
+        sequence[step].hasValue &&
         sequence[step].strip->enabled
         ? &sequence[step]
         : nullptr
@@ -555,12 +563,14 @@ void Group::newNote(Step *currentStep, Step *newStep, juce::MidiBuffer& midiBuff
         if (currentStep != nullptr &&
             currentStep->hasValue) {
             currentStep->addNoteOffEvent(midiBuffer, samplePos);
+            // TODO: Slice & Strip isOn
             isOn = false;
         }
 
         if (newStep != nullptr &&
             newStep->hasValue) {
             newStep->addNoteOffEvent(midiBuffer, samplePos);
+            // Here too
             isOn = true;
         }
     }
@@ -660,7 +670,7 @@ BreaQAudioProcessor::BreaQAudioProcessor()
     random = juce::Random::getSystemRandom();
     
     needsRepaint = false;
-    startTimer(30);
+    startTimer(15);
 }
 
 //==============================================================================
@@ -688,36 +698,8 @@ void BreaQAudioProcessor::timerCallback() {
             strips[i].loadParameters();
         }
 
-        StripDto* stripDto = nullptr;
-        Strip* strip = nullptr;
-        SliceDto* sliceDto = nullptr;
-        Slice* slice = nullptr;
-
-        for (int i = 0; i < NUM_STRIPS; i++) {
-            stripDto = &stripDtos[i];
-            strip = &strips[i];
-
-            stripDto->isOn = strip->isOn;
-            stripDto->isEnabled = strip->enabled;
-            stripDto->isBypassed = strip->bypassed;
-            stripDto->group = strip->group;
-            stripDto->choice = strip->choice;
-
-            for (int j = 0; j < NUM_SLICES; j++) {
-                sliceDto = &stripDto->sliceDtos[j];
-                slice = &strip->slices[j];
-
-                sliceDto->isEnabled = slice->enabled;
-                sliceDto->isOn = slice->isOn;
-                sliceDto->length = slice->length;
-                sliceDto->plusSixteen = slice->plusSixteen;
-                sliceDto->progress = slice->progress;
-                sliceDto->plusSixteenProgress = slice->plusSixteenProgress;
-            }
-        }
-
         if (editor != nullptr) {
-            editor->LoadState(groupDtos, stripDtos);
+            editor->LoadState(groups, strips);
         }
 
         needsRepaint = false;
@@ -847,7 +829,7 @@ void BreaQAudioProcessor::processBlock (
         }
 
         for (int g = 0; g < NUM_GROUPS; g++) {
-            groups[g].takeStep(processedBuffer, samplePos);
+            groups[g].takeStep(processedBuffer, samplePos, strips, random);
         } // ForEach Group
 
         needsRepaint = true;
@@ -887,9 +869,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout BreaQAudioProcessor::createP
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
     groups = new Group[NUM_GROUPS];
-    groupDtos = new GroupDto[NUM_GROUPS];
     strips = new Strip[NUM_STRIPS];
-    stripDtos = new StripDto[NUM_STRIPS];
 
     for (int i = 0; i < NUM_GROUPS; i++) {
         groups[i].setGroupId(i);

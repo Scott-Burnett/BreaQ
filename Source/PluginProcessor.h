@@ -118,14 +118,6 @@ public:
     void addNoteOffEvent(juce::MidiBuffer&, int);
 };
 
-//==============================================================================
-/**
-*/
-enum State {
-    off,
-    playing
-};
-
 
 //==============================================================================
 /**
@@ -145,7 +137,6 @@ public:
     int step;
     int numSteps;
     Step* sequence;
-    // Step* currentStep;
 
     Group();
     ~Group();
@@ -156,7 +147,7 @@ public:
     void loadParameters();
 
     void createSequence(Strip* strips, juce::Random random);
-    void takeStep(juce::MidiBuffer&, int);
+    void takeStep(juce::MidiBuffer&, int, Strip*, juce::Random);
     void newNote(Step*, Step*, juce::MidiBuffer&, int);
 
 private:
@@ -169,10 +160,6 @@ private:
 /**
 */
 class BreaQAudioProcessorEditor;
-
-class GroupDto;
-class StripDto;
-class SliceDto;
 
 //==============================================================================
 /**
@@ -189,10 +176,7 @@ public:
     BreaQAudioProcessorEditor* editor;
 
     Group* groups;
-    GroupDto* groupDtos;
-
     Strip* strips;
-    StripDto* stripDtos;
 
     //==============================================================================
     BreaQAudioProcessor();

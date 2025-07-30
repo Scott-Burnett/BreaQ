@@ -8,22 +8,6 @@
 //==============================================================================
 /*
 */
-class SliceDto {
-public:
-    bool isOn;
-    bool isEnabled;
-    int length;
-    int plusSixteen;
-    int progress;
-    long plusSixteenProgress;
-
-    SliceDto();
-    ~SliceDto();
-};
-
-//==============================================================================
-/*
-*/
 class SliceEditor {
 public:
     SliceEditor();
@@ -37,7 +21,7 @@ public:
     void paint(juce::Graphics&);
     void resized(juce::Rectangle<int>);
     
-    void loadParameters(SliceDto&);
+    void loadParameters(Slice*);
 
 private:
     bool isOn;
@@ -66,23 +50,6 @@ private:
 //==============================================================================
 /*
 */
-class StripDto {
-public:
-    bool isOn;
-    bool isEnabled;
-    bool isBypassed;
-    int group;
-    int choice;
-
-    SliceDto* sliceDtos;
-
-    StripDto();
-    ~StripDto();
-};
-
-//==============================================================================
-/*
-*/
 class StripEditor {
 public:
     StripEditor();
@@ -96,7 +63,7 @@ public:
     void paint(juce::Graphics&);
     void resized(juce::Rectangle<int>);
 
-    void loadParameters(StripDto&);
+    void loadParameters(Strip*);
 
 private:
     bool isOn;
@@ -150,22 +117,6 @@ private:
 //==============================================================================
 /*
 */
-class GroupDto {
-public:
-    bool isOn;
-    bool isEnabled;
-    int length;
-    int plusSixteen;
-    int progress;
-    long plusSixteenProgress;
-
-    GroupDto();
-    ~GroupDto();
-};
-
-//==============================================================================
-/*
-*/
 class GroupEditor {
 public:
     GroupEditor();
@@ -180,7 +131,7 @@ public:
     void paint(juce::Graphics&);
     void resized(juce::Rectangle<int>);
 
-    void loadParameters(GroupDto&);
+    void loadParameters(Group*);
 
 private:
     bool isOn;
@@ -189,6 +140,10 @@ private:
     int plusSixteen;
     int progress;
     long plusSixteenProgress;
+
+    int step;
+    int numSteps;
+    int steps[MAX_STEPS];
 
     bool needsRepaint;
     juce::Rectangle<int> bounds;
@@ -205,14 +160,6 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> enabledButtonAttachment;
 };
 
-////==============================================================================
-///*
-//*/
-//class GlobalDto {
-//public:
-//
-//};
-//
 ////==============================================================================
 ///*
 //*/
@@ -255,7 +202,7 @@ public:
 
     void timerCallback() override;
 
-    void LoadState(GroupDto*, StripDto*);
+    void LoadState(Group*, Strip*);
 
 private:
     BreaQAudioProcessor& audioProcessor;

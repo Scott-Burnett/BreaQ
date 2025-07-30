@@ -165,21 +165,6 @@ static void DrawLabels(
 }
 
 //==============================================================================
-SliceDto::SliceDto() {
-    isOn = false;
-    isEnabled = false;
-    length = 0;
-    plusSixteen = 0;
-    progress = -1;
-    plusSixteenProgress = -1l;
-}
-
-//==============================================================================
-SliceDto::~SliceDto() {
-
-}
-
-//==============================================================================
 SliceEditor::SliceEditor() {
     isOn = false;
     isEnabled = false;
@@ -279,34 +264,20 @@ void SliceEditor::resized(juce::Rectangle<int> bounds) {
 }
 
 //==============================================================================
-void SliceEditor::loadParameters(SliceDto& dto) {
-    if (isOn != dto.isOn) {
-        needsRepaint = true;
-        isOn = dto.isOn;
-    }
-    if (isEnabled != dto.isEnabled) {
-        needsRepaint = true;
-        isEnabled = dto.isEnabled;
-    }
-
-    if (length != dto.length) {
-        needsRepaint = true;
-        length = dto.length;
-    }
-
-    if (plusSixteen != dto.plusSixteen) {
-        needsRepaint = true;
-        plusSixteen = dto.plusSixteen;
-    }
-
-    if (progress != dto.progress) {
-        needsRepaint = true;
-        progress = dto.progress;
-    }
-
-    if (plusSixteenProgress != dto.plusSixteenProgress) {
-        needsRepaint = true;
-        plusSixteenProgress = dto.plusSixteenProgress;
+void SliceEditor::loadParameters(Slice* slice) {
+    if (isOn != slice->isOn ||
+        isEnabled != slice->enabled ||
+        length != slice->length ||
+        plusSixteen != slice->plusSixteen ||
+        progress != slice->progress ||
+        plusSixteenProgress != slice->plusSixteenProgress) {
+            needsRepaint = true;
+            isOn = slice->isOn;
+            isEnabled = slice->enabled;
+            length = slice->length;
+            plusSixteen = slice->plusSixteen;
+            progress = slice->progress;
+            plusSixteenProgress = slice->plusSixteenProgress;
     }
 }
 
@@ -341,22 +312,6 @@ void SliceEditor::paint(juce::Graphics& g) {
     }
 
     needsRepaint = false;
-}
-
-//==============================================================================
-StripDto::StripDto() {
-    isOn = false;
-    isEnabled = false;
-    isBypassed = false;
-    group = 0;
-    choice = 0;
-
-    sliceDtos = new SliceDto[NUM_SLICES];
-}
-
-//==============================================================================
-StripDto::~StripDto() {
-
 }
 
 //==============================================================================
@@ -494,6 +449,11 @@ void StripEditor::resized (juce::Rectangle<int> bounds) {
 
 //==============================================================================
 void StripEditor::paint(juce::Graphics& g) {
+    // Paint Slices
+    for (int i = 0; i < NUM_SLICES; i++) {
+        slices[i].paint(g);
+    }
+
     /*if (!needsRepaint) {
         return;
     }*/
@@ -514,58 +474,25 @@ void StripEditor::paint(juce::Graphics& g) {
 
     g.drawRect(bounds, 4);
 
-    // Paint Slices
-    for (int i = 0; i < NUM_SLICES; i++) {
-        slices[i].paint(g);
-    }
-
     needsRepaint = false;
 }
 
 //==============================================================================
-void StripEditor::loadParameters(StripDto& dto) {
-    if (isOn != dto.isOn) {
-        needsRepaint = true;
-        isOn = dto.isOn;
-    }
-
-    if (isEnabled != dto.isEnabled) {
-        needsRepaint = true;
-        isEnabled = dto.isEnabled;
-    }
-
-    if (isBypassed != dto.isBypassed) {
-        needsRepaint = true;
-        isBypassed = dto.isBypassed;
-    }
-
-    if (group != dto.group) {
-        needsRepaint = true;
-        group = dto.group;
-    }
-
-    if (choice != dto.choice) {
-        needsRepaint = true;
-        choice = dto.choice;
+void StripEditor::loadParameters(Strip* strip) {
+    if (isOn != strip->isOn ||
+        isEnabled != strip->enabled ||
+        group != strip->group ||
+        choice != strip->choice) {
+            needsRepaint = true;
+            isOn = strip->isOn;
+            isEnabled = strip->enabled;
+            group = strip->group;
+            choice = strip->choice;
     }
 
     for (int i = 0; i < NUM_SLICES; i++) {
-        slices[i].loadParameters(dto.sliceDtos[i]);
+        slices[i].loadParameters(&strip->slices[i]);
     }
-}
-
-//==============================================================================
-GroupDto::GroupDto() {
-    isOn = false;
-    isEnabled = false;
-    length = 0;
-    plusSixteen = 0;
-    progress = -1;
-    plusSixteenProgress = -1l;
-}
-
-//==============================================================================
-GroupDto::~GroupDto() {
 }
 
 //==============================================================================
@@ -578,6 +505,12 @@ GroupEditor::GroupEditor() {
     plusSixteenProgress = -1l;
 
     needsRepaint = false;
+
+    step = 0;
+    numSteps = 0;
+    for (int i = 0; i < MAX_STEPS; i++) {
+        steps[i] = -1;
+    }
 }
 
 //==============================================================================
@@ -618,13 +551,15 @@ void GroupEditor::init(
 
 //==============================================================================
 void GroupEditor::paint(juce::Graphics& g) {
-
+    /*if (!needsRepaint) {
+        return;
+    }*/
     auto blockHeight = this->sequenceBounds.getHeight() / NUM_STRIPS;
     auto blockWidth = this->sequenceBounds.getWidth() / MAX_STEPS;
 
     auto workingBounds = sequenceBounds;
 
-    g.setColour(Colours::transparentOrange3);
+    /*g.setColour(Colours::transparentOrange3);
     for (int row = 0; row < NUM_STRIPS; row++) {
         auto blockRect = workingBounds.removeFromBottom(blockHeight);
         for (int column = 0; column < 4; column++) {
@@ -634,6 +569,25 @@ void GroupEditor::paint(juce::Graphics& g) {
         }
 
         workingBounds.removeFromLeft(blockWidth * 18);
+    }*/
+
+    int row = 0;
+    for (int col = 0; col < numSteps; col++) {
+        auto nextBlock = workingBounds.removeFromLeft(blockWidth);
+        if (steps[col] < 0) {
+            continue;
+        }
+
+        int h = steps[col];
+        if (h > 0) {
+            bounds.removeFromBottom(blockHeight * (h - 1));
+        }
+
+        if (h < NUM_STRIPS) {
+            bounds.removeFromTop(blockHeight * (NUM_STRIPS - h));
+        }
+
+        g.fillRect(nextBlock);
     }
 
     // Draw Sequence
@@ -645,6 +599,8 @@ void GroupEditor::paint(juce::Graphics& g) {
 
     g.setColour(Colours::transparentOrange4);
     g.drawRect(bounds);
+
+    needsRepaint = false;
 }
 
 //==============================================================================
@@ -652,16 +608,12 @@ void GroupEditor::resized(juce::Rectangle<int> bounds) {
     this->sequenceBounds = bounds.removeFromLeft(bounds.getWidth() * 0.75f);
     this->bounds = bounds;
 
-
     // const float probabilityFactor = 0.6f;
     const float enabledFactor = 0.1f;
     const float lengthFactor = 0.6f;
     const float plusSixteenFactor = 0.4f;
 
     const int columns = 8;
-
-    // this->bounds = bounds;
-
     bounds = bounds.reduced(6);
 
     float columnWidth = bounds.getWidth() / (float) columns;
@@ -695,34 +647,29 @@ void GroupEditor::resized(juce::Rectangle<int> bounds) {
 }
 
 //==============================================================================
-void GroupEditor::loadParameters(GroupDto& dto) {
-    if (isOn != dto.isOn) {
-        needsRepaint = true;
-        isOn = dto.isOn;
-    }
-    if (isEnabled != dto.isEnabled) {
-        needsRepaint = true;
-        isEnabled = dto.isEnabled;
-    }
-
-    if (length != dto.length) {
-        needsRepaint = true;
-        length = dto.length;
-    }
-
-    if (plusSixteen != dto.plusSixteen) {
-        needsRepaint = true;
-        plusSixteen = dto.plusSixteen;
-    }
-
-    if (progress != dto.progress) {
-        needsRepaint = true;
-        progress = dto.progress;
-    }
-
-    if (plusSixteenProgress != dto.plusSixteenProgress) {
-        needsRepaint = true;
-        plusSixteenProgress = dto.plusSixteenProgress;
+void GroupEditor::loadParameters(Group* group) {
+    if (isOn != group->isOn ||
+        isEnabled != group->enabled ||
+        length != group->length ||
+        plusSixteen != group->plusSixteen ||
+        progress != group->progress ||
+        plusSixteenProgress != group->plusSixteenProgress ||
+        step != group->step ||
+        numSteps != group->numSteps) {
+            needsRepaint = true;
+            isOn = group->isOn;
+            isEnabled = group->enabled;
+            length = group->length;
+            plusSixteen = group->plusSixteen;
+            progress = group->progress;
+            plusSixteenProgress = group->plusSixteenProgress;
+            step = group->step;
+            numSteps = group->numSteps;
+            for (int i = 0; i < MAX_STEPS; i++) {
+                steps[i] = group->sequence[i].hasValue
+                    ? group->sequence[i].strip->stripId
+                    : -1;
+            }
     }
 }
 
@@ -742,7 +689,6 @@ BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
     }
 
     strips = new StripEditor[NUM_STRIPS];
-
     for (int i = 0; i < NUM_STRIPS; i++) {
         strips[i].init(i, vts, *this);
     }
@@ -804,14 +750,13 @@ void BreaQAudioProcessorEditor::resized () {
 }
 
 //==============================================================================
-void BreaQAudioProcessorEditor::LoadState(GroupDto* groupDtos, StripDto* stripDtos) {
-    // TODO: Group Editors
-    /*for (int i = 0; i < NUM_GROUPS; i++) {
-        groups[i].loadParameters(groupDtos[i]);
-    }*/
+void BreaQAudioProcessorEditor::LoadState(Group* groupProcessors, Strip* stripProcessors) {
+    for (int i = 0; i < NUM_GROUPS; i++) {
+        groups[i].loadParameters(&groupProcessors[i]);
+    }
 
     for (int i = 0; i < NUM_STRIPS; i++) {
-        strips[i].loadParameters(stripDtos[i]);
+        strips[i].loadParameters(&stripProcessors[i]);
     }
 
     repaint();
