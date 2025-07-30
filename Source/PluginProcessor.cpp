@@ -18,7 +18,7 @@ static Slice* choose (
         }
     }
 
-    float r = random.nextFloat() * maxProbability;
+    float r = juce::Random::getSystemRandom().nextFloat() * maxProbability;
     float p = 0.0f;
     for (int i = 0; i < candidates; i++) {
         p += items[lookup[i]].probability;
@@ -46,7 +46,7 @@ static Strip* choose (
         }
     }
 
-    float r = random.nextFloat() * maxProbability;
+    float r = juce::Random::getSystemRandom().nextFloat() * maxProbability;
     float p = 0.0f;
     for (int i = 0; i < candidates; i++) {
         p += items[lookup[i]].probability;
@@ -219,7 +219,7 @@ void Slice::createParameterLayout (
 //==============================================================================
 void Slice::loadParameters() {
     probability = probabilityParameter->load();
-    length = lengthParameter->load();
+    length = lengthParameter->load() + 1;
     plusSixteen = plusSixteenParameter->load();
     enabled = (bool) enabledParameter->load();
 }
@@ -640,7 +640,7 @@ void Group::createParameterLayout(
 
 //==============================================================================
 void Group::loadParameters() {
-    length = lengthParameter->load();
+    length = lengthParameter->load() + 1;
     plusSixteen = plusSixteenParameter->load();
     enabled = (bool) enabledParameter->load();
 }

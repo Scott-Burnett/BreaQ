@@ -571,6 +571,8 @@ void GroupEditor::paint(juce::Graphics& g) {
         workingBounds.removeFromLeft(blockWidth * 18);
     }*/
 
+    g.setColour(Colours::transparentOrange3);
+
     int row = 0;
     for (int col = 0; col < numSteps; col++) {
         auto nextBlock = workingBounds.removeFromLeft(blockWidth);
@@ -579,14 +581,15 @@ void GroupEditor::paint(juce::Graphics& g) {
         }
 
         int h = steps[col];
-        if (h > 0) {
-            bounds.removeFromBottom(blockHeight * (h - 1));
-        }
+        nextBlock = nextBlock
+            .removeFromBottom(blockHeight * (h + 1))
+            .removeFromTop(blockHeight)
+        ;
 
-        if (h < NUM_STRIPS) {
-            bounds.removeFromTop(blockHeight * (NUM_STRIPS - h));
+        g.setColour(Colours::transparentOrange3);
+        if (step == col) {
+            g.setColour(Colours::orange3);
         }
-
         g.fillRect(nextBlock);
     }
 
