@@ -4,7 +4,6 @@
 
 //==============================================================================
 static Slice* choose (
-    juce::Random random,
     Slice* items,
     std::function<bool(Slice*)> predicate
 ) {
@@ -32,7 +31,6 @@ static Slice* choose (
 
 //==============================================================================
 static Strip* choose (
-    juce::Random random,
     Strip* items,
     std::function<bool(Strip*)> predicate
 ) {
@@ -403,6 +401,8 @@ void Step::addNoteOnEvent(juce::MidiBuffer& midiBuffer, int samplePos) {
         samplePos
     );
     // Todo: set strip & slice on
+    slice->isOn = true;
+    strip->isOn = true;
 }
 
 //==============================================================================
@@ -414,6 +414,8 @@ void Step::addNoteOffEvent(juce::MidiBuffer& midiBuffer, int samplePos) {
         samplePos
     );
     // Todo: set strip & slice off
+    slice->isOn = false;
+    strip->isOn = false;
 }
 
 //==============================================================================
@@ -437,20 +439,20 @@ Step Step::loadFrom(Strip *strip, Slice *slice) {
 //==============================================================================
 bool Step::differs(Step *first, Step *second) {
     if (first == nullptr) {
-        return second == nullptr;
+        return second != nullptr;
     }
 
     if (second == nullptr) {
-        return false;
+        return true;
     }
 
     return // probably overboard
-        first->hasValue == second->hasValue &&
-        first->channel == second->channel &&
-        first->noteNumber == second->noteNumber &&
-        first->velocity == second->velocity &&
-        first->strip == second->strip &&
-        first->slice == second->slice
+        first->hasValue != second->hasValue ||
+        first->channel != second->channel ||
+        first->noteNumber != second->noteNumber ||
+        first->velocity != second->velocity ||
+        first->strip != second->strip ||
+        first->slice != second->slice
     ;
 }
 
@@ -473,8 +475,7 @@ Group::Group() {
 
 //==============================================================================
 void Group::createSequence(
-    Strip* strips,
-    juce::Random random
+    Strip* strips
 ) {
     // release all locks
     for (int i = 0; i < this->numSteps; i++) {
@@ -489,7 +490,6 @@ void Group::createSequence(
     int s = 0;
     while (s < numSteps) {
         Strip* strip = choose (
-            random,
             strips,
             [this] (Strip* strip) -> bool {
                 return
@@ -501,10 +501,10 @@ void Group::createSequence(
         if (strip == nullptr ||
             !strip->lock.tryLock(this->id)) {
             goto clearToEnd;
+            // Just break?
         }
 
         Slice* slice = choose (
-            random,
             strip->slices,
             [] (Slice* slice) -> bool {
                 return
@@ -527,13 +527,15 @@ void Group::createSequence(
     }
 
 clearToEnd:
+    numSteps = s; // 0?
     while (s < MAX_STEPS) {
+        // May not even be necessary?
         sequence[s++].clear();
     }
 }
 
 //==============================================================================
-void Group::takeStep(juce::MidiBuffer& midiBuffer, int samplePos, Strip* strips, juce::Random random) {
+void Group::takeStep(juce::MidiBuffer& midiBuffer, int samplePos, Strip* strips) {
     Step* currentStep = isOn
         ? &sequence[step]
         : nullptr
@@ -542,7 +544,7 @@ void Group::takeStep(juce::MidiBuffer& midiBuffer, int samplePos, Strip* strips,
     if (++step >= numSteps
         /*ToDo: and not looping*/) {
         // todo: Create sequence here
-        createSequence(strips, random);
+        createSequence(strips);
         step = 0;
     }
     
@@ -569,7 +571,7 @@ void Group::newNote(Step *currentStep, Step *newStep, juce::MidiBuffer& midiBuff
 
         if (newStep != nullptr &&
             newStep->hasValue) {
-            newStep->addNoteOffEvent(midiBuffer, samplePos);
+            newStep->addNoteOnEvent(midiBuffer, samplePos);
             // Here too
             isOn = true;
         }
@@ -666,8 +668,6 @@ BreaQAudioProcessor::BreaQAudioProcessor()
     for (int i = 0; i < NUM_STRIPS; i++) {
         strips[i].init(parameters, *this);
     }
-    
-    random = juce::Random::getSystemRandom();
     
     needsRepaint = false;
     startTimer(15);
@@ -829,7 +829,7 @@ void BreaQAudioProcessor::processBlock (
         }
 
         for (int g = 0; g < NUM_GROUPS; g++) {
-            groups[g].takeStep(processedBuffer, samplePos, strips, random);
+            groups[g].takeStep(processedBuffer, samplePos, strips);
         } // ForEach Group
 
         needsRepaint = true;

@@ -146,8 +146,8 @@ public:
     void createParameterLayout(juce::AudioProcessorValueTreeState::ParameterLayout&);
     void loadParameters();
 
-    void createSequence(Strip* strips, juce::Random random);
-    void takeStep(juce::MidiBuffer&, int, Strip*, juce::Random);
+    void createSequence(Strip* strips);
+    void takeStep(juce::MidiBuffer&, int, Strip*);
     void newNote(Step*, Step*, juce::MidiBuffer&, int);
 
 private:
@@ -227,8 +227,6 @@ private:
     };
 
     bool needsRepaint;
-
-    juce::Random random;
 
     juce::MidiBuffer processedBuffer;
 
