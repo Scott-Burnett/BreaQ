@@ -757,6 +757,13 @@ const std::string ParameterNames::groupEnabled[NUM_GROUPS] = {
     "groupEnabled3"
 };
 
+const std::string ParameterNames::groupLoop[NUM_GROUPS] = {
+    "groupLoop0",
+    "groupLoop1",
+    "groupLoop2",
+    "groupLoop3"
+};
+
 // Parameter Options
 const juce::StringArray ParameterOptions::toggleButtonOptions = {
     "On",

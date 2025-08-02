@@ -32,8 +32,6 @@ public:
     float probability;
     int length;
     int plusSixteen;
-    int progress;
-    long plusSixteenProgress;
     int sliceId;
     bool enabled;
     bool isOn;
@@ -68,10 +66,9 @@ public:
     float probability;
     int group;
     int choice;
-    int noteNumber;
+    // int noteNumber;
     int stripId;
     bool enabled;
-    bool bypassed;
     bool isOn;
 
     Strip();
@@ -128,9 +125,8 @@ public:
     int id;
     int length;
     int plusSixteen;
-    int progress;
-    long plusSixteenProgress;
     bool enabled;
+    bool loop;
     bool isOn;
 
     Strip* currentStrip;
@@ -155,6 +151,7 @@ private:
     std::atomic<float>* lengthParameter = nullptr;
     std::atomic<float>* plusSixteenParameter = nullptr;
     std::atomic<float>* enabledParameter = nullptr;
+    std::atomic<float>* loopParameter = nullptr;
 };
 
 //==============================================================================

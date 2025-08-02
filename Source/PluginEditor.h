@@ -28,8 +28,6 @@ private:
     bool isEnabled;
     int length;
     int plusSixteen;
-    int progress;
-    long plusSixteenProgress;
 
     bool needsRepaint;
     juce::Rectangle<int> bounds;
@@ -68,7 +66,6 @@ public:
 private:
     bool isOn;
     bool isEnabled;
-    bool isBypassed;
     int group;
     int choice;
 
@@ -91,9 +88,6 @@ private:
 
     juce::ToggleButton enabledButton;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> enabledButtonAttachment;
-
-    juce::ToggleButton bypassedButton;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> bypassedButtonAttachment;
 };
 
 //==============================================================================
@@ -136,10 +130,9 @@ public:
 private:
     bool isOn;
     bool isEnabled;
+    bool loop;
     int length;
     int plusSixteen;
-    int progress;
-    long plusSixteenProgress;
 
     int step;
     int numSteps;
@@ -158,6 +151,9 @@ private:
 
     juce::ToggleButton enabledButton;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> enabledButtonAttachment;
+
+    juce::ToggleButton loopButton;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> loopButtonAttachment;
 };
 
 ////==============================================================================

@@ -170,8 +170,6 @@ SliceEditor::SliceEditor() {
     isEnabled = false;
     length = 0;
     plusSixteen = 0;
-    progress = -1;
-    plusSixteenProgress = -1l;
 
     needsRepaint = false;
 }
@@ -268,16 +266,12 @@ void SliceEditor::loadParameters(Slice* slice) {
     if (isOn != slice->isOn ||
         isEnabled != slice->enabled ||
         length != slice->length ||
-        plusSixteen != slice->plusSixteen ||
-        progress != slice->progress ||
-        plusSixteenProgress != slice->plusSixteenProgress) {
+        plusSixteen != slice->plusSixteen) {
             needsRepaint = true;
             isOn = slice->isOn;
             isEnabled = slice->enabled;
             length = slice->length;
             plusSixteen = slice->plusSixteen;
-            progress = slice->progress;
-            plusSixteenProgress = slice->plusSixteenProgress;
     }
 }
 
@@ -286,25 +280,10 @@ void SliceEditor::paint(juce::Graphics& g) {
     /*if (!needsRepaint) {
         return;
     }*/
-    long plusSixteenLength = (long)plusSixteen * 16l;
-    bool isPlusSixteen =
-        plusSixteen > 0 &&
-        plusSixteenProgress < plusSixteenLength;
-
-    int psp =
-        isPlusSixteen ||
-        plusSixteenProgress == plusSixteenLength
-        ? (int) (plusSixteenProgress / 16l) 
-        : -1l;
-
-    int p = isPlusSixteen
-        ? (int) (plusSixteenProgress % 16l)
-        : progress;
-
 
     DrawArc(&probabilitySlider, g);
-    DrawLabels(ParameterOptions::lengthOptions, 16, p, !isPlusSixteen, &lengthSlider, g);
-    DrawLabels(ParameterOptions::plusSixteenOptions, 9, psp, true, &plusSixteenSlider, g);
+    DrawLabels(ParameterOptions::lengthOptions, 16, length, false, &lengthSlider, g);
+    DrawLabels(ParameterOptions::plusSixteenOptions, 9, plusSixteen, false, &plusSixteenSlider, g);
 
     if (isOn) {
         g.setColour(Colours::orange3);
@@ -318,7 +297,6 @@ void SliceEditor::paint(juce::Graphics& g) {
 StripEditor::StripEditor() {
     isOn = false;
     isEnabled = false;
-    isBypassed = false;
     group = 0;
     choice = 0;
 
@@ -370,14 +348,6 @@ void StripEditor::init (
         editor
     );
 
-    initButton (
-        ParameterNames::stripBypassed[stripNumber], 
-        bypassedButton, 
-        bypassedButtonAttachment, 
-        vts, 
-        editor
-    );
-
     for (int i = 0, offset = stripNumber * NUM_SLICES; i < NUM_SLICES; i++) {
         slices[i].init(i + offset, vts, editor);
     }
@@ -406,14 +376,14 @@ void StripEditor::resized (juce::Rectangle<int> bounds) {
         .reduced(10);
     enabledButton.setBounds(enabledBounds);
 
-    auto bypassedBounds = bounds;
+    /*auto bypassedBounds = bounds;
     bypassedBounds = 
         bypassedBounds
         .removeFromLeft(bypassedBounds.getWidth() * enabledFactor)
         .removeFromBottom(bypassedBounds.getHeight() * enabledFactor)
         .reduced(10);
     bypassedBounds.setPosition(bypassedBounds.getX() + enabledBounds.getWidth() - 7, bypassedBounds.getY());
-    bypassedButton.setBounds(bypassedBounds);
+    bypassedButton.setBounds(bypassedBounds);*/
 
     auto probabilityBounds = bounds;
     probabilityBounds = 
@@ -499,10 +469,9 @@ void StripEditor::loadParameters(Strip* strip) {
 GroupEditor::GroupEditor() {
     isOn = false;
     isEnabled = false;
+    loop = false;
     length = 0;
     plusSixteen = 0;
-    progress = -1;
-    plusSixteenProgress = -1l;
 
     needsRepaint = false;
 
@@ -547,6 +516,14 @@ void GroupEditor::init(
         vts,
         editor
     );
+
+    initButton(
+        ParameterNames::groupLoop[groupNumber],
+        loopButton,
+        loopButtonAttachment,
+        vts,
+        editor
+    );
 }
 
 //==============================================================================
@@ -576,6 +553,18 @@ void GroupEditor::paint(juce::Graphics& g) {
     int row = 0;
     for (int col = 0; col < numSteps; col++) {
         auto nextBlock = workingBounds.removeFromLeft(blockWidth);
+        // Draw the full column
+        if (col % 4 == 0) {
+            g.setColour(Colours::background2);
+        }
+        /*else if (col % 2) {
+            g.setColour(Colours::background1);
+        }*/
+        else {
+            g.setColour(Colours::transparentBackground2);
+        }
+        g.fillRect(nextBlock);
+
         if (steps[col] < 0) {
             continue;
         }
@@ -592,6 +581,10 @@ void GroupEditor::paint(juce::Graphics& g) {
         }
         g.fillRect(nextBlock);
     }
+
+
+    g.setColour(Colours::transparentBackground2);
+    g.fillRect(workingBounds);
 
     // Draw Sequence
     // for (int i = 0; i < numSteps)
@@ -623,12 +616,18 @@ void GroupEditor::resized(juce::Rectangle<int> bounds) {
     float topRowHeight = bounds.getHeight() * 0.4f;
     float bottomRowHeight = bounds.getHeight() * 0.6f;
 
-    auto enabledBounds = bounds.removeFromRight(columnWidth);
-    enabledBounds =
-        enabledBounds
-        .reduced(5)
+    auto buttonBounds = bounds.removeFromRight(columnWidth);
+    auto enabledBounds =
+        buttonBounds.removeFromTop(buttonBounds.getHeight() * 0.5f)
+        .reduced(10)
     ;
     enabledButton.setBounds(enabledBounds);
+
+    auto loopBounds =
+        buttonBounds
+        .reduced(10)
+        ;
+    loopButton.setBounds(loopBounds);
 
     auto plusSixteenbounds = bounds.removeFromRight(columnWidth);
     plusSixteenbounds =
@@ -653,10 +652,9 @@ void GroupEditor::resized(juce::Rectangle<int> bounds) {
 void GroupEditor::loadParameters(Group* group) {
     if (isOn != group->isOn ||
         isEnabled != group->enabled ||
+        loop != group->loop ||
         length != group->length ||
         plusSixteen != group->plusSixteen ||
-        progress != group->progress ||
-        plusSixteenProgress != group->plusSixteenProgress ||
         step != group->step ||
         numSteps != group->numSteps) {
             needsRepaint = true;
@@ -664,8 +662,6 @@ void GroupEditor::loadParameters(Group* group) {
             isEnabled = group->enabled;
             length = group->length;
             plusSixteen = group->plusSixteen;
-            progress = group->progress;
-            plusSixteenProgress = group->plusSixteenProgress;
             step = group->step;
             numSteps = group->numSteps;
             for (int i = 0; i < MAX_STEPS; i++) {

@@ -127,8 +127,6 @@ Lock::Lock(int* key) {
 Slice::Slice() {
     probability = 0.0f;
     length = 0;
-    progress = -1;
-    plusSixteenProgress = -1l;
     plusSixteen = 0;
     sliceId = 0;
     enabled = false;
@@ -227,10 +225,9 @@ Strip::Strip() {
     probability = 0.0f;
     group = 0;
     choice = 0;
-    noteNumber = 0;
+    // noteNumber = 0;
     stripId = 0;
     enabled = false;
-    bypassed = false;
     isOn = false;
 
     lock = Lock(&group);
@@ -265,7 +262,7 @@ bool Strip::isPreparedToPlay() {
 //==============================================================================
 void Strip::setStrpId(int id) {
     stripId = id;
-    noteNumber = 60 + id;
+    // noteNumber = 60 + id;
 
      for (int i = 0, offset = stripId * NUM_SLICES; i < NUM_SLICES; i++) {
          slices[i].setSliceId(i + offset);
@@ -361,7 +358,6 @@ void Strip::loadParameters() {
     group = (int) groupParameter->load();
     choice = choiceParameter->load();
     enabled = (bool) enabledParameter->load();
-    bypassed = (bool) bypassedParameter->load();
 
     for (int i = 0; i < NUM_SLICES; i++) {
         slices[i].loadParameters();
@@ -422,7 +418,8 @@ void Step::addNoteOffEvent(juce::MidiBuffer& midiBuffer, int samplePos) {
 Step Step::loadFrom(Strip *strip, Slice *slice) {
     int noteNumber = 60 + strip->choice + (strip->stripId * NUM_CHOICES);
     int channel = 1;
-    juce::uint8 velocity = (juce::uint8) 127;
+    // int r = juce::Random::getSystemRandom().nextInt({ 1, 127 });
+    juce::uint8 velocity = (juce::uint8) juce::Random::getSystemRandom().nextInt({ 1, 127 });
 
     Step step;
     step.noteNumber = noteNumber;
@@ -468,9 +465,8 @@ Group::Group() {
     id = -1;
     length = 0;
     plusSixteen = 0;
-    progress = -1;
-    plusSixteenProgress = -1l;
     enabled = true;
+    loop = false;
     isOn = false;
 
     currentStrip = nullptr;
@@ -548,9 +544,10 @@ void Group::takeStep(juce::MidiBuffer& midiBuffer, int samplePos, Strip* strips)
         : Step::empty()
     ;
 
-    if (++step >= numSteps
-        /*ToDo: and not looping*/) {
-        createSequence(strips);
+    if (++step >= numSteps) {
+        if (!loop) {
+            createSequence(strips);
+        }
         step = 0;
     }
     
@@ -607,12 +604,17 @@ void Group::init(
     enabledParameter = vts.getRawParameterValue(
         ParameterNames::groupEnabled[id]
     );
+    loopParameter = vts.getRawParameterValue(
+        ParameterNames::groupLoop[id]
+    );
 
     vts.getParameter(ParameterNames::groupLength[id])->
         addListener(&listener);
     vts.getParameter(ParameterNames::groupPlusSixteen[id])->
         addListener(&listener);
     vts.getParameter(ParameterNames::groupEnabled[id])->
+        addListener(&listener);
+    vts.getParameter(ParameterNames::groupLoop[id])->
         addListener(&listener);
 }
 
@@ -640,6 +642,13 @@ void Group::createParameterLayout(
         ParameterOptions::toggleButtonOptions,
         0
     ));
+
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        ParameterNames::groupLoop[id],
+        "Loop",
+        ParameterOptions::toggleButtonOptions,
+        0
+    ));
 }
 
 //==============================================================================
@@ -647,6 +656,7 @@ void Group::loadParameters() {
     length = lengthParameter->load() + 1;
     plusSixteen = plusSixteenParameter->load();
     enabled = (bool) enabledParameter->load();
+    loop = (bool) loopParameter->load();
 }
 
 //==============================================================================
