@@ -205,6 +205,7 @@ public:
     void LoadState(Group*, Strip*);
 
 private:
+    bool open;
     BreaQAudioProcessor& audioProcessor;
     BreaQLookAndFeel breaQLookAndFeel;
 

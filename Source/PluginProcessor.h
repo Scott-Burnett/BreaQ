@@ -110,7 +110,8 @@ public:
     ~Step();
 
     static Step loadFrom(Strip*, Slice*);
-    static bool differs(Step*, Step*);
+    static Step empty();
+    static bool differs(Step, Step);
 
     void clear();
 
@@ -148,7 +149,7 @@ public:
 
     void createSequence(Strip* strips);
     void takeStep(juce::MidiBuffer&, int, Strip*);
-    void newNote(Step*, Step*, juce::MidiBuffer&, int);
+    void newNote(Step, Step, juce::MidiBuffer&, int);
 
 private:
     std::atomic<float>* lengthParameter = nullptr;

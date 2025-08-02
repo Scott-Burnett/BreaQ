@@ -437,22 +437,29 @@ Step Step::loadFrom(Strip *strip, Slice *slice) {
 }
 
 //==============================================================================
-bool Step::differs(Step *first, Step *second) {
-    if (first == nullptr) {
-        return second != nullptr;
+Step Step::empty() {
+    Step step;
+    step.hasValue = false;
+
+    return step;
+}
+
+//==============================================================================
+bool Step::differs(Step first, Step second) {
+    if (!first.hasValue) {
+        return second.hasValue;
     }
 
-    if (second == nullptr) {
+    if (!second.hasValue) {
         return true;
     }
 
     return // probably overboard
-        first->hasValue != second->hasValue ||
-        first->channel != second->channel ||
-        first->noteNumber != second->noteNumber ||
-        first->velocity != second->velocity ||
-        first->strip != second->strip ||
-        first->slice != second->slice
+        first.channel != second.channel ||
+        first.noteNumber != second.noteNumber ||
+        first.velocity != second.velocity ||
+        first.strip != second.strip ||
+        first.slice != second.slice
     ;
 }
 
@@ -536,43 +543,38 @@ clearToEnd:
 
 //==============================================================================
 void Group::takeStep(juce::MidiBuffer& midiBuffer, int samplePos, Strip* strips) {
-    Step* currentStep = isOn
-        ? &sequence[step]
-        : nullptr
+    Step currentStep = isOn
+        ? sequence[step]
+        : Step::empty()
     ;
 
     if (++step >= numSteps
         /*ToDo: and not looping*/) {
-        // todo: Create sequence here
         createSequence(strips);
         step = 0;
     }
     
-    Step *newStep = 
+    Step newStep = 
         enabled &&
         sequence[step].hasValue &&
         sequence[step].strip->enabled
-        ? &sequence[step]
-        : nullptr
+        ? sequence[step]
+        : Step::empty()
     ;
 
     newNote(currentStep, newStep, midiBuffer, samplePos);
 }
 
 //==============================================================================
-void Group::newNote(Step *currentStep, Step *newStep, juce::MidiBuffer& midiBuffer, int samplePos) {
+void Group::newNote(Step currentStep, Step newStep, juce::MidiBuffer& midiBuffer, int samplePos) {
     if (Step::differs(currentStep, newStep)) {
-        if (currentStep != nullptr &&
-            currentStep->hasValue) {
-            currentStep->addNoteOffEvent(midiBuffer, samplePos);
-            // TODO: Slice & Strip isOn
+        if (currentStep.hasValue) {
+            currentStep.addNoteOffEvent(midiBuffer, samplePos);
             isOn = false;
         }
 
-        if (newStep != nullptr &&
-            newStep->hasValue) {
-            newStep->addNoteOnEvent(midiBuffer, samplePos);
-            // Here too
+        if (newStep.hasValue) {
+            newStep.addNoteOnEvent(midiBuffer, samplePos);
             isOn = true;
         }
     }

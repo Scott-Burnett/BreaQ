@@ -698,11 +698,13 @@ BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
 
     setSize(2000, 1000);
     startTimer(30);
+    open = true;
 }
 
 //==============================================================================
 BreaQAudioProcessorEditor::~BreaQAudioProcessorEditor() {
     juce::LookAndFeel::setDefaultLookAndFeel(nullptr);
+    open = false;
 }
 
 //==============================================================================
@@ -744,6 +746,8 @@ void BreaQAudioProcessorEditor::resized () {
         groups[i].resized(groupBounds.removeFromTop(groupHeight));
     }
 
+    bounds.removeFromTop(mainMargin);
+
     auto stripBounds = bounds;
 
     auto stripWidth = stripBounds.getWidth() / NUM_STRIPS;
@@ -754,11 +758,20 @@ void BreaQAudioProcessorEditor::resized () {
 
 //==============================================================================
 void BreaQAudioProcessorEditor::LoadState(Group* groupProcessors, Strip* stripProcessors) {
+    if (!open) {
+        return;
+    }
     for (int i = 0; i < NUM_GROUPS; i++) {
+        if (&groups[i] == nullptr) {
+            continue;
+        }
         groups[i].loadParameters(&groupProcessors[i]);
     }
 
     for (int i = 0; i < NUM_STRIPS; i++) {
+        if (&strips[i] == nullptr) {
+            continue;
+        }
         strips[i].loadParameters(&stripProcessors[i]);
     }
 
