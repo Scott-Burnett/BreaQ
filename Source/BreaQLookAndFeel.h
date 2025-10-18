@@ -1,6 +1,19 @@
 #pragma once
 #include <../JuceLibraryCode/JuceHeader.h>
 
+//==============================================================================
+/*
+*/
+class OptionSlider : public juce::Slider {
+public:
+	OptionSlider();
+
+	void init(const juce::StringArray& labels, int numLabels);
+
+	const juce::StringArray* labels;
+	int numLabels;
+};
+
 class BreaQLookAndFeel : public juce::LookAndFeel_V4
 {
 public:

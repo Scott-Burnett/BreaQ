@@ -28,6 +28,27 @@ static void initSlider (
 }
 
 //==============================================================================
+static void initOptionSlider(
+    std::string sliderName,
+    OptionSlider& slider,
+    const juce::StringArray& labels,
+    int numLabels,
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>& sliderAttachment,
+    juce::AudioProcessorValueTreeState& vts,
+    juce::AudioProcessorEditor& editor
+) {
+    initSlider(
+        sliderName,
+        slider,
+        sliderAttachment,
+        vts,
+        editor
+    );
+
+    slider.init(labels, numLabels);
+}
+
+//==============================================================================
 static void initButton(
     std::string buttonName,
     juce::ToggleButton& button,
@@ -41,127 +62,6 @@ static void initButton(
         new juce::AudioProcessorValueTreeState::ButtonAttachment(
             vts, buttonName, button
         ));
-}
-
-//==============================================================================
-static void DrawArc(
-    juce::Slider* slider,
-    juce::Graphics& g
-) {
-    const float rotaryStartAngle = slider->getRotaryParameters().startAngleRadians;
-    const float rotaryEndAngle = slider->getRotaryParameters().endAngleRadians;
-
-    auto bounds = slider->getBounds();
-    auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) / 2.0f;
-    auto lineW = 4.0f;
-    auto arcRadius = radius - lineW * 0.5f;
-
-    juce::Path arc;
-    arc.addCentredArc(
-        bounds.getCentreX(),
-        bounds.getCentreY(),
-        arcRadius,
-        arcRadius,
-        0.0f,
-        rotaryStartAngle,
-        rotaryEndAngle,
-        true
-    );
-
-    g.setColour(Colours::transparentOrange3);
-    g.strokePath (
-        arc,
-        juce::PathStrokeType(
-            lineW,
-            juce::PathStrokeType::curved,
-            juce::PathStrokeType::rounded
-        )
-    );
-
-    auto ang = juce::jmap((float) slider->getValue(), 
-        0.0f, 1.0f, 
-        rotaryStartAngle, rotaryEndAngle
-    );
-
-    juce::Path filledArc;
-    filledArc.addCentredArc(
-        bounds.getCentreX(),
-        bounds.getCentreY(),
-        arcRadius,
-        arcRadius,
-        0.0f,
-        rotaryStartAngle,
-        ang,
-        true
-    );
-
-    g.setGradientFill ({
-        Colours::pink, bounds.getTopLeft().toFloat(),
-        Colours::orange3, bounds.getBottomRight().toFloat(),
-        false
-    });
-
-    g.strokePath (
-        filledArc,
-        juce::PathStrokeType(
-            1.2f,
-            juce::PathStrokeType::curved,
-            juce::PathStrokeType::rounded
-        )
-    );
-}
-
-//==============================================================================
-static void DrawLabels(
-    const juce::StringArray labels,
-    int numLabels,
-    int highlight,
-    bool doubleHighlightAtFull,
-    juce::Slider *slider,
-    juce::Graphics& g
-) {
-    auto bounds = slider->getBounds();
-    auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) / 2.0f;
-
-    float rotaryStartAngle = slider->getRotaryParameters().startAngleRadians;
-    float rotaryEndAngle = slider->getRotaryParameters().endAngleRadians;
-
-    float sliderPos = slider->getValue();
-
-    float pos = 0;
-    float inc = 1.0f / (float)(numLabels - 1);
-
-    for (int i = 0; i < numLabels; i++, pos += inc) {
-        auto ang = juce::jmap(pos, 0.0f, 1.0f, rotaryStartAngle, rotaryEndAngle);
-        auto c = bounds.getCentre().getPointOnCircumference(radius + 1.0f, ang);
-
-        juce::Rectangle<float> r;
-        juce::String str = labels[i];
-
-        r.setSize(g.getCurrentFont().getStringWidthFloat(str), g.getCurrentFont().getStringWidthFloat(str));
-        r.setCentre(c);
-
-        if (doubleHighlightAtFull &&
-            (int) sliderPos == i &&
-            highlight == i) {
-            g.setColour(Colours::aquamarine);
-        }
-        else if ((int)sliderPos == i) {
-            g.setColour(Colours::orange3);
-        }
-        else if (highlight >= i) {
-            g.setGradientFill({
-                Colours::pink, bounds.getTopLeft().toFloat(),
-                Colours::orange3, bounds.getBottomRight().toFloat(),
-                false
-                });
-        }
-        else {
-            g.setColour(Colours::transparentOrange3);
-        }
-
-        g.drawFittedText(str, r.toNearestInt(), juce::Justification::centred, 1);
-    }
 }
 
 //==============================================================================
@@ -193,17 +93,21 @@ void SliceEditor::init (
         editor
     );
 
-    initSlider (
+    initOptionSlider(
         ParameterNames::sliceLength[sliceNumber], 
         lengthSlider, 
+        ParameterOptions::lengthOptions,
+        16,
         lengthSliderAttachment, 
         vts, 
         editor
     );
 
-    initSlider (
+    initOptionSlider (
         ParameterNames::slicePlusSixteen[sliceNumber], 
         plusSixteenSlider, 
+        ParameterOptions::plusSixteenOptions,
+        9,
         plusSixteenSliderAttachment, 
         vts, 
         editor
@@ -281,10 +185,6 @@ void SliceEditor::paint(juce::Graphics& g) {
         return;
     }*/
 
-    DrawArc(&probabilitySlider, g);
-    DrawLabels(ParameterOptions::lengthOptions, 16, length, false, &lengthSlider, g);
-    DrawLabels(ParameterOptions::plusSixteenOptions, 9, plusSixteen, false, &plusSixteenSlider, g);
-
     if (isOn) {
         g.setColour(Colours::orange3);
         g.drawRect(bounds, 4);
@@ -324,17 +224,21 @@ void StripEditor::init (
         editor
     );
 
-    initSlider (
+    initOptionSlider (
         ParameterNames::stripGroup[stripNumber], 
         groupSlider, 
+        ParameterOptions::groupOptions,
+        NUM_GROUPS,
         groupSliderAttachment, 
         vts, 
         editor
     );
 
-    initSlider(
+    initOptionSlider(
         ParameterNames::stripChoice[stripNumber],
         choiceSlider,
+        ParameterOptions::choiceOptions,
+        NUM_CHOICES,
         choiceSliderAttachment,
         vts,
         editor
@@ -375,15 +279,6 @@ void StripEditor::resized (juce::Rectangle<int> bounds) {
         .removeFromBottom(enabledBounds.getHeight() * enabledFactor)
         .reduced(10);
     enabledButton.setBounds(enabledBounds);
-
-    /*auto bypassedBounds = bounds;
-    bypassedBounds = 
-        bypassedBounds
-        .removeFromLeft(bypassedBounds.getWidth() * enabledFactor)
-        .removeFromBottom(bypassedBounds.getHeight() * enabledFactor)
-        .reduced(10);
-    bypassedBounds.setPosition(bypassedBounds.getX() + enabledBounds.getWidth() - 7, bypassedBounds.getY());
-    bypassedButton.setBounds(bypassedBounds);*/
 
     auto probabilityBounds = bounds;
     probabilityBounds = 
@@ -427,10 +322,6 @@ void StripEditor::paint(juce::Graphics& g) {
     /*if (!needsRepaint) {
         return;
     }*/
-
-    DrawArc(&probabilitySlider, g);
-    DrawLabels(ParameterOptions::groupOptions, NUM_GROUPS, -1, false, &groupSlider, g);
-    DrawLabels(ParameterOptions::choiceOptions, NUM_CHOICES, -1, false, &choiceSlider, g);
 
     g.setColour(Colours::transparentBackground2);
     g.fillRect(bounds);
@@ -493,17 +384,21 @@ void GroupEditor::init(
     juce::AudioProcessorValueTreeState& vts,
     juce::AudioProcessorEditor& editor
 ) {
-    initSlider(
+    initOptionSlider(
         ParameterNames::groupLength[groupNumber],
         lengthSlider,
+        ParameterOptions::lengthOptions,
+        16,
         lengthSliderAttachment,
         vts,
         editor
     );
 
-    initSlider(
+    initOptionSlider(
         ParameterNames::groupPlusSixteen[groupNumber],
         plusSixteenSlider,
+        ParameterOptions::plusSixteenOptions,
+        9,
         plusSixteenSliderAttachment,
         vts,
         editor
@@ -535,18 +430,6 @@ void GroupEditor::paint(juce::Graphics& g) {
     auto blockWidth = this->sequenceBounds.getWidth() / MAX_STEPS;
 
     auto workingBounds = sequenceBounds;
-
-    /*g.setColour(Colours::transparentOrange3);
-    for (int row = 0; row < NUM_STRIPS; row++) {
-        auto blockRect = workingBounds.removeFromBottom(blockHeight);
-        for (int column = 0; column < 4; column++) {
-            auto nextBlock = blockRect.removeFromLeft(blockWidth);
-
-            g.fillRect(nextBlock);
-        }
-
-        workingBounds.removeFromLeft(blockWidth * 18);
-    }*/
 
     g.setColour(Colours::transparentOrange3);
 
@@ -585,10 +468,6 @@ void GroupEditor::paint(juce::Graphics& g) {
 
     g.setColour(Colours::transparentBackground2);
     g.fillRect(workingBounds);
-
-    // Draw Sequence
-    // for (int i = 0; i < numSteps)
-
 
     g.setColour(Colours::transparentBackground2);
     g.fillRect(bounds);
@@ -705,6 +584,9 @@ BreaQAudioProcessorEditor::~BreaQAudioProcessorEditor() {
 
 //==============================================================================
 void BreaQAudioProcessorEditor::paint (juce::Graphics& g) {
+    /*if (!needsRepaint) {
+        return;
+    }*/
     g.fillAll(Colours::background1);
 
     for (int i = 0; i < NUM_GROUPS; i++) {

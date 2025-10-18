@@ -35,10 +35,10 @@ private:
     juce::Slider probabilitySlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> probabilitySliderAttachment;
 
-    juce::Slider lengthSlider;
+    OptionSlider lengthSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> lengthSliderAttachment;
 
-    juce::Slider plusSixteenSlider;
+    OptionSlider plusSixteenSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> plusSixteenSliderAttachment;
 
     juce::ToggleButton enabledButton;
@@ -77,35 +77,14 @@ private:
     juce::Slider probabilitySlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> probabilitySliderAttachment;
 
-    juce::Slider groupSlider;
+    OptionSlider groupSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> groupSliderAttachment;
 
-    juce::Slider choiceSlider;
+    OptionSlider choiceSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> choiceSliderAttachment;
-
-    juce::Slider noteSlider;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> noteSliderAttachment;
 
     juce::ToggleButton enabledButton;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> enabledButtonAttachment;
-};
-
-//==============================================================================
-/*
-*/
-class SequenceEditor {
-public:
-    SequenceEditor();
-    ~SequenceEditor();
-
-    void paint(juce::Graphics&);
-    void resized(juce::Rectangle<int>);
-
-private:
-    Step *steps;
-
-    bool needsRepaint;
-    juce::Rectangle<int> bounds;
 };
 
 //==============================================================================
@@ -143,10 +122,10 @@ private:
 
     juce::Rectangle<int> sequenceBounds;
 
-    juce::Slider lengthSlider;
+    OptionSlider lengthSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> lengthSliderAttachment;
 
-    juce::Slider plusSixteenSlider;
+    OptionSlider plusSixteenSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> plusSixteenSliderAttachment;
 
     juce::ToggleButton enabledButton;
@@ -155,32 +134,6 @@ private:
     juce::ToggleButton loopButton;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> loopButtonAttachment;
 };
-
-////==============================================================================
-///*
-//*/
-//class GlobalEditor {
-//    GlobalEditor();
-//    ~GlobalEditor();
-//
-//    void init(
-//        int,
-//        juce::AudioProcessorValueTreeState&,
-//        juce::AudioProcessorEditor&
-//    );
-//
-//    void paint(juce::Graphics&);
-//    void resized(juce::Rectangle<int>);
-//
-//    void loadParameters(GlobalDto&);
-//
-//    int sixteenthCount;
-//    int quarterCount;
-//    int wholeCount;
-//
-//    bool needsRepaint;
-//    juce::Rectangle<int> bounds;
-//};
 
 //==============================================================================
 /*
@@ -205,7 +158,6 @@ private:
     BreaQAudioProcessor& audioProcessor;
     BreaQLookAndFeel breaQLookAndFeel;
 
-    // GlobalEditor* global;
     GroupEditor* groups;
     StripEditor* strips;
 
