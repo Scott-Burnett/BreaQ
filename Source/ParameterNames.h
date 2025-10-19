@@ -25,11 +25,20 @@ public:
     const static std::string stripNote[32];
     const static std::string stripEnabled[32];
     const static std::string stripBypassed[32];
+    const static std::string stripChoke[32];
+    const static std::string stripVariants[32];
     // Groups
     const static std::string groupEnabled[NUM_GROUPS];
     const static std::string groupLoop[NUM_GROUPS];
     const static std::string groupLength[NUM_GROUPS];
     const static std::string groupPlusSixteen[NUM_GROUPS];
+    const static std::string groupTjopLength[NUM_GROUPS];
+    const static std::string groupTjopLengthMultiplier[NUM_GROUPS];
+    const static std::string groupIntervalLength[NUM_GROUPS];
+    const static std::string groupIntervalLengthMultiplier[NUM_GROUPS];
+    const static std::string groupSequenceLength[NUM_GROUPS];
+    const static std::string groupSequenceLengthMultiplier[NUM_GROUPS];
+    const static std::string groupDensity[NUM_GROUPS];
 };
 
 //==============================================================================
@@ -42,6 +51,7 @@ public:
     const static juce::StringArray choiceOptions;
     const static juce::StringArray lengthOptions;
     const static juce::StringArray plusSixteenOptions;
+    const static juce::StringArray variantsOptions;
 };
 
 //==============================================================================

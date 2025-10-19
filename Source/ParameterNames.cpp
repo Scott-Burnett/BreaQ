@@ -736,6 +736,76 @@ const std::string ParameterNames::stripBypassed[32] = {
     "StripBypassed31"
 };
 
+const std::string ParameterNames::stripChoke[32] = {
+    "StripChoke0",
+    "StripChoke1",
+    "StripChoke2",
+    "StripChoke3",
+    "StripChoke4",
+    "StripChoke5",
+    "StripChoke6",
+    "StripChoke7",
+    "StripChoke8",
+    "StripChoke9",
+    "StripChoke10",
+    "StripChoke11",
+    "StripChoke12",
+    "StripChoke13",
+    "StripChoke14",
+    "StripChoke15",
+    "StripChoke16",
+    "StripChoke17",
+    "StripChoke18",
+    "StripChoke19",
+    "StripChoke20",
+    "StripChoke21",
+    "StripChoke22",
+    "StripChoke23",
+    "StripChoke24",
+    "StripChoke25",
+    "StripChoke26",
+    "StripChoke27",
+    "StripChoke28",
+    "StripChoke29",
+    "StripChoke30",
+    "StripChoke31"
+};
+
+const std::string ParameterNames::stripVariants[32] = {
+    "StripVariants0",
+    "StripVariants1",
+    "StripVariants2",
+    "StripVariants3",
+    "StripVariants4",
+    "StripVariants5",
+    "StripVariants6",
+    "StripVariants7",
+    "StripVariants8",
+    "StripVariants9",
+    "StripVariants10",
+    "StripVariants11",
+    "StripVariants12",
+    "StripVariants13",
+    "StripVariants14",
+    "StripVariants15",
+    "StripVariants16",
+    "StripVariants17",
+    "StripVariants18",
+    "StripVariants19",
+    "StripVariants20",
+    "StripVariants21",
+    "StripVariants22",
+    "StripVariants23",
+    "StripVariants24",
+    "StripVariants25",
+    "StripVariants26",
+    "StripVariants27",
+    "StripVariants28",
+    "StripVariants29",
+    "StripVariants30",
+    "StripVariants31"
+};
+
 const std::string ParameterNames::groupLength[NUM_GROUPS] = {
     "groupLength0",
     "groupLength1",
@@ -764,6 +834,55 @@ const std::string ParameterNames::groupLoop[NUM_GROUPS] = {
     "groupLoop3"
 };
 
+const std::string ParameterNames::groupTjopLength[NUM_GROUPS] = {
+    "groupTjopLength0",
+    "groupTjopLength1",
+    "groupTjopLength2",
+    "groupTjopLength3"
+};
+
+const std::string ParameterNames::groupTjopLengthMultiplier[NUM_GROUPS] = {
+    "groupTjopLengthMultiplier0",
+    "groupTjopLengthMultiplier1",
+    "groupTjopLengthMultiplier2",
+    "groupTjopLengthMultiplier3"
+};
+
+const std::string ParameterNames::groupIntervalLength[NUM_GROUPS] = {
+    "groupIntervalLength0",
+    "groupIntervalLength1",
+    "groupIntervalLength2",
+    "groupIntervalLength3"
+};
+
+const std::string ParameterNames::groupIntervalLengthMultiplier[NUM_GROUPS] = {
+    "groupIntervalLengthMultiplier0",
+    "groupIntervalLengthMultiplier1",
+    "groupIntervalLengthMultiplier2",
+    "groupIntervalLengthMultiplier3"
+};
+
+const std::string ParameterNames::groupSequenceLength[NUM_GROUPS] = {
+    "groupSequenceLength0",
+    "groupSequenceLength1",
+    "groupSequenceLength2",
+    "groupSequenceLength3"
+};
+
+const std::string ParameterNames::groupSequenceLengthMultiplier[NUM_GROUPS] = {
+    "groupSequenceLengthMultiplier0",
+    "groupSequenceLengthMultiplier1",
+    "groupSequenceLengthMultiplier2",
+    "groupSequenceLengthMultiplier3"
+};
+
+const std::string ParameterNames::groupDensity[NUM_GROUPS] = {
+    "groupDensity0",
+    "groupDensity1",
+    "groupDensity2",
+    "groupDensity3"
+};
+
 // Parameter Options
 const juce::StringArray ParameterOptions::toggleButtonOptions = {
     "On",
@@ -785,6 +904,11 @@ const juce::StringArray ParameterOptions::lengthOptions = {
 
 const juce::StringArray ParameterOptions::plusSixteenOptions = {
     "+0", "+16", "+32", "+48", "+64", "+80", "+96", "+112", "+128"
+};
+
+const juce::StringArray ParameterOptions::variantsOptions = {
+    "1", "2", "3", "4", "5", "6", "7", "8", 
+    "9", "10", "11", "12", "13", "14", "15", "16"
 };
 
 // Colours

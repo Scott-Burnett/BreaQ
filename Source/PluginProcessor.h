@@ -71,6 +71,10 @@ public:
     bool enabled;
     bool isOn;
 
+    // New Stuff
+    float choke;
+    int variants;
+
     Strip();
     ~Strip();
 
@@ -87,6 +91,10 @@ private:
     std::atomic<float>* choiceParameter = nullptr;
     std::atomic<float>* enabledParameter = nullptr;
     std::atomic<float>* bypassedParameter = nullptr;
+
+    // New Stuff
+    std::atomic<float>* chokeParameter = nullptr;
+    std::atomic<float>* variantsParameter = nullptr;
 };
 
 //==============================================================================
@@ -152,6 +160,14 @@ private:
     std::atomic<float>* plusSixteenParameter = nullptr;
     std::atomic<float>* enabledParameter = nullptr;
     std::atomic<float>* loopParameter = nullptr;
+    // New Stuff
+    std::atomic<float>* tjopLengthParameter = nullptr;
+    std::atomic<float>* tjopLengthMultiplierParameter = nullptr;
+    std::atomic<float>* intervalLengthParameter = nullptr;
+    std::atomic<float>* intervalLengthMultiplierParameter = nullptr;
+    std::atomic<float>* sequenceLengthParameter = nullptr;
+    std::atomic<float>* sequenceLengthMultiplierParameter = nullptr;
+    std::atomic<float>* densityParameter = nullptr;
 };
 
 //==============================================================================

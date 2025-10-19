@@ -252,6 +252,10 @@ void StripEditor::init (
         editor
     );
 
+    // TODO:
+    // Choke
+    // Variant
+
     for (int i = 0, offset = stripNumber * NUM_SLICES; i < NUM_SLICES; i++) {
         slices[i].init(i + offset, vts, editor);
     }

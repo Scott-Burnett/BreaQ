@@ -289,6 +289,12 @@ void Strip::init (
     bypassedParameter = vts.getRawParameterValue(
         ParameterNames::stripBypassed[stripId]
     );
+    chokeParameter = vts.getRawParameterValue(
+        ParameterNames::stripChoke[stripId]
+    );
+    variantsParameter = vts.getRawParameterValue(
+        ParameterNames::stripVariants[stripId]
+    );
 
     vts.getParameter(ParameterNames::stripProbability[stripId])->
         addListener(&listener);
@@ -299,6 +305,10 @@ void Strip::init (
     vts.getParameter(ParameterNames::stripEnabled[stripId])->
         addListener(&listener);
     vts.getParameter(ParameterNames::stripBypassed[stripId])->
+        addListener(&listener);
+    vts.getParameter(ParameterNames::stripChoke[stripId])->
+        addListener(&listener);
+    vts.getParameter(ParameterNames::stripVariants[stripId])->
         addListener(&listener);
 
     for (int i = 0, offset = stripId * NUM_SLICES; i < NUM_SLICES; i++) {
@@ -344,6 +354,22 @@ void Strip::createParameterLayout (
         ParameterNames::stripBypassed[stripId], 
         "Bypass", 
         ParameterOptions::toggleButtonOptions,
+        0
+    ));
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat> (
+        ParameterNames::stripChoke[stripId], 
+        "Choke", 
+        juce::NormalisableRange {
+            0.0f, 1.0f, 0.01f, 1.0f, false
+        },
+        0.0f
+    ));
+
+    layout.add(std::make_unique<juce::AudioParameterChoice> (
+        ParameterNames::stripVariants[stripId], 
+        "Group", 
+        ParameterOptions::variantsOptions,
         0
     ));
 
@@ -607,6 +633,27 @@ void Group::init(
     loopParameter = vts.getRawParameterValue(
         ParameterNames::groupLoop[id]
     );
+    tjopLengthParameter = vts.getRawParameterValue(
+        ParameterNames::groupTjopLength[id]
+    );
+    tjopLengthMultiplierParameter = vts.getRawParameterValue(
+        ParameterNames::groupTjopLengthMultiplier[id]
+    );
+    intervalLengthParameter = vts.getRawParameterValue(
+        ParameterNames::groupIntervalLength[id]
+    );
+    intervalLengthMultiplierParameter = vts.getRawParameterValue(
+        ParameterNames::groupIntervalLengthMultiplier[id]
+    );
+    sequenceLengthParameter = vts.getRawParameterValue(
+        ParameterNames::groupSequenceLength[id]
+    );
+    sequenceLengthMultiplierParameter = vts.getRawParameterValue(
+        ParameterNames::groupSequenceLengthMultiplier[id]
+    );
+    densityParameter = vts.getRawParameterValue(
+        ParameterNames::groupDensity[id]
+    );
 
     vts.getParameter(ParameterNames::groupLength[id])->
         addListener(&listener);
@@ -615,6 +662,20 @@ void Group::init(
     vts.getParameter(ParameterNames::groupEnabled[id])->
         addListener(&listener);
     vts.getParameter(ParameterNames::groupLoop[id])->
+        addListener(&listener);
+    vts.getParameter(ParameterNames::groupTjopLength[id])->
+        addListener(&listener);
+    vts.getParameter(ParameterNames::groupTjopLengthMultiplier[id])->
+        addListener(&listener);
+    vts.getParameter(ParameterNames::groupIntervalLength[id])->
+        addListener(&listener);
+    vts.getParameter(ParameterNames::groupIntervalLengthMultiplier[id])->
+        addListener(&listener);
+    vts.getParameter(ParameterNames::groupSequenceLength[id])->
+        addListener(&listener);
+    vts.getParameter(ParameterNames::groupSequenceLengthMultiplier[id])->
+        addListener(&listener);
+    vts.getParameter(ParameterNames::groupDensity[id])->
         addListener(&listener);
 }
 
@@ -648,6 +709,51 @@ void Group::createParameterLayout(
         "Loop",
         ParameterOptions::toggleButtonOptions,
         0
+    ));
+
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        ParameterNames::groupTjopLength[id],
+        "TjopLength",
+        ParameterOptions::lengthOptions,
+        0
+    ));
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        ParameterNames::groupTjopLengthMultiplier[id],
+        "TjopLengthMultiplier",
+        ParameterOptions::lengthOptions,
+        0
+    ));
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        ParameterNames::groupIntervalLength[id],
+        "IntervalLength",
+        ParameterOptions::lengthOptions,
+        0
+    ));
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        ParameterNames::groupIntervalLengthMultiplier[id],
+        "IntervalLengthMultiplier",
+        ParameterOptions::lengthOptions,
+        0
+    ));
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        ParameterNames::groupSequenceLength[id],
+        "SequenceLength",
+        ParameterOptions::lengthOptions,
+        0
+    ));
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        ParameterNames::groupSequenceLengthMultiplier[id],
+        "SequenceLengthMultiplier",
+        ParameterOptions::lengthOptions,
+        0
+    ));
+    layout.add(std::make_unique<juce::AudioParameterFloat> (
+        ParameterNames::groupDensity[id], 
+        "Density", 
+        juce::NormalisableRange {
+            0.0f, 1.0f, 0.01f, 1.0f, false
+        },
+        0.0f
     ));
 }
 
