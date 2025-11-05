@@ -65,135 +65,6 @@ static void initButton(
 }
 
 //==============================================================================
-SliceEditor::SliceEditor() {
-    isOn = false;
-    isEnabled = false;
-    length = 0;
-    plusSixteen = 0;
-
-    needsRepaint = false;
-}
-
-//==============================================================================
-SliceEditor::~SliceEditor() {
-    
-}
-
-//==============================================================================
-void SliceEditor::init (
-    int sliceNumber,
-    juce::AudioProcessorValueTreeState& vts,
-    juce::AudioProcessorEditor& editor
-) {
-    initSlider (
-        ParameterNames::sliceProbability[sliceNumber], 
-        probabilitySlider, 
-        probabilitySliderAttachment, 
-        vts, 
-        editor
-    );
-
-    initOptionSlider(
-        ParameterNames::sliceLength[sliceNumber], 
-        lengthSlider, 
-        ParameterOptions::lengthOptions,
-        16,
-        lengthSliderAttachment, 
-        vts, 
-        editor
-    );
-
-    initOptionSlider (
-        ParameterNames::slicePlusSixteen[sliceNumber], 
-        plusSixteenSlider, 
-        ParameterOptions::plusSixteenOptions,
-        9,
-        plusSixteenSliderAttachment, 
-        vts, 
-        editor
-    );
-
-    initButton (
-        ParameterNames::sliceEnabled[sliceNumber], 
-        enabledButton, 
-        enabledButtonAttachment, 
-        vts, 
-        editor
-    );
-}
-
-//==============================================================================
-void SliceEditor::resized(juce::Rectangle<int> bounds) {
-    const float probabilityFactor = 0.6f;
-    const float enabledFactor = 0.4f;
-    const float lengthFactor = 0.6f;
-    const float plusSixteenFactor = 1.0f - probabilityFactor;
-
-    this->bounds = bounds;
-
-    bounds = bounds.reduced(6);
-
-    auto enabledBounds = bounds;
-    enabledBounds = 
-        enabledBounds
-        .removeFromLeft(enabledBounds.getWidth() * enabledFactor)
-        .removeFromBottom(enabledBounds.getHeight() * enabledFactor)
-        .reduced(10);
-    enabledButton.setBounds(enabledBounds);
-
-    auto probabilityBounds = bounds;
-    probabilityBounds = 
-        probabilityBounds
-        .removeFromLeft(probabilityBounds.getWidth() * probabilityFactor)
-        .removeFromTop(probabilityBounds.getHeight() * probabilityFactor);
-    probabilitySlider.setBounds(probabilityBounds);
-
-    auto plusSixteenbounds = bounds;
-    plusSixteenbounds = 
-        plusSixteenbounds
-        .removeFromRight(plusSixteenbounds.getWidth() * plusSixteenFactor)
-        .removeFromTop(plusSixteenbounds.getWidth() * plusSixteenFactor)
-        .reduced(4);
-    plusSixteenSlider.setBounds(plusSixteenbounds);
-
-    auto lengthBounds = bounds;
-    lengthBounds = 
-        lengthBounds
-        .removeFromRight(lengthBounds.getWidth() * lengthFactor)
-        .removeFromBottom(lengthBounds.getHeight() * lengthFactor);
-
-    lengthSlider.setBounds(lengthBounds);
-}
-
-//==============================================================================
-void SliceEditor::loadParameters(Slice* slice) {
-    if (isOn != slice->isOn ||
-        isEnabled != slice->enabled ||
-        length != slice->length ||
-        plusSixteen != slice->plusSixteen) {
-            needsRepaint = true;
-            isOn = slice->isOn;
-            isEnabled = slice->enabled;
-            length = slice->length;
-            plusSixteen = slice->plusSixteen;
-    }
-}
-
-//==============================================================================
-void SliceEditor::paint(juce::Graphics& g) {
-    /*if (!needsRepaint) {
-        return;
-    }*/
-
-    if (isOn) {
-        g.setColour(Colours::orange3);
-        g.drawRect(bounds, 4);
-    }
-
-    needsRepaint = false;
-}
-
-//==============================================================================
 StripEditor::StripEditor() {
     isOn = false;
     isEnabled = false;
@@ -201,8 +72,6 @@ StripEditor::StripEditor() {
     choice = 0;
 
     needsRepaint = false;
-
-    slices = new SliceEditor[NUM_SLICES];
 }
 
 //==============================================================================
@@ -252,13 +121,23 @@ void StripEditor::init (
         editor
     );
 
-    // TODO:
-    // Choke
-    // Variant
+    initSlider (
+        ParameterNames::stripChoke[stripNumber], 
+        chokeSlider, 
+        chokeSliderAttachment, 
+        vts, 
+        editor
+    );
 
-    for (int i = 0, offset = stripNumber * NUM_SLICES; i < NUM_SLICES; i++) {
-        slices[i].init(i + offset, vts, editor);
-    }
+    initOptionSlider(
+        ParameterNames::stripVariants[stripNumber],
+        variantsSlider,
+        ParameterOptions::variantsOptions,
+        16,
+        variantsSliderAttachment,
+        vts,
+        editor
+    );
 }
 
 //==============================================================================
@@ -307,22 +186,10 @@ void StripEditor::resized (juce::Rectangle<int> bounds) {
         .removeFromBottom(choiceBounds.getHeight() * choiceFactor);
     choiceBounds.setPosition(choiceBounds.getX() + 8, choiceBounds.getY() - 10);
     choiceSlider.setBounds(choiceBounds);
-
-    // _________________________________________________
-
-    auto sliceHeight = sliceBounds.getHeight() / NUM_SLICES;
-    for (int i = 0; i < NUM_SLICES; i++) {
-        slices[i].resized(sliceBounds.removeFromTop(sliceHeight));
-    }
 }
 
 //==============================================================================
 void StripEditor::paint(juce::Graphics& g) {
-    // Paint Slices
-    for (int i = 0; i < NUM_SLICES; i++) {
-        slices[i].paint(g);
-    }
-
     /*if (!needsRepaint) {
         return;
     }*/
@@ -353,10 +220,6 @@ void StripEditor::loadParameters(Strip* strip) {
             isEnabled = strip->enabled;
             group = strip->group;
             choice = strip->choice;
-    }
-
-    for (int i = 0; i < NUM_SLICES; i++) {
-        slices[i].loadParameters(&strip->slices[i]);
     }
 }
 
@@ -421,6 +284,74 @@ void GroupEditor::init(
         loopButton,
         loopButtonAttachment,
         vts,
+        editor
+    );
+
+    initOptionSlider(
+        ParameterNames::groupTjopLength[groupNumber],
+        tjopLengthSlider,
+        ParameterOptions::lengthOptions,
+        16,
+        tjopLengthSliderAttachment,
+        vts,
+        editor
+    );
+
+    initOptionSlider(
+        ParameterNames::groupTjopLengthMultiplier[groupNumber],
+        tjopLengthMultiplierSlider,
+        ParameterOptions::lengthOptions,
+        16,
+        tjopLengthMultiplierSliderAttachment,
+        vts,
+        editor
+    );
+
+    initOptionSlider(
+        ParameterNames::groupIntervalLength[groupNumber],
+        intervalLengthSlider,
+        ParameterOptions::lengthOptions,
+        16,
+        intervalLengthSliderAttachment,
+        vts,
+        editor
+    );
+
+    initOptionSlider(
+        ParameterNames::groupIntervalLengthMultiplier[groupNumber],
+        intervalLengthMultiplierSlider,
+        ParameterOptions::lengthOptions,
+        16,
+        intervalLengthMultiplierSliderAttachment,
+        vts,
+        editor
+    );
+
+    initOptionSlider(
+        ParameterNames::groupSequenceLength[groupNumber],
+        sequenceLengthSlider,
+        ParameterOptions::lengthOptions,
+        16,
+        sequenceLengthSliderAttachment,
+        vts,
+        editor
+    );
+
+    initOptionSlider(
+        ParameterNames::groupSequenceLengthMultiplier[groupNumber],
+        sequenceLengthMultiplierSlider,
+        ParameterOptions::lengthOptions,
+        16,
+        sequenceLengthMultiplierSliderAttachment,
+        vts,
+        editor
+    );
+
+    initSlider (
+        ParameterNames::groupDensity[groupNumber], 
+        densitySlider, 
+        densitySliderAttachment, 
+        vts, 
         editor
     );
 }

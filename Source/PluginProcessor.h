@@ -27,40 +27,8 @@ private:
 //==============================================================================
 /**
 */
-class Slice {
-public:
-    float probability;
-    int length;
-    int plusSixteen;
-    int sliceId;
-    bool enabled;
-    bool isOn;
-
-    Slice();
-    ~Slice();
-
-    bool isPreparedToPlay();
-
-    void setSliceId(int);
-    void init(juce::AudioProcessorValueTreeState&, juce::AudioProcessorParameter::Listener&);
-    void createParameterLayout(juce::AudioProcessorValueTreeState::ParameterLayout&);
-    void loadParameters();
-
-private:
-    std::atomic<float>* probabilityParameter = nullptr;
-    std::atomic<float>* lengthParameter = nullptr;
-    std::atomic<float>* plusSixteenParameter = nullptr;
-    std::atomic<float>* enabledParameter = nullptr;
-};
-
-//==============================================================================
-/**
-*/
 class Strip {
 public:
-    Slice* slices;
-    Slice* currentSlice;
-
     Lock lock;
 
     float probability;
@@ -109,12 +77,11 @@ public:
     juce::uint8 velocity;
 
     Strip* strip;
-    Slice* slice;
 
     Step();
     ~Step();
 
-    static Step loadFrom(Strip*, Slice*);
+    static Step loadFrom(Strip*);
     static Step empty();
     static bool differs(Step, Step);
 

@@ -3,33 +3,6 @@
 #include "ParameterNames.h"
 
 //==============================================================================
-static Slice* choose (
-    Slice* items,
-    std::function<bool(Slice*)> predicate
-) {
-    int candidates = 0;
-    int lookup[NUM_SLICES];
-    float maxProbability = 0.0f;
-    for (int i = 0; i < NUM_SLICES; i++) {
-        if (predicate(&items[i])) {
-            lookup[candidates++] = i;
-            maxProbability += items[i].probability;
-        }
-    }
-
-    float r = juce::Random::getSystemRandom().nextFloat() * maxProbability;
-    float p = 0.0f;
-    for (int i = 0; i < candidates; i++) {
-        p += items[lookup[i]].probability;
-        if (p >= r) {
-            return &items[lookup[i]];
-        }
-    }
-
-    return nullptr;
-}
-
-//==============================================================================
 static Strip* choose (
     Strip* items,
     std::function<bool(Strip*)> predicate
@@ -124,103 +97,6 @@ Lock::Lock(int* key) {
 }
 
 //==============================================================================
-Slice::Slice() {
-    probability = 0.0f;
-    length = 0;
-    plusSixteen = 0;
-    sliceId = 0;
-    enabled = false;
-    isOn = false;
-}
-
-//==============================================================================
-Slice::~Slice() {
-
-}
-
-//==============================================================================
-bool Slice::isPreparedToPlay() {
-    return
-        enabled &&
-        probability > 0.0f;
-}
-//==============================================================================
-void Slice::setSliceId(int id) {
-    sliceId = id;
-}
-
-//==============================================================================
-void Slice::init (
-    juce::AudioProcessorValueTreeState& vts, 
-    juce::AudioProcessorParameter::Listener& listener
-) {
-    probabilityParameter = vts.getRawParameterValue(
-        ParameterNames::sliceProbability[sliceId]
-    );
-    lengthParameter = vts.getRawParameterValue(
-        ParameterNames::sliceLength[sliceId]
-    );
-    plusSixteenParameter = vts.getRawParameterValue(
-        ParameterNames::slicePlusSixteen[sliceId]
-    );
-    enabledParameter = vts.getRawParameterValue(
-        ParameterNames::sliceEnabled[sliceId]
-    );
-
-    vts.getParameter(ParameterNames::sliceProbability[sliceId])->
-        addListener(&listener);
-    vts.getParameter(ParameterNames::sliceLength[sliceId])->
-        addListener(&listener);
-    vts.getParameter(ParameterNames::slicePlusSixteen[sliceId])->
-        addListener(&listener);
-    vts.getParameter(ParameterNames::sliceEnabled[sliceId])->
-        addListener(&listener);
-}
-
-//==============================================================================
-void Slice::createParameterLayout (
-    juce::AudioProcessorValueTreeState::ParameterLayout& layout
-) {
-    layout.add(std::make_unique<juce::AudioParameterFloat> (
-        ParameterNames::sliceProbability[sliceId], 
-        "Probability", 
-        juce::NormalisableRange {
-            0.0f, 1.0f, 0.01f, 1.0f, false
-        },
-        0.0f
-    ));
-
-    layout.add(std::make_unique<juce::AudioParameterChoice> (
-        ParameterNames::sliceLength[sliceId], 
-        "Length", 
-        ParameterOptions::lengthOptions,
-        0
-    ));
-
-    layout.add(std::make_unique<juce::AudioParameterChoice> (
-        ParameterNames::slicePlusSixteen[sliceId], 
-        "plusSixteen", 
-        ParameterOptions::plusSixteenOptions,
-        0
-    ));
-
-    layout.add(std::make_unique<juce::AudioParameterChoice> (
-        ParameterNames::sliceEnabled[sliceId], 
-        "Enabled", 
-        ParameterOptions::toggleButtonOptions,
-        0
-    ));
-}
-
-//==============================================================================
-void Slice::loadParameters() {
-    probability = probabilityParameter->load();
-    length = lengthParameter->load() + 1;
-    plusSixteen = plusSixteenParameter->load();
-    enabled = (bool) enabledParameter->load();
-}
-
-//==============================================================================
 Strip::Strip() {
     probability = 0.0f;
     group = 0;
@@ -231,10 +107,6 @@ Strip::Strip() {
     isOn = false;
 
     lock = Lock(&group);
-
-    currentSlice = nullptr;
-
-    slices = new Slice[NUM_SLICES];
 }
 
 //==============================================================================
@@ -244,29 +116,15 @@ Strip::~Strip() {
 
 //==============================================================================
 bool Strip::isPreparedToPlay() {
-    if (!enabled ||
-        probability == 0.0f) {
-        return false;
-    }
-    // enabled && probability > 0.0f
-    for (int i = 0; i < NUM_SLICES; i++) {
-        if (slices[i].isPreparedToPlay()) {
-            // at least one slice is prepared to play
-            return true;
-        }
-    }
-
-    return false;
+    return 
+        enabled &&
+        probability > 0.0f;
 }
 
 //==============================================================================
 void Strip::setStrpId(int id) {
     stripId = id;
     // noteNumber = 60 + id;
-
-     for (int i = 0, offset = stripId * NUM_SLICES; i < NUM_SLICES; i++) {
-         slices[i].setSliceId(i + offset);
-     }
 }
 
 //==============================================================================
@@ -311,9 +169,9 @@ void Strip::init (
     vts.getParameter(ParameterNames::stripVariants[stripId])->
         addListener(&listener);
 
-    for (int i = 0, offset = stripId * NUM_SLICES; i < NUM_SLICES; i++) {
-        slices[i].init(vts, listener);
-    }
+    // for (int i = 0, offset = stripId * NUM_SLICES; i < NUM_SLICES; i++) {
+    //     slices[i].init(vts, listener);
+    // }
 }
 
 //==============================================================================
@@ -373,9 +231,9 @@ void Strip::createParameterLayout (
         0
     ));
 
-    for (int i = 0; i < NUM_SLICES; i++) {
-        slices[i].createParameterLayout(layout);
-    }
+    // for (int i = 0; i < NUM_SLICES; i++) {
+    //     slices[i].createParameterLayout(layout);
+    // }
 }
 
 //==============================================================================
@@ -385,9 +243,9 @@ void Strip::loadParameters() {
     choice = choiceParameter->load();
     enabled = (bool) enabledParameter->load();
 
-    for (int i = 0; i < NUM_SLICES; i++) {
-        slices[i].loadParameters();
-    }
+    // for (int i = 0; i < NUM_SLICES; i++) {
+    //     slices[i].loadParameters();
+    // }
 }
 
 //==============================================================================
@@ -399,7 +257,7 @@ Step::Step() {
     velocity = (juce::uint8) 127;
 
     strip = nullptr;
-    slice = nullptr;
+    // slice = nullptr;
 }
 
 //==============================================================================
@@ -411,7 +269,7 @@ Step::~Step() {
 void Step::clear() {
     hasValue = false;
     strip = nullptr;
-    slice = nullptr;
+    // slice = nullptr;
 }
 
 //==============================================================================
@@ -422,8 +280,7 @@ void Step::addNoteOnEvent(juce::MidiBuffer& midiBuffer, int samplePos) {
         ),
         samplePos
     );
-    // Todo: set strip & slice on
-    slice->isOn = true;
+    // slice->isOn = true;
     strip->isOn = true;
 }
 
@@ -435,13 +292,12 @@ void Step::addNoteOffEvent(juce::MidiBuffer& midiBuffer, int samplePos) {
         ),
         samplePos
     );
-    // Todo: set strip & slice off
-    slice->isOn = false;
+    // slice->isOn = false;
     strip->isOn = false;
 }
 
 //==============================================================================
-Step Step::loadFrom(Strip *strip, Slice *slice) {
+Step Step::loadFrom(Strip *strip /*Slice *slice*/) {
     int noteNumber = 60 + strip->choice + (strip->stripId * NUM_CHOICES);
     int channel = 1;
     // int r = juce::Random::getSystemRandom().nextInt({ 1, 127 });
@@ -452,7 +308,7 @@ Step Step::loadFrom(Strip *strip, Slice *slice) {
     step.channel = channel;
     step.velocity = velocity;
     step.strip = strip;
-    step.slice = slice;
+    // step.slice = slice;
 
     step.hasValue = true;
 
@@ -481,8 +337,8 @@ bool Step::differs(Step first, Step second) {
         first.channel != second.channel ||
         first.noteNumber != second.noteNumber ||
         first.velocity != second.velocity ||
-        first.strip != second.strip ||
-        first.slice != second.slice
+        first.strip != second.strip // ||
+        // first.slice != second.slice
     ;
 }
 
@@ -542,7 +398,7 @@ void Group::createSequence(
         );
         // Should always be at least 1 slice here
         int length = slice->length + slice->plusSixteen * 16;
-        Step next = Step::loadFrom(strip, slice);
+        Step next = Step::loadFrom(strip); 
 
         for (
             int i = 0; 
@@ -561,6 +417,8 @@ clearToEnd:
         // May not even be necessary?
         sequence[s++].clear();
     }
+
+
 }
 
 //==============================================================================

@@ -6,46 +6,6 @@
 #include "ParameterNames.h"
 
 //==============================================================================
-/* Remove Completely
-*/
-class SliceEditor {
-public:
-    SliceEditor();
-    ~SliceEditor();
-
-    void init(
-        int, 
-        juce::AudioProcessorValueTreeState&, 
-        juce::AudioProcessorEditor&
-    );
-    void paint(juce::Graphics&);
-    void resized(juce::Rectangle<int>);
-    
-    void loadParameters(Slice*);
-
-private:
-    bool isOn;
-    bool isEnabled;
-    int length;
-    int plusSixteen;
-
-    bool needsRepaint;
-    juce::Rectangle<int> bounds;
-
-    juce::Slider probabilitySlider;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> probabilitySliderAttachment;
-
-    OptionSlider lengthSlider;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> lengthSliderAttachment;
-
-    OptionSlider plusSixteenSlider;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> plusSixteenSliderAttachment;
-
-    juce::ToggleButton enabledButton;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> enabledButtonAttachment;
-};
-
-//==============================================================================
 /*
 */
 class StripEditor {
@@ -69,7 +29,7 @@ private:
     bool needsRepaint;
     juce::Rectangle<int> bounds;
     
-    SliceEditor* slices;
+    // SliceEditor* slices;
     
     // Remove
     juce::Slider probabilitySlider;
