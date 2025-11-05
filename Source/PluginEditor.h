@@ -92,14 +92,14 @@ private:
 
     // Parameters
     // Remove
-    int length;
-    OptionSlider lengthSlider;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> lengthSliderAttachment;
+    // int length;
+    // OptionSlider lengthSlider;
+    // std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> lengthSliderAttachment;
     
     // Remove
-    int plusSixteen;
-    OptionSlider plusSixteenSlider;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> plusSixteenSliderAttachment;
+    // int plusSixteen;
+    // OptionSlider plusSixteenSlider;
+    // std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> plusSixteenSliderAttachment;
     
     bool isEnabled;
     juce::ToggleButton enabledButton;

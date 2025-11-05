@@ -110,6 +110,15 @@ public:
     int numSteps;
     Step* sequence;
 
+    // new stuff
+    int tjopLength;
+    int tjopLengthMultiplier;
+    int intervalLength;
+    int intervalLengthMultiplier;
+    int sequenceLength;
+    int sequenceLengthMultiplier;
+    float density;
+
     Group();
     ~Group();
 

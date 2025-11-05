@@ -148,44 +148,34 @@ void StripEditor::resized (juce::Rectangle<int> bounds) {
     const float choiceFactor = 0.5f;
     const float plusSixteenFactor = 1.0f - probabilityFactor;
 
-    auto sliceBounds = bounds.removeFromTop(bounds.getHeight() * 0.66f);
+    // auto sliceBounds = bounds.removeFromTop(bounds.getHeight() * 0.66f);
 
     this->bounds = bounds;
     bounds = bounds.reduced(2);
     bounds = bounds.reduced(4);
     bounds = bounds.reduced(4);
 
-    auto enabledBounds = bounds;
-    enabledBounds = 
-        enabledBounds
-        .removeFromLeft(enabledBounds.getWidth() * enabledFactor)
-        .removeFromBottom(enabledBounds.getHeight() * enabledFactor)
-        .reduced(10);
+    int rows = 6;
+    float rowHeight = bounds.getHeight() / (float) rows;
+    auto rowBounds = bounds;
+
+    auto enabledBounds = rowBounds.removeFromBottom(rowHeight);
     enabledButton.setBounds(enabledBounds);
 
-    auto probabilityBounds = bounds;
-    probabilityBounds = 
-        probabilityBounds
-        .removeFromLeft(probabilityBounds.getWidth() * probabilityFactor)
-        .removeFromTop(probabilityBounds.getHeight() * probabilityFactor);
+    auto probabilityBounds = rowBounds.removeFromBottom(rowHeight);
     probabilitySlider.setBounds(probabilityBounds);
 
-    auto groupBounds = bounds;
-    groupBounds = 
-        groupBounds
-        .removeFromRight(groupBounds.getWidth() * groupFactor)
-        .removeFromTop(groupBounds.getHeight() * groupFactor)
-        .reduced(8);
-    groupBounds.setPosition(groupBounds.getX() - 10, groupBounds.getY() - 10);
+    auto groupBounds = rowBounds.removeFromBottom(rowHeight);;
     groupSlider.setBounds(groupBounds);
 
-    auto choiceBounds = bounds;
-    choiceBounds =
-        choiceBounds
-        .removeFromRight(choiceBounds.getWidth() * choiceFactor)
-        .removeFromBottom(choiceBounds.getHeight() * choiceFactor);
-    choiceBounds.setPosition(choiceBounds.getX() + 8, choiceBounds.getY() - 10);
+    auto choiceBounds = rowBounds.removeFromBottom(rowHeight);
     choiceSlider.setBounds(choiceBounds);
+
+    auto variantsBounds = rowBounds.removeFromBottom(rowHeight);
+    variantsSlider.setBounds(variantsBounds);
+
+    auto chokeBounds = rowBounds.removeFromBottom(rowHeight);
+    chokeSlider.setBounds(chokeBounds);
 }
 
 //==============================================================================
@@ -228,8 +218,8 @@ GroupEditor::GroupEditor() {
     isOn = false;
     isEnabled = false;
     loop = false;
-    length = 0;
-    plusSixteen = 0;
+    /*length = 0;
+    plusSixteen = 0;*/
 
     needsRepaint = false;
 
@@ -251,25 +241,25 @@ void GroupEditor::init(
     juce::AudioProcessorValueTreeState& vts,
     juce::AudioProcessorEditor& editor
 ) {
-    initOptionSlider(
-        ParameterNames::groupLength[groupNumber],
-        lengthSlider,
-        ParameterOptions::lengthOptions,
-        16,
-        lengthSliderAttachment,
-        vts,
-        editor
-    );
+    // initOptionSlider(
+    //     ParameterNames::groupLength[groupNumber],
+    //     lengthSlider,
+    //     ParameterOptions::lengthOptions,
+    //     16,
+    //     lengthSliderAttachment,
+    //     vts,
+    //     editor
+    // );
 
-    initOptionSlider(
-        ParameterNames::groupPlusSixteen[groupNumber],
-        plusSixteenSlider,
-        ParameterOptions::plusSixteenOptions,
-        9,
-        plusSixteenSliderAttachment,
-        vts,
-        editor
-    );
+    // initOptionSlider(
+    //     ParameterNames::groupPlusSixteen[groupNumber],
+    //     plusSixteenSlider,
+    //     ParameterOptions::plusSixteenOptions,
+    //     9,
+    //     plusSixteenSliderAttachment,
+    //     vts,
+    //     editor
+    // );
 
     initButton(
         ParameterNames::groupEnabled[groupNumber],
@@ -362,6 +352,7 @@ void GroupEditor::paint(juce::Graphics& g) {
         return;
     }*/
     auto blockHeight = this->sequenceBounds.getHeight() / NUM_STRIPS;
+    auto bombis = this->sequenceBounds.getWidth();
     auto blockWidth = this->sequenceBounds.getWidth() / MAX_STEPS;
 
     auto workingBounds = sequenceBounds;
@@ -372,7 +363,10 @@ void GroupEditor::paint(juce::Graphics& g) {
     for (int col = 0; col < numSteps; col++) {
         auto nextBlock = workingBounds.removeFromLeft(blockWidth);
         // Draw the full column
-        if (col % 4 == 0) {
+        if (step == col) {
+            g.setColour(Colours::transparentOrange3);
+        }
+        else if (col % 4 == 0) {
             g.setColour(Colours::background2);
         }
         /*else if (col % 2) {
@@ -443,23 +437,68 @@ void GroupEditor::resized(juce::Rectangle<int> bounds) {
         ;
     loopButton.setBounds(loopBounds);
 
-    auto plusSixteenbounds = bounds.removeFromRight(columnWidth);
-    plusSixteenbounds =
-        plusSixteenbounds
+    auto densityBounds = bounds.removeFromRight(columnWidth);
+    densityBounds =
+        densityBounds
         .removeFromTop(topRowHeight)
         .expanded(8)
         .translated(0, +10)
     ;
-    plusSixteenSlider.setBounds(plusSixteenbounds);
+    densitySlider.setBounds(densityBounds);
 
-    auto lengthBounds = bounds.removeFromRight(columnWidth);
-    lengthBounds =
-        lengthBounds
+    auto sequenceLengthMultiplierBounds = bounds.removeFromRight(columnWidth);
+    sequenceLengthMultiplierBounds =
+        sequenceLengthMultiplierBounds
+        .removeFromTop(topRowHeight)
+        .expanded(8)
+        .translated(0, +10)
+    ;
+    sequenceLengthMultiplierSlider.setBounds(sequenceLengthMultiplierBounds);
+
+    auto sequenceLengthBounds = bounds.removeFromRight(columnWidth);
+    sequenceLengthBounds =
+        sequenceLengthBounds
         .removeFromBottom(bottomRowHeight)
         .expanded(8)
         .translated(0, +2)
     ;
-    lengthSlider.setBounds(lengthBounds);
+    sequenceLengthSlider.setBounds(sequenceLengthBounds);
+
+    auto intervalLengthMultiplierBounds = bounds.removeFromRight(columnWidth);
+    intervalLengthMultiplierBounds =
+        intervalLengthMultiplierBounds
+        .removeFromTop(topRowHeight)
+        .expanded(8)
+        .translated(0, +10)
+    ;
+    intervalLengthMultiplierSlider.setBounds(intervalLengthMultiplierBounds);
+
+    auto intervalLengthBounds = bounds.removeFromRight(columnWidth);
+    intervalLengthBounds =
+        intervalLengthBounds
+        .removeFromBottom(bottomRowHeight)
+        .expanded(8)
+        .translated(0, +2)
+    ;
+    intervalLengthSlider.setBounds(intervalLengthBounds);
+
+    auto tjopLengthMultiplierBounds = bounds.removeFromRight(columnWidth);
+    tjopLengthMultiplierBounds =
+        tjopLengthMultiplierBounds
+        .removeFromTop(topRowHeight)
+        .expanded(8)
+        .translated(0, +10)
+    ;
+    tjopLengthMultiplierSlider.setBounds(tjopLengthMultiplierBounds);
+
+    auto tjopLengthBounds = bounds.removeFromRight(columnWidth);
+    tjopLengthBounds =
+        tjopLengthBounds
+        .removeFromBottom(bottomRowHeight)
+        .expanded(8)
+        .translated(0, +2)
+    ;
+    tjopLengthSlider.setBounds(tjopLengthBounds);
 }
 
 //==============================================================================
@@ -467,15 +506,15 @@ void GroupEditor::loadParameters(Group* group) {
     if (isOn != group->isOn ||
         isEnabled != group->enabled ||
         loop != group->loop ||
-        length != group->length ||
-        plusSixteen != group->plusSixteen ||
+        // length != group->length ||
+        // plusSixteen != group->plusSixteen ||
         step != group->step ||
         numSteps != group->numSteps) {
             needsRepaint = true;
             isOn = group->isOn;
             isEnabled = group->enabled;
-            length = group->length;
-            plusSixteen = group->plusSixteen;
+            // length = group->length;
+            // plusSixteen = group->plusSixteen;
             step = group->step;
             numSteps = group->numSteps;
             for (int i = 0; i < MAX_STEPS; i++) {

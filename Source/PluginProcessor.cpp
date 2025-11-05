@@ -356,6 +356,18 @@ Group::Group() {
     numSteps = 0;
     step = 0;
     sequence = new Step[MAX_STEPS];
+
+    sequenceLength = 0;
+    sequenceLengthMultiplier = 0;
+
+    intervalLength = 0;
+    intervalLengthMultiplier = 0;
+
+    tjopLength = 0;
+    tjopLengthMultiplier = 0;
+
+    density = 0.0f;
+
 }
 
 //==============================================================================
@@ -370,55 +382,66 @@ void Group::createSequence(
         }
     }
 
-    this->numSteps = length + plusSixteen * 16;
+    this->numSteps = sequenceLength * sequenceLengthMultiplier;
 
     int s = 0;
-    while (s < numSteps) {
-        Strip* strip = choose (
-            strips,
-            [this] (Strip* strip) -> bool {
-                return
-                    strip->isPreparedToPlay() &&
-                    strip->lock.canLock(this->id);
+    int i = 0;
+    int t = 0;
+    int sequenceSteps = sequenceLength * sequenceLengthMultiplier;
+    int intervalSteps = intervalLength * intervalLengthMultiplier;
+    int tjopSteps = tjopLength * tjopLengthMultiplier;
+
+    // TODO: Variants Kak
+    // Get all possible variants for each strip upfront
+    // then each time we get a strip, we then get the variant before finally getting the step
+
+    s = 0;
+    while (
+        s < sequenceSteps ) {
+
+        i = 0;
+        while (
+            s < sequenceSteps &&
+            i < intervalSteps) {
+            float d = juce::Random::getSystemRandom().nextFloat();
+
+            Strip* strip = d < density
+                ? choose (
+                    strips,
+                    [this] (Strip* strip) -> bool {
+                        return
+                            strip->isPreparedToPlay() &&
+                            strip->lock.canLock(this->id);
+                    }
+                )
+                : nullptr
+            ;
+
+            Step next = 
+                strip != nullptr &&
+                strip->lock.tryLock(this->id)
+                ? Step::loadFrom(strip)
+                : Step::empty()
+            ;
+
+            t = 0;
+            while (
+                s < sequenceSteps &&
+                i < intervalSteps &&
+                t < tjopSteps) {
+
+                // Choke here. if t > choke, step = empty
+                if (strip != nullptr &&
+                    t >= strip->choke) { // Not right, choke is float
+                    // next = Step::empty();
+                }
+
+                sequence[s] = next;
+
+                s++, i++, t++;
             }
-        );
-
-        if (strip == nullptr ||
-            !strip->lock.tryLock(this->id)) {
-            goto clearToEnd;
-            // Just break?
         }
-
-        Slice* slice = choose (
-            strip->slices,
-            [] (Slice* slice) -> bool {
-                return
-                    slice->isPreparedToPlay();
-            }
-        );
-        // Should always be at least 1 slice here
-        int length = slice->length + slice->plusSixteen * 16;
-        Step next = Step::loadFrom(strip); 
-
-        for (
-            int i = 0; 
-            i < length && s < numSteps; 
-            i++, s++ // Not sure if this skips a step?
-        ) {
-            sequence[s] = next;
-        }
-
-        // back to top ..
     }
-
-clearToEnd:
-    numSteps = s; // 0?
-    while (s < MAX_STEPS) {
-        // May not even be necessary?
-        sequence[s++].clear();
-    }
-
-
 }
 
 //==============================================================================
@@ -621,6 +644,17 @@ void Group::loadParameters() {
     plusSixteen = plusSixteenParameter->load();
     enabled = (bool) enabledParameter->load();
     loop = (bool) loopParameter->load();
+
+    density = densityParameter->load();
+
+    tjopLength = tjopLengthParameter->load() + 1;
+    tjopLengthMultiplier = tjopLengthMultiplierParameter->load() + 1;
+
+    intervalLength = intervalLengthParameter->load() + 1;
+    intervalLengthMultiplier = intervalLengthMultiplierParameter->load() + 1;
+
+    sequenceLength = sequenceLengthParameter->load() + 1;
+    sequenceLengthMultiplier = sequenceLengthMultiplierParameter->load() + 1;
 }
 
 //==============================================================================
@@ -806,10 +840,10 @@ void BreaQAudioProcessor::processBlock (
 
         for (int g = 0; g < NUM_GROUPS; g++) {
             groups[g].takeStep(processedBuffer, samplePos, strips);
-        } // ForEach Group
+        }
 
         needsRepaint = true;
-    } // MidiMessage Iterator 
+    } 
 
     midiBuffer.swapWith(processedBuffer); 
 }
