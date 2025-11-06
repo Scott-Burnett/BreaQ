@@ -14,6 +14,9 @@ public:
 	int numLabels;
 };
 
+//==============================================================================
+/*
+*/
 class BreaQLookAndFeel : public juce::LookAndFeel_V4
 {
 public:

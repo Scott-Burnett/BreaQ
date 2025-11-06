@@ -3,6 +3,16 @@
 #include "ParameterNames.h"
 
 //==============================================================================
+static float nextFloat() {
+    return juce::Random::getSystemRandom().nextFloat();
+}
+
+//==============================================================================
+static int nextInt(int lower, int upper) {
+    return juce::Random::getSystemRandom().nextInt({lower, upper});
+}
+
+//==============================================================================
 static Strip* choose (
     Strip* items,
     std::function<bool(Strip*)> predicate
@@ -17,7 +27,7 @@ static Strip* choose (
         }
     }
 
-    float r = juce::Random::getSystemRandom().nextFloat() * maxProbability;
+    float r = nextFloat() * maxProbability;
     float p = 0.0f;
     for (int i = 0; i < candidates; i++) {
         p += items[lookup[i]].probability;
@@ -76,6 +86,11 @@ bool Lock::tryLock(int key) {
         *shape == key) {
         locked = true;
         holder = key;
+
+        if (onLockAquired) {
+            onLockAquired();
+        }
+
         return true;
     }
 
@@ -94,6 +109,16 @@ Lock::Lock(int* key) {
 
     locked = false;
     holder = -1;
+}
+
+//==============================================================================
+Lock::Lock(int* key, std::function<void()> onLockAquired) {
+    shape = key;
+
+    locked = false;
+    holder = -1;
+
+    this->onLockAquired = onLockAquired;
 }
 
 //==============================================================================
@@ -124,7 +149,6 @@ bool Strip::isPreparedToPlay() {
 //==============================================================================
 void Strip::setStrpId(int id) {
     stripId = id;
-    // noteNumber = 60 + id;
 }
 
 //==============================================================================
@@ -168,10 +192,6 @@ void Strip::init (
         addListener(&listener);
     vts.getParameter(ParameterNames::stripVariants[stripId])->
         addListener(&listener);
-
-    // for (int i = 0, offset = stripId * NUM_SLICES; i < NUM_SLICES; i++) {
-    //     slices[i].init(vts, listener);
-    // }
 }
 
 //==============================================================================
@@ -226,14 +246,10 @@ void Strip::createParameterLayout (
 
     layout.add(std::make_unique<juce::AudioParameterChoice> (
         ParameterNames::stripVariants[stripId], 
-        "Group", 
+        "Variants", 
         ParameterOptions::variantsOptions,
         0
     ));
-
-    // for (int i = 0; i < NUM_SLICES; i++) {
-    //     slices[i].createParameterLayout(layout);
-    // }
 }
 
 //==============================================================================
@@ -242,10 +258,8 @@ void Strip::loadParameters() {
     group = (int) groupParameter->load();
     choice = choiceParameter->load();
     enabled = (bool) enabledParameter->load();
-
-    // for (int i = 0; i < NUM_SLICES; i++) {
-    //     slices[i].loadParameters();
-    // }
+    choke = chokeParameter->load();
+    variants = (int) variantsParameter->load();
 }
 
 //==============================================================================
@@ -257,7 +271,6 @@ Step::Step() {
     velocity = (juce::uint8) 127;
 
     strip = nullptr;
-    // slice = nullptr;
 }
 
 //==============================================================================
@@ -269,7 +282,6 @@ Step::~Step() {
 void Step::clear() {
     hasValue = false;
     strip = nullptr;
-    // slice = nullptr;
 }
 
 //==============================================================================
@@ -280,7 +292,6 @@ void Step::addNoteOnEvent(juce::MidiBuffer& midiBuffer, int samplePos) {
         ),
         samplePos
     );
-    // slice->isOn = true;
     strip->isOn = true;
 }
 
@@ -292,23 +303,20 @@ void Step::addNoteOffEvent(juce::MidiBuffer& midiBuffer, int samplePos) {
         ),
         samplePos
     );
-    // slice->isOn = false;
     strip->isOn = false;
 }
 
 //==============================================================================
-Step Step::loadFrom(Strip *strip /*Slice *slice*/) {
+Step Step::loadFrom(Strip *strip) {
     int noteNumber = 60 + strip->choice + (strip->stripId * NUM_CHOICES);
     int channel = 1;
-    // int r = juce::Random::getSystemRandom().nextInt({ 1, 127 });
-    juce::uint8 velocity = (juce::uint8) juce::Random::getSystemRandom().nextInt({ 1, 127 });
+    juce::uint8 velocity = (juce::uint8) nextInt(1, 127);
 
     Step step;
     step.noteNumber = noteNumber;
     step.channel = channel;
     step.velocity = velocity;
     step.strip = strip;
-    // step.slice = slice;
 
     step.hasValue = true;
 
@@ -337,8 +345,7 @@ bool Step::differs(Step first, Step second) {
         first.channel != second.channel ||
         first.noteNumber != second.noteNumber ||
         first.velocity != second.velocity ||
-        first.strip != second.strip // ||
-        // first.slice != second.slice
+        first.strip != second.strip
     ;
 }
 
@@ -403,9 +410,9 @@ void Group::createSequence(
         while (
             s < sequenceSteps &&
             i < intervalSteps) {
-            float d = juce::Random::getSystemRandom().nextFloat();
+            // float d = juce::Random::getSystemRandom().nextFloat();
 
-            Strip* strip = d < density
+            Strip* strip = nextFloat() < density
                 ? choose (
                     strips,
                     [this] (Strip* strip) -> bool {
@@ -424,24 +431,27 @@ void Group::createSequence(
                 : Step::empty()
             ;
 
+            int c = strip != nullptr
+                ? (int) ((float) tjopSteps * strip->choke)
+                : tjopSteps
+            ;
+
             t = 0;
             while (
                 s < sequenceSteps &&
                 i < intervalSteps &&
                 t < tjopSteps) {
 
-                // Choke here. if t > choke, step = empty
-                if (strip != nullptr &&
-                    t >= strip->choke) { // Not right, choke is float
-                    // next = Step::empty();
+                if (t > c) { // Choke
+                    next = Step::empty();
                 }
 
                 sequence[s] = next;
 
                 s++, i++, t++;
-            }
-        }
-    }
+            } // Tjop Loop
+        } // Interval Loop
+    } // Sequence Loop
 }
 
 //==============================================================================

@@ -353,7 +353,11 @@ void GroupEditor::paint(juce::Graphics& g) {
     }*/
     auto blockHeight = this->sequenceBounds.getHeight() / NUM_STRIPS;
     auto bombis = this->sequenceBounds.getWidth();
-    auto blockWidth = this->sequenceBounds.getWidth() / MAX_STEPS;
+    // auto blockWidth = this->sequenceBounds.getWidth() / MAX_STEPS;
+    
+    auto numSixteens = (numSteps / 16) + 1;
+    auto blockWidth = this->sequenceBounds.getWidth() / (numSixteens * 16);
+
 
     auto workingBounds = sequenceBounds;
 
@@ -362,8 +366,10 @@ void GroupEditor::paint(juce::Graphics& g) {
     int row = 0;
     for (int col = 0; col < numSteps; col++) {
         auto nextBlock = workingBounds.removeFromLeft(blockWidth);
+
         // Draw the full column
-        if (step == col) {
+        if (step == col &&
+            isEnabled) {
             g.setColour(Colours::transparentOrange3);
         }
         else if (col % 4 == 0) {
@@ -377,6 +383,7 @@ void GroupEditor::paint(juce::Graphics& g) {
         }
         g.fillRect(nextBlock);
 
+        // Now Draw the block (if there is one)
         if (steps[col] < 0) {
             continue;
         }
@@ -395,7 +402,7 @@ void GroupEditor::paint(juce::Graphics& g) {
     }
 
 
-    g.setColour(Colours::transparentBackground2);
+    g.setColour(Colours::background2);
     g.fillRect(workingBounds);
 
     g.setColour(Colours::transparentBackground2);
@@ -421,7 +428,7 @@ void GroupEditor::resized(juce::Rectangle<int> bounds) {
     bounds = bounds.reduced(6);
 
     float columnWidth = bounds.getWidth() / (float) columns;
-    float topRowHeight = bounds.getHeight() * 0.4f;
+    float topRowHeight = bounds.getHeight() * 0.35f;
     float bottomRowHeight = bounds.getHeight() * 0.6f;
 
     auto buttonBounds = bounds.removeFromRight(columnWidth);
@@ -440,9 +447,9 @@ void GroupEditor::resized(juce::Rectangle<int> bounds) {
     auto densityBounds = bounds.removeFromRight(columnWidth);
     densityBounds =
         densityBounds
-        .removeFromTop(topRowHeight)
+        .removeFromBottom(bottomRowHeight)
         .expanded(8)
-        .translated(0, +10)
+        .translated(0, +2)
     ;
     densitySlider.setBounds(densityBounds);
 
@@ -517,6 +524,14 @@ void GroupEditor::loadParameters(Group* group) {
             // plusSixteen = group->plusSixteen;
             step = group->step;
             numSteps = group->numSteps;
+
+            tjopLength = group->tjopLength;
+            tjopLengthMultiplier = group->tjopLengthMultiplier;
+            intervalLength = group->intervalLength;
+            intervalLengthMultiplier = group->intervalLengthMultiplier;
+            sequenceLength = group->sequenceLength;
+            sequenceLengthMultiplier = group->sequenceLengthMultiplier;
+
             for (int i = 0; i < MAX_STEPS; i++) {
                 steps[i] = group->sequence[i].hasValue
                     ? group->sequence[i].strip->stripId

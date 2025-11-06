@@ -9,6 +9,7 @@ struct Lock {
 public:
     Lock();
     Lock(int* key);
+    Lock(int* key, std::function<void()> onLockAquired);
     ~Lock();
 
     bool isLocked();
@@ -22,6 +23,8 @@ private:
 
     bool locked;
     int holder;
+    
+    std::function<void()> onLockAquired;
 };
 
 //==============================================================================
