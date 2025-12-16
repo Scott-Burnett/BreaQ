@@ -355,7 +355,9 @@ void GroupEditor::paint(juce::Graphics& g) {
     auto bombis = this->sequenceBounds.getWidth();
     // auto blockWidth = this->sequenceBounds.getWidth() / MAX_STEPS;
     
-    auto numSixteens = (numSteps / 16);
+    auto numSixteens = numSteps == 0
+            ? 1
+            : (numSteps + 15) / 16;
     auto blockWidth = this->sequenceBounds.getWidth() / (numSixteens * 16);
 
 
