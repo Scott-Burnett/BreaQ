@@ -862,7 +862,11 @@ void BreaQAudioProcessor::processBlock (
                     groups[g].takeStep(processedBuffer, samplePos, strips);
                     break;
                 case NOTE_SCHEDULE_RESET:
+                    // Bad but good enough for now, but come back and fix this
+                    // More like "STEP FROM FIRST" than "RESET"
+                    // Fine as long as you dont send two note ons at once
                     groups[g].scheduleReset();
+                    groups[g].takeStep(processedBuffer, samplePos, strips);
                     break;
             }
             
