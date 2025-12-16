@@ -112,6 +112,7 @@ public:
     int step;
     int numSteps;
     Step* sequence;
+    bool needsReset;
 
     // new stuff
     int tjopLength;
@@ -133,6 +134,7 @@ public:
     void createSequence(Strip* strips);
     void takeStep(juce::MidiBuffer&, int, Strip*);
     void newNote(Step, Step, juce::MidiBuffer&, int);
+    void scheduleReset();
 
 private:
     std::atomic<float>* lengthParameter = nullptr;

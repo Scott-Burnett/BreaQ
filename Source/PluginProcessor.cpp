@@ -363,6 +363,7 @@ Group::Group() {
     numSteps = 0;
     step = 0;
     sequence = new Step[MAX_STEPS];
+    needsReset = false;
 
     sequenceLength = 0;
     sequenceLengthMultiplier = 0;
@@ -461,11 +462,13 @@ void Group::takeStep(juce::MidiBuffer& midiBuffer, int samplePos, Strip* strips)
         : Step::empty()
     ;
 
-    if (++step >= numSteps) {
+    if (++step >= numSteps ||
+        needsReset) {
         if (!loop) {
             createSequence(strips);
         }
         step = 0;
+        needsReset = false;
     }
     
     Step newStep = 
@@ -492,6 +495,11 @@ void Group::newNote(Step currentStep, Step newStep, juce::MidiBuffer& midiBuffer
             isOn = true;
         }
     }
+}
+
+//==============================================================================
+void Group::scheduleReset() {
+    needsReset = true;
 }
 
 //==============================================================================
@@ -849,7 +857,15 @@ void BreaQAudioProcessor::processBlock (
         }
 
         for (int g = 0; g < NUM_GROUPS; g++) {
-            groups[g].takeStep(processedBuffer, samplePos, strips);
+            switch (current.getNoteNumber()) {
+                case NOTE_TAKE_STEP:
+                    groups[g].takeStep(processedBuffer, samplePos, strips);
+                    break;
+                case NOTE_SCHEDULE_RESET:
+                    groups[g].scheduleReset();
+                    break;
+            }
+            
         }
 
         needsRepaint = true;

@@ -355,7 +355,7 @@ void GroupEditor::paint(juce::Graphics& g) {
     auto bombis = this->sequenceBounds.getWidth();
     // auto blockWidth = this->sequenceBounds.getWidth() / MAX_STEPS;
     
-    auto numSixteens = (numSteps / 16) + 1;
+    auto numSixteens = (numSteps / 16);
     auto blockWidth = this->sequenceBounds.getWidth() / (numSixteens * 16);
 
 
@@ -367,12 +367,14 @@ void GroupEditor::paint(juce::Graphics& g) {
     for (int col = 0; col < numSteps; col++) {
         auto nextBlock = workingBounds.removeFromLeft(blockWidth);
 
+        bool isMod4 = col % 4 == 0;
+
         // Draw the full column
         if (step == col &&
             isEnabled) {
             g.setColour(Colours::transparentOrange3);
         }
-        else if (col % 4 == 0) {
+        else if (isMod4) {
             g.setColour(Colours::background2);
         }
         /*else if (col % 2) {
@@ -397,6 +399,9 @@ void GroupEditor::paint(juce::Graphics& g) {
         g.setColour(Colours::transparentOrange3);
         if (step == col) {
             g.setColour(Colours::orange3);
+            if (isMod4) {
+                g.setColour(Colours::terraCotta);
+            }
         }
         g.fillRect(nextBlock);
     }
