@@ -30,6 +30,11 @@ public:
     const static std::string stripBypassed[32];
     const static std::string stripChoke[32];
     const static std::string stripVariants[32];
+    const static std::string stripRepeatProbability[32];
+    const static std::string stripRepeatLength[32];
+    const static std::string stripOffset[32];
+    const static std::string stripRange[32];
+
     // Groups
     const static std::string groupEnabled[NUM_GROUPS];
     const static std::string groupLoop[NUM_GROUPS];

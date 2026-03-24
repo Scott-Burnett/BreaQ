@@ -28,10 +28,8 @@ private:
     
     bool needsRepaint;
     juce::Rectangle<int> bounds;
-    
-    // SliceEditor* slices;
-    
-    // Remove
+
+    // Parameters
     juce::Slider probabilitySlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> probabilitySliderAttachment;
     
@@ -47,10 +45,6 @@ private:
     juce::ToggleButton enabledButton;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> enabledButtonAttachment;
 
-    // New Stuff
-    // Choke
-    // Variations here?
-
     float choke;
     juce::Slider chokeSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> chokeSliderAttachment;
@@ -58,6 +52,30 @@ private:
     int variant;
     OptionSlider variantsSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> variantsSliderAttachment;
+
+    // New Stuff
+    /*
+        - Repeat Probability
+        - Repeat Length
+
+        - Offset
+        - Range
+    */
+    float repeatProbability;
+    juce::Slider repeatProbabilitySlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> repeatProbabilitySliderAttachment;
+
+    int repeatLength;
+    OptionSlider repeatLengthSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> repeatLengthSliderAttachment;
+
+    float offset;
+    juce::Slider offsetSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> offsetSliderAttachment;
+
+    float range;
+    juce::Slider rangeSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> rangeSliderAttachment;
 };
 
 //==============================================================================

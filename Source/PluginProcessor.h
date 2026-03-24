@@ -46,6 +46,13 @@ public:
     float choke;
     int variants;
 
+    // new new stuff
+    float repeatProbability;
+    int repeatLength;
+
+    float offset; // Int?
+    float range; // Int?
+
     Strip();
     ~Strip();
 
@@ -66,6 +73,12 @@ private:
     // New Stuff
     std::atomic<float>* chokeParameter = nullptr;
     std::atomic<float>* variantsParameter = nullptr;
+
+    std::atomic<float>* repeatProbabilityParameter = nullptr;
+    std::atomic<float>* repeatLengthParameter = nullptr;
+
+    std::atomic<float>* offsetParameter = nullptr;
+    std::atomic<float>* rangeParameter = nullptr;
 };
 
 //==============================================================================
@@ -74,6 +87,7 @@ private:
 struct Step {
 public:
     bool hasValue;
+    std::uint64_t identifier;
 
     int noteNumber;
     int channel;

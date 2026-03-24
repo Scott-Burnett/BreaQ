@@ -177,6 +177,19 @@ void Strip::init (
     variantsParameter = vts.getRawParameterValue(
         ParameterNames::stripVariants[stripId]
     );
+    // New New Stuff
+    repeatProbabilityParameter = vts.getRawParameterValue(
+        ParameterNames::stripRepeatProbability[stripId]
+    );
+    repeatLengthParameter = vts.getRawParameterValue(
+        ParameterNames::stripRepeatLength[stripId]
+    );
+    offsetParameter = vts.getRawParameterValue(
+        ParameterNames::stripOffset[stripId]
+    );
+    rangeParameter = vts.getRawParameterValue(
+        ParameterNames::stripRange[stripId]
+    );
 
     vts.getParameter(ParameterNames::stripProbability[stripId])->
         addListener(&listener);
@@ -191,6 +204,15 @@ void Strip::init (
     vts.getParameter(ParameterNames::stripChoke[stripId])->
         addListener(&listener);
     vts.getParameter(ParameterNames::stripVariants[stripId])->
+        addListener(&listener);
+    // New New Stuff
+    vts.getParameter(ParameterNames::stripRepeatProbability[stripId])->
+        addListener(&listener);
+    vts.getParameter(ParameterNames::stripRepeatLength[stripId])->
+        addListener(&listener);
+    vts.getParameter(ParameterNames::stripOffset[stripId])->
+        addListener(&listener);
+    vts.getParameter(ParameterNames::stripRange[stripId])->
         addListener(&listener);
 }
 
@@ -250,6 +272,41 @@ void Strip::createParameterLayout (
         ParameterOptions::variantsOptions,
         0
     ));
+
+    // New New Stuff
+    layout.add(std::make_unique<juce::AudioParameterFloat> (
+        ParameterNames::stripRepeatProbability[stripId], 
+        "Repeat Probability", 
+        juce::NormalisableRange {
+            0.0f, 1.0f, 0.01f, 1.0f, false
+        },
+        0.0f
+    ));
+
+    layout.add(std::make_unique<juce::AudioParameterChoice> (
+        ParameterNames::stripRepeatLength[stripId], 
+        "Repeat Length", 
+        ParameterOptions::lengthOptions,
+        0
+    ));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat> (
+        ParameterNames::stripOffset[stripId], 
+        "Offset", 
+        juce::NormalisableRange {
+            0.0f, 1.0f, 0.01f, 1.0f, false
+        },
+        0.0f
+    ));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat> (
+        ParameterNames::stripRange[stripId], 
+        "Range", 
+        juce::NormalisableRange {
+            0.0f, 1.0f, 0.01f, 1.0f, false
+        },
+        0.0f
+    ));
 }
 
 //==============================================================================
@@ -260,11 +317,17 @@ void Strip::loadParameters() {
     enabled = (bool) enabledParameter->load();
     choke = chokeParameter->load();
     variants = (int) variantsParameter->load();
+    // New New Stuff
+    repeatProbability = repeatProbabilityParameter->load();
+    repeatLength = (int) repeatLengthParameter->load();
+    offset = offsetParameter->load();
+    range = rangeParameter->load();
 }
 
 //==============================================================================
 Step::Step() {
     hasValue = false;
+    identifier = 0ULL;
 
     noteNumber = 0;
     channel = 1;
@@ -310,7 +373,12 @@ void Step::addNoteOffEvent(juce::MidiBuffer& midiBuffer, int samplePos) {
 Step Step::loadFrom(Strip *strip) {
     int noteNumber = 60 + strip->choice + (strip->stripId * NUM_CHOICES);
     int channel = 1;
+
+    // TODO: Use Offset + Range Here
     juce::uint8 velocity = (juce::uint8) nextInt(1, 127);
+
+    // TODO: Get Unique here
+    std::uint64_t identifier = 0ULL;
 
     Step step;
     step.noteNumber = noteNumber;
@@ -319,6 +387,7 @@ Step Step::loadFrom(Strip *strip) {
     step.strip = strip;
 
     step.hasValue = true;
+    step.identifier = identifier;
 
     return step;
 }
@@ -341,12 +410,15 @@ bool Step::differs(Step first, Step second) {
         return true;
     }
 
-    return // probably overboard
-        first.channel != second.channel ||
-        first.noteNumber != second.noteNumber ||
-        first.velocity != second.velocity ||
-        first.strip != second.strip
-    ;
+    // return // probably overboard
+    //     first.channel != second.channel ||
+    //     first.noteNumber != second.noteNumber ||
+    //     first.velocity != second.velocity ||
+    //     first.strip != second.strip
+    // ;
+
+    // Should work right??
+    return first.identifier != second.identifier;
 }
 
 //==============================================================================
@@ -402,6 +474,9 @@ void Group::createSequence(
     // TODO: Variants Kak
     // Get all possible variants for each strip upfront
     // then each time we get a strip, we then get the variant before finally getting the step
+
+    // TODO: Implement Repeat
+    // If nextFloat < RepeatProbability then repeat
 
     s = 0;
     while (

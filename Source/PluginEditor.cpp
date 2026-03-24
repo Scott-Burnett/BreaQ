@@ -138,6 +138,41 @@ void StripEditor::init (
         vts,
         editor
     );
+
+    // New Stuff
+    initSlider (
+        ParameterNames::stripRepeatProbability[stripNumber], 
+        repeatProbabilitySlider, 
+        repeatProbabilitySliderAttachment, 
+        vts, 
+        editor
+    );
+
+    initOptionSlider(
+        ParameterNames::stripRepeatLength[stripNumber],
+        repeatLengthSlider,
+        ParameterOptions::lengthOptions,
+        16,
+        repeatLengthSliderAttachment,
+        vts,
+        editor
+    );
+
+    initSlider (
+        ParameterNames::stripOffset[stripNumber], 
+        offsetSlider, 
+        offsetSliderAttachment, 
+        vts, 
+        editor
+    );
+
+    initSlider (
+        ParameterNames::stripRange[stripNumber], 
+        rangeSlider, 
+        rangeSliderAttachment, 
+        vts, 
+        editor
+    );
 }
 
 //==============================================================================
@@ -176,6 +211,14 @@ void StripEditor::resized (juce::Rectangle<int> bounds) {
 
     auto chokeBounds = rowBounds.removeFromBottom(rowHeight);
     chokeSlider.setBounds(chokeBounds);
+
+    // TODO:
+    /*
+        - RepeatProbability
+        - RepeatLength
+        - Offset
+        - Range
+    */
 }
 
 //==============================================================================
@@ -210,6 +253,15 @@ void StripEditor::loadParameters(Strip* strip) {
             isEnabled = strip->enabled;
             group = strip->group;
             choice = strip->choice;
+            // TODO:
+            /*
+                - RepeatProbability
+                - RepeatLength
+                - Offset
+                - Range
+
+                ?????
+            */
     }
 }
 
