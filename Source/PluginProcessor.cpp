@@ -3,6 +3,19 @@
 #include "ParameterNames.h"
 
 //==============================================================================
+std::uint64_t identifiers[NUM_GROUPS] = {
+    0ULL,
+    0ULL,
+    0ULL,
+    0ULL
+};
+
+//==============================================================================
+static std::uint64_t nextIdentifier(int group) {
+    return identifiers[group]++;
+}
+
+//==============================================================================
 static float nextFloat() {
     return juce::Random::getSystemRandom().nextFloat();
 }
@@ -10,6 +23,19 @@ static float nextFloat() {
 //==============================================================================
 static int nextInt(int lower, int upper) {
     return juce::Random::getSystemRandom().nextInt({lower, upper});
+}
+
+//==============================================================================
+static int clamp(int value, int lower, int upper) {
+    if (value <= lower) {
+        return lower;
+    }
+
+    if (value >= upper) {
+        return upper;
+    }
+
+    return value;
 }
 
 //==============================================================================
@@ -375,10 +401,25 @@ Step Step::loadFrom(Strip *strip) {
     int channel = 1;
 
     // TODO: Use Offset + Range Here
-    juce::uint8 velocity = (juce::uint8) nextInt(1, 127);
+    // juce::uint8 velocity = (juce::uint8) nextInt(1, 127);
+    
+    // Get Velocity
+    int vmax = clamp(
+        (int) (strip->offset + strip->range) * 127.0f,
+        1,
+        127
+    );
+
+    int vmin = clamp(
+        (int) strip->offset * 127.0f,
+        1,
+        127
+    );
+
+    juce::uint8 velocity = (juce::uint8) nextInt(vmin, vmax);
 
     // TODO: Get Unique here
-    std::uint64_t identifier = 0ULL;
+    std::uint64_t identifier = nextIdentifier(strip->group);
 
     Step step;
     step.noteNumber = noteNumber;
@@ -512,11 +553,26 @@ void Group::createSequence(
                 : tjopSteps
             ;
 
+            // Try get RepeatLength??
+            int r = 0;
+            int repeatSteps = 
+                strip != nullptr &&
+                strip->repeatProbability > nextFloat()
+                ? strip->repeatLength
+                : tjopSteps
+            ;
+
             t = 0;
             while (
                 s < sequenceSteps &&
                 i < intervalSteps &&
                 t < tjopSteps) {
+
+                if (r++ >= repeatSteps) { // Repeat (check then increment)
+                    // TODO: Neaten this up, Utility Method?
+                    next.identifier = nextIdentifier(strip->group);
+                    r = 0;
+                }
 
                 if (t > c) { // Choke
                     next = Step::empty();
