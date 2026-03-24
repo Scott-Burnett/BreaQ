@@ -129,15 +129,15 @@ void StripEditor::init (
         editor
     );
 
-    initOptionSlider(
-        ParameterNames::stripVariants[stripNumber],
-        variantsSlider,
-        ParameterOptions::variantsOptions,
-        16,
-        variantsSliderAttachment,
-        vts,
-        editor
-    );
+    // initOptionSlider(
+    //     ParameterNames::stripVariants[stripNumber],
+    //     variantsSlider,
+    //     ParameterOptions::variantsOptions,
+    //     16,
+    //     variantsSliderAttachment,
+    //     vts,
+    //     editor
+    // );
 
     // New Stuff
     initSlider (
@@ -206,8 +206,8 @@ void StripEditor::resized (juce::Rectangle<int> bounds) {
     auto choiceBounds = rowBounds.removeFromBottom(rowHeight);
     choiceSlider.setBounds(choiceBounds);
 
-    auto variantsBounds = rowBounds.removeFromBottom(rowHeight);
-    variantsSlider.setBounds(variantsBounds);
+    // auto variantsBounds = rowBounds.removeFromBottom(rowHeight);
+    // variantsSlider.setBounds(variantsBounds);
 
     auto chokeBounds = rowBounds.removeFromBottom(rowHeight);
     chokeSlider.setBounds(chokeBounds);

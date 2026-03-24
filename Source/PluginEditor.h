@@ -49,9 +49,9 @@ private:
     juce::Slider chokeSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> chokeSliderAttachment;
 
-    int variant;
-    OptionSlider variantsSlider;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> variantsSliderAttachment;
+    // int variant;
+    // OptionSlider variantsSlider;
+    // std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> variantsSliderAttachment;
 
     // New Stuff
     /*

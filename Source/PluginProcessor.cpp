@@ -200,9 +200,9 @@ void Strip::init (
     chokeParameter = vts.getRawParameterValue(
         ParameterNames::stripChoke[stripId]
     );
-    variantsParameter = vts.getRawParameterValue(
-        ParameterNames::stripVariants[stripId]
-    );
+    // variantsParameter = vts.getRawParameterValue(
+    //     ParameterNames::stripVariants[stripId]
+    // );
     // New New Stuff
     repeatProbabilityParameter = vts.getRawParameterValue(
         ParameterNames::stripRepeatProbability[stripId]
@@ -229,8 +229,8 @@ void Strip::init (
         addListener(&listener);
     vts.getParameter(ParameterNames::stripChoke[stripId])->
         addListener(&listener);
-    vts.getParameter(ParameterNames::stripVariants[stripId])->
-        addListener(&listener);
+    // vts.getParameter(ParameterNames::stripVariants[stripId])->
+    //     addListener(&listener);
     // New New Stuff
     vts.getParameter(ParameterNames::stripRepeatProbability[stripId])->
         addListener(&listener);
@@ -292,12 +292,12 @@ void Strip::createParameterLayout (
         0.0f
     ));
 
-    layout.add(std::make_unique<juce::AudioParameterChoice> (
-        ParameterNames::stripVariants[stripId], 
-        "Variants", 
-        ParameterOptions::variantsOptions,
-        0
-    ));
+    // layout.add(std::make_unique<juce::AudioParameterChoice> (
+    //     ParameterNames::stripVariants[stripId], 
+    //     "Variants", 
+    //     ParameterOptions::variantsOptions,
+    //     0
+    // ));
 
     // New New Stuff
     layout.add(std::make_unique<juce::AudioParameterFloat> (
@@ -342,7 +342,7 @@ void Strip::loadParameters() {
     choice = choiceParameter->load();
     enabled = (bool) enabledParameter->load();
     choke = chokeParameter->load();
-    variants = (int) variantsParameter->load();
+    // variants = (int) variantsParameter->load();
     // New New Stuff
     repeatProbability = repeatProbabilityParameter->load();
     repeatLength = (int) repeatLengthParameter->load();

@@ -44,7 +44,7 @@ public:
 
     // New Stuff
     float choke;
-    int variants;
+    // int variants;
 
     // new new stuff
     float repeatProbability;
@@ -72,7 +72,7 @@ private:
 
     // New Stuff
     std::atomic<float>* chokeParameter = nullptr;
-    std::atomic<float>* variantsParameter = nullptr;
+    // std::atomic<float>* variantsParameter = nullptr;
 
     std::atomic<float>* repeatProbabilityParameter = nullptr;
     std::atomic<float>* repeatLengthParameter = nullptr;
