@@ -21,6 +21,7 @@ static void initSlider (
      );
 
      slider.hideTextBox(false);
+
      sliderAttachment.reset (
          new juce::AudioProcessorValueTreeState::SliderAttachment (
              vts, sliderName, slider
@@ -192,22 +193,41 @@ void StripEditor::resized (juce::Rectangle<int> bounds) {
 
     int rows = 6;
     float rowHeight = bounds.getHeight() / (float) rows;
+    float columnWidth = bounds.getWidth() * 0.7f;
     auto rowBounds = bounds;
 
-    auto enabledBounds = rowBounds.removeFromBottom(rowHeight);
+    auto enabledGroupBounds = rowBounds.removeFromBottom(rowHeight);
+
+    auto groupBounds = enabledGroupBounds.removeFromLeft(columnWidth);
+    groupSlider.setBounds(groupBounds);
+
+    auto enabledBounds = enabledGroupBounds;
     enabledButton.setBounds(enabledBounds);
 
     auto probabilityBounds = rowBounds.removeFromBottom(rowHeight);
     probabilitySlider.setBounds(probabilityBounds);
 
-    auto groupBounds = rowBounds.removeFromBottom(rowHeight);;
-    groupSlider.setBounds(groupBounds);
+    auto offsetRangeBounds = rowBounds.removeFromBottom(rowHeight);
+
+    auto offsetBounds = offsetRangeBounds.removeFromLeft(columnWidth);
+    offsetSlider.setBounds(offsetBounds);
+
+    auto rangeBounds = offsetRangeBounds;
+    rangeSlider.setBounds(rangeBounds);
 
     auto choiceBounds = rowBounds.removeFromBottom(rowHeight);
     choiceSlider.setBounds(choiceBounds);
 
     // auto variantsBounds = rowBounds.removeFromBottom(rowHeight);
     // variantsSlider.setBounds(variantsBounds);
+
+    auto repeatBounds = rowBounds.removeFromBottom(rowHeight);
+
+    auto repeatProbabilityBounds = repeatBounds.removeFromLeft(columnWidth);
+    repeatProbabilitySlider.setBounds(repeatProbabilityBounds);
+
+    auto repeatLengthBounds = repeatBounds;
+    repeatLengthSlider.setBounds(repeatLengthBounds);
 
     auto chokeBounds = rowBounds.removeFromBottom(rowHeight);
     chokeSlider.setBounds(chokeBounds);

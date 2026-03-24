@@ -405,13 +405,13 @@ Step Step::loadFrom(Strip *strip) {
     
     // Get Velocity
     int vmax = clamp(
-        (int) (strip->offset + strip->range) * 127.0f,
+        (int) ((strip->offset + strip->range) * 127.0f),
         1,
         127
     );
 
     int vmin = clamp(
-        (int) strip->offset * 127.0f,
+        (int) (strip->offset * 127.0f),
         1,
         127
     );
