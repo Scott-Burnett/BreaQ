@@ -96,7 +96,7 @@ static void DrawLabels(
         return;
     }
 
-    auto bounds = slider->getLocalBounds();
+    auto bounds = slider->getLocalBounds().reduced(4);
     auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) / 2.0f;
 
     float rotaryStartAngle = slider->getRotaryParameters().startAngleRadians;
@@ -147,7 +147,7 @@ void BreaQLookAndFeel::drawRotarySlider(
 		const float rotaryEndAngle,
 		juce::Slider& slider
 ) {
-    auto bounds = juce::Rectangle<int>(x, y, width, height).toFloat().reduced(8);
+    auto bounds = juce::Rectangle<int>(x, y, width, height).toFloat().reduced(12);
     auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight());// / 2.0f;
     auto toAngle = rotaryStartAngle + sliderPos * (rotaryEndAngle - rotaryStartAngle);
     auto lineW = 1.2f;
@@ -185,6 +185,19 @@ void BreaQLookAndFeel::drawRotarySlider(
     else {
         DrawArc(&slider, g);
     }
+
+    // Draw lable
+    // auto l = bounds.getCentre().getPointOnCircumference(radius + 1.0f, 1.0f);
+    // g.setColour(Colours::transparentOrange3);
+
+    // juce::Rectangle<float> r;
+
+    // // TODO
+    // juce::String lableStr = "one";
+
+    // r.setSize(g.getCurrentFont().getStringWidthFloat(lableStr), g.getCurrentFont().getHeight());
+    // r.setCentre(l);
+    // g.drawFittedText(lableStr, r.toNearestInt(), juce::Justification::centred, 1);
 }
 
 //==============================================================================

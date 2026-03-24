@@ -345,7 +345,7 @@ void Strip::loadParameters() {
     // variants = (int) variantsParameter->load();
     // New New Stuff
     repeatProbability = repeatProbabilityParameter->load();
-    repeatLength = (int) repeatLengthParameter->load();
+    repeatLength = (int) repeatLengthParameter->load() + 1;
     offset = offsetParameter->load();
     range = rangeParameter->load();
 }
@@ -527,7 +527,6 @@ void Group::createSequence(
         while (
             s < sequenceSteps &&
             i < intervalSteps) {
-            // float d = juce::Random::getSystemRandom().nextFloat();
 
             Strip* strip = nextFloat() < density
                 ? choose (
@@ -548,13 +547,11 @@ void Group::createSequence(
                 : Step::empty()
             ;
 
-            int c = strip != nullptr
+            int chokeSteps = strip != nullptr
                 ? (int) ((float) tjopSteps * strip->choke)
                 : tjopSteps
             ;
 
-            // Try get RepeatLength??
-            int r = 0;
             int repeatSteps = 
                 strip != nullptr &&
                 strip->repeatProbability > nextFloat()
@@ -568,19 +565,35 @@ void Group::createSequence(
                 i < intervalSteps &&
                 t < tjopSteps) {
 
-                if (r++ >= repeatSteps) { // Repeat (check then increment)
-                    // TODO: Neaten this up, Utility Method?
+                // if (++r >= repeatSteps &&
+                //     strip != nullptr) { // Repeat (increment then check, First time counts as a repeat)
+                //     // TODO: Fuck these null checks
+                //     // TODO: Neaten this up, Utility Method?
+                //     next.identifier = nextIdentifier(strip->group);
+                //     r = 0;
+                // }
+
+                int r = 0;
+                while (
+                    s < sequenceSteps &&
+                    i < intervalSteps &&
+                    t < tjopSteps &&
+                    r < repeatSteps) {
+
+                    if (t > chokeSteps) { // Choke
+                        next = Step::empty();
+                    }
+
+                    sequence[s] = next;
+
+                    s++, i++, t++, r++;
+                } // Repeat Loop
+
+                // Now update the identifier for next iteration
+                // Only if hasValue, because otherwise may dereference null strip
+                if (next.hasValue) {
                     next.identifier = nextIdentifier(strip->group);
-                    r = 0;
                 }
-
-                if (t > c) { // Choke
-                    next = Step::empty();
-                }
-
-                sequence[s] = next;
-
-                s++, i++, t++;
             } // Tjop Loop
         } // Interval Loop
     } // Sequence Loop
