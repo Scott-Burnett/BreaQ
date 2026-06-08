@@ -130,17 +130,6 @@ void StripEditor::init (
         editor
     );
 
-    // initOptionSlider(
-    //     ParameterNames::stripVariants[stripNumber],
-    //     variantsSlider,
-    //     ParameterOptions::variantsOptions,
-    //     16,
-    //     variantsSliderAttachment,
-    //     vts,
-    //     editor
-    // );
-
-    // New Stuff
     initSlider (
         ParameterNames::stripRepeatProbability[stripNumber], 
         repeatProbabilitySlider, 
@@ -184,18 +173,17 @@ void StripEditor::resized (juce::Rectangle<int> bounds) {
     const float choiceFactor = 0.5f;
     const float plusSixteenFactor = 1.0f - probabilityFactor;
 
-    // auto sliceBounds = bounds.removeFromTop(bounds.getHeight() * 0.66f);
-
     this->bounds = bounds;
     bounds = bounds.reduced(2);
     bounds = bounds.reduced(4);
     bounds = bounds.reduced(4);
 
-    int rows = 6;
+    int rows = 5;
     float rowHeight = bounds.getHeight() / (float) rows;
     float columnWidth = bounds.getWidth() * 0.7f;
     auto rowBounds = bounds;
 
+    // Row 1
     auto enabledGroupBounds = rowBounds.removeFromBottom(rowHeight);
 
     auto groupBounds = enabledGroupBounds.removeFromLeft(columnWidth);
@@ -204,9 +192,7 @@ void StripEditor::resized (juce::Rectangle<int> bounds) {
     auto enabledBounds = enabledGroupBounds;
     enabledButton.setBounds(enabledBounds);
 
-    auto probabilityBounds = rowBounds.removeFromBottom(rowHeight);
-    probabilitySlider.setBounds(probabilityBounds);
-
+    // Row 2
     auto offsetRangeBounds = rowBounds.removeFromBottom(rowHeight);
 
     auto offsetBounds = offsetRangeBounds.removeFromLeft(columnWidth);
@@ -215,12 +201,11 @@ void StripEditor::resized (juce::Rectangle<int> bounds) {
     auto rangeBounds = offsetRangeBounds;
     rangeSlider.setBounds(rangeBounds);
 
+    // Row 3
     auto choiceBounds = rowBounds.removeFromBottom(rowHeight);
     choiceSlider.setBounds(choiceBounds);
 
-    // auto variantsBounds = rowBounds.removeFromBottom(rowHeight);
-    // variantsSlider.setBounds(variantsBounds);
-
+    // Row 4
     auto repeatBounds = rowBounds.removeFromBottom(rowHeight);
 
     auto repeatProbabilityBounds = repeatBounds.removeFromLeft(columnWidth);
@@ -229,16 +214,14 @@ void StripEditor::resized (juce::Rectangle<int> bounds) {
     auto repeatLengthBounds = repeatBounds;
     repeatLengthSlider.setBounds(repeatLengthBounds);
 
-    auto chokeBounds = rowBounds.removeFromBottom(rowHeight);
-    chokeSlider.setBounds(chokeBounds);
+    // Row 5
+    auto probabilityChokeBounds = rowBounds.removeFromBottom(rowHeight);
 
-    // TODO:
-    /*
-        - RepeatProbability
-        - RepeatLength
-        - Offset
-        - Range
-    */
+    auto probabilityBounds = probabilityChokeBounds.removeFromLeft(columnWidth);
+    probabilitySlider.setBounds(probabilityBounds);
+
+    auto chokeBounds = probabilityChokeBounds;
+    chokeSlider.setBounds(chokeBounds);
 }
 
 //==============================================================================
@@ -290,8 +273,6 @@ GroupEditor::GroupEditor() {
     isOn = false;
     isEnabled = false;
     loop = false;
-    /*length = 0;
-    plusSixteen = 0;*/
 
     needsRepaint = false;
 
@@ -313,26 +294,6 @@ void GroupEditor::init(
     juce::AudioProcessorValueTreeState& vts,
     juce::AudioProcessorEditor& editor
 ) {
-    // initOptionSlider(
-    //     ParameterNames::groupLength[groupNumber],
-    //     lengthSlider,
-    //     ParameterOptions::lengthOptions,
-    //     16,
-    //     lengthSliderAttachment,
-    //     vts,
-    //     editor
-    // );
-
-    // initOptionSlider(
-    //     ParameterNames::groupPlusSixteen[groupNumber],
-    //     plusSixteenSlider,
-    //     ParameterOptions::plusSixteenOptions,
-    //     9,
-    //     plusSixteenSliderAttachment,
-    //     vts,
-    //     editor
-    // );
-
     initButton(
         ParameterNames::groupEnabled[groupNumber],
         enabledButton,
@@ -425,7 +386,6 @@ void GroupEditor::paint(juce::Graphics& g) {
     }*/
     auto blockHeight = this->sequenceBounds.getHeight() / NUM_STRIPS;
     auto bombis = this->sequenceBounds.getWidth();
-    // auto blockWidth = this->sequenceBounds.getWidth() / MAX_STEPS;
     
     auto numSixteens = numSteps == 0
             ? 1
@@ -498,7 +458,6 @@ void GroupEditor::resized(juce::Rectangle<int> bounds) {
     this->sequenceBounds = bounds.removeFromLeft(bounds.getWidth() * 0.75f);
     this->bounds = bounds;
 
-    // const float probabilityFactor = 0.6f;
     const float enabledFactor = 0.1f;
     const float lengthFactor = 0.6f;
     const float plusSixteenFactor = 0.4f;
@@ -592,15 +551,11 @@ void GroupEditor::loadParameters(Group* group) {
     if (isOn != group->isOn ||
         isEnabled != group->enabled ||
         loop != group->loop ||
-        // length != group->length ||
-        // plusSixteen != group->plusSixteen ||
         step != group->step ||
         numSteps != group->numSteps) {
             needsRepaint = true;
             isOn = group->isOn;
             isEnabled = group->enabled;
-            // length = group->length;
-            // plusSixteen = group->plusSixteen;
             step = group->step;
             numSteps = group->numSteps;
 

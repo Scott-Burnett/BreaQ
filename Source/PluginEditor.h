@@ -49,18 +49,6 @@ private:
     juce::Slider chokeSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> chokeSliderAttachment;
 
-    // int variant;
-    // OptionSlider variantsSlider;
-    // std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> variantsSliderAttachment;
-
-    // New Stuff
-    /*
-        - Repeat Probability
-        - Repeat Length
-
-        - Offset
-        - Range
-    */
     float repeatProbability;
     juce::Slider repeatProbabilitySlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> repeatProbabilitySliderAttachment;
@@ -107,18 +95,8 @@ private:
     bool needsRepaint;
     juce::Rectangle<int> bounds;
     juce::Rectangle<int> sequenceBounds;
-
+    
     // Parameters
-    // Remove
-    // int length;
-    // OptionSlider lengthSlider;
-    // std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> lengthSliderAttachment;
-    
-    // Remove
-    // int plusSixteen;
-    // OptionSlider plusSixteenSlider;
-    // std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> plusSixteenSliderAttachment;
-    
     bool isEnabled;
     juce::ToggleButton enabledButton;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> enabledButtonAttachment;
@@ -127,12 +105,6 @@ private:
     juce::ToggleButton loopButton;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> loopButtonAttachment;
 
-    // new stuff:
-    // :: TJOP
-    /*
-        - length (1 -16)
-        - Multiplier (1 - 16) ??
-    */
     int tjopLength;
     OptionSlider tjopLengthSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> tjopLengthSliderAttachment;
@@ -141,11 +113,6 @@ private:
     OptionSlider tjopLengthMultiplierSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> tjopLengthMultiplierSliderAttachment;
 
-    // :: INTERVAL ?? (Bad name)
-    /*
-        - length (1 -16)
-        - Multiplier (1 - 16) ??
-    */
     int intervalLength;
     OptionSlider intervalLengthSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> intervalLengthSliderAttachment;
@@ -154,17 +121,6 @@ private:
     OptionSlider intervalLengthMultiplierSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> intervalLengthMultiplierSliderAttachment;
 
-    // :: Global
-    /*
-        - length (1 -16)
-        - Multiplier (1 - 16) ??
-
-        - Density
-
-        - Loop
-
-        - enabled
-    */
     int sequenceLength;
     OptionSlider sequenceLengthSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> sequenceLengthSliderAttachment;

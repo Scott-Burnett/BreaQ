@@ -152,7 +152,6 @@ Strip::Strip() {
     probability = 0.0f;
     group = 0;
     choice = 0;
-    // noteNumber = 0;
     stripId = 0;
     enabled = false;
     isOn = false;
@@ -200,10 +199,6 @@ void Strip::init (
     chokeParameter = vts.getRawParameterValue(
         ParameterNames::stripChoke[stripId]
     );
-    // variantsParameter = vts.getRawParameterValue(
-    //     ParameterNames::stripVariants[stripId]
-    // );
-    // New New Stuff
     repeatProbabilityParameter = vts.getRawParameterValue(
         ParameterNames::stripRepeatProbability[stripId]
     );
@@ -229,9 +224,6 @@ void Strip::init (
         addListener(&listener);
     vts.getParameter(ParameterNames::stripChoke[stripId])->
         addListener(&listener);
-    // vts.getParameter(ParameterNames::stripVariants[stripId])->
-    //     addListener(&listener);
-    // New New Stuff
     vts.getParameter(ParameterNames::stripRepeatProbability[stripId])->
         addListener(&listener);
     vts.getParameter(ParameterNames::stripRepeatLength[stripId])->
@@ -292,14 +284,6 @@ void Strip::createParameterLayout (
         0.0f
     ));
 
-    // layout.add(std::make_unique<juce::AudioParameterChoice> (
-    //     ParameterNames::stripVariants[stripId], 
-    //     "Variants", 
-    //     ParameterOptions::variantsOptions,
-    //     0
-    // ));
-
-    // New New Stuff
     layout.add(std::make_unique<juce::AudioParameterFloat> (
         ParameterNames::stripRepeatProbability[stripId], 
         "Repeat Probability", 
@@ -342,8 +326,6 @@ void Strip::loadParameters() {
     choice = choiceParameter->load();
     enabled = (bool) enabledParameter->load();
     choke = chokeParameter->load();
-    // variants = (int) variantsParameter->load();
-    // New New Stuff
     repeatProbability = repeatProbabilityParameter->load();
     repeatLength = (int) repeatLengthParameter->load() + 1;
     offset = offsetParameter->load();
@@ -397,29 +379,27 @@ void Step::addNoteOffEvent(juce::MidiBuffer& midiBuffer, int samplePos) {
 
 //==============================================================================
 Step Step::loadFrom(Strip *strip) {
-    int noteNumber = 60 + strip->choice + (strip->stripId * NUM_CHOICES);
     int channel = 1;
 
-    // TODO: Use Offset + Range Here
-    // juce::uint8 velocity = (juce::uint8) nextInt(1, 127);
-    
-    // Get Velocity
-    int vmax = clamp(
-        (int) ((strip->offset + strip->range) * 127.0f),
-        1,
-        127
-    );
+    std::uint64_t identifier = nextIdentifier(strip->group);
 
+    // Note Number
+    int noteNumber = 60 + strip->choice + (strip->stripId * NUM_CHOICES);
+    
+    // Velocity
     int vmin = clamp(
         (int) (strip->offset * 127.0f),
         1,
         127
     );
 
-    juce::uint8 velocity = (juce::uint8) nextInt(vmin, vmax);
+    int vmax = clamp(
+        (int) ((strip->offset + strip->range) * 127.0f),
+        1,
+        127
+    );
 
-    // TODO: Get Unique here
-    std::uint64_t identifier = nextIdentifier(strip->group);
+    juce::uint8 velocity = (juce::uint8) nextInt(vmin, vmax);
 
     Step step;
     step.noteNumber = noteNumber;
@@ -451,14 +431,6 @@ bool Step::differs(Step first, Step second) {
         return true;
     }
 
-    // return // probably overboard
-    //     first.channel != second.channel ||
-    //     first.noteNumber != second.noteNumber ||
-    //     first.velocity != second.velocity ||
-    //     first.strip != second.strip
-    // ;
-
-    // Should work right??
     return first.identifier != second.identifier;
 }
 
@@ -512,13 +484,6 @@ void Group::createSequence(
     int intervalSteps = intervalLength * intervalLengthMultiplier;
     int tjopSteps = tjopLength * tjopLengthMultiplier;
 
-    // TODO: Variants Kak
-    // Get all possible variants for each strip upfront
-    // then each time we get a strip, we then get the variant before finally getting the step
-
-    // TODO: Implement Repeat
-    // If nextFloat < RepeatProbability then repeat
-
     s = 0;
     while (
         s < sequenceSteps ) {
@@ -565,14 +530,6 @@ void Group::createSequence(
                 i < intervalSteps &&
                 t < tjopSteps) {
 
-                // if (++r >= repeatSteps &&
-                //     strip != nullptr) { // Repeat (increment then check, First time counts as a repeat)
-                //     // TODO: Fuck these null checks
-                //     // TODO: Neaten this up, Utility Method?
-                //     next.identifier = nextIdentifier(strip->group);
-                //     r = 0;
-                // }
-
                 int r = 0;
                 while (
                     s < sequenceSteps &&
@@ -580,7 +537,7 @@ void Group::createSequence(
                     t < tjopSteps &&
                     r < repeatSteps) {
 
-                    if (t > chokeSteps) { // Choke
+                    if (t > chokeSteps) {
                         next = Step::empty();
                     }
 
@@ -588,9 +545,7 @@ void Group::createSequence(
 
                     s++, i++, t++, r++;
                 } // Repeat Loop
-
-                // Now update the identifier for next iteration
-                // Only if hasValue, because otherwise may dereference null strip
+                
                 if (next.hasValue) {
                     next.identifier = nextIdentifier(strip->group);
                 }

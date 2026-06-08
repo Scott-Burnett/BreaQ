@@ -37,21 +37,17 @@ public:
     float probability;
     int group;
     int choice;
-    // int noteNumber;
     int stripId;
     bool enabled;
     bool isOn;
 
-    // New Stuff
     float choke;
-    // int variants;
 
-    // new new stuff
     float repeatProbability;
     int repeatLength;
 
-    float offset; // Int?
-    float range; // Int?
+    float offset;
+    float range;
 
     Strip();
     ~Strip();
@@ -70,9 +66,7 @@ private:
     std::atomic<float>* enabledParameter = nullptr;
     std::atomic<float>* bypassedParameter = nullptr;
 
-    // New Stuff
     std::atomic<float>* chokeParameter = nullptr;
-    // std::atomic<float>* variantsParameter = nullptr;
 
     std::atomic<float>* repeatProbabilityParameter = nullptr;
     std::atomic<float>* repeatLengthParameter = nullptr;
@@ -128,7 +122,6 @@ public:
     Step* sequence;
     bool needsReset;
 
-    // new stuff
     int tjopLength;
     int tjopLengthMultiplier;
     int intervalLength;
@@ -155,7 +148,6 @@ private:
     std::atomic<float>* plusSixteenParameter = nullptr;
     std::atomic<float>* enabledParameter = nullptr;
     std::atomic<float>* loopParameter = nullptr;
-    // New Stuff
     std::atomic<float>* tjopLengthParameter = nullptr;
     std::atomic<float>* tjopLengthMultiplierParameter = nullptr;
     std::atomic<float>* intervalLengthParameter = nullptr;
