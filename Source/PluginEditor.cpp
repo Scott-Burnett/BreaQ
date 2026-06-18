@@ -163,6 +163,14 @@ void StripEditor::init (
         vts, 
         editor
     );
+
+    initSlider (
+        ParameterNames::stripGateDensity[stripNumber], 
+        gateDensitySlider, 
+        gateDensitySliderAttachment, 
+        vts, 
+        editor
+    );
 }
 
 //==============================================================================

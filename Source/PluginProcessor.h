@@ -41,6 +41,9 @@ public:
     bool enabled;
     bool isOn;
 
+    // New
+    float gateDensity;
+
     float choke;
 
     float repeatProbability;
@@ -73,6 +76,9 @@ private:
 
     std::atomic<float>* offsetParameter = nullptr;
     std::atomic<float>* rangeParameter = nullptr;
+
+    // New
+    std::atomic<float>* gateDensityParameter = nullptr;
 };
 
 //==============================================================================
@@ -88,6 +94,10 @@ public:
     juce::uint8 velocity;
 
     Strip* strip;
+
+    // New
+    bool isGateOpen;
+    bool isGateClose;
 
     Step();
     ~Step();

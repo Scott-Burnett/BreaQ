@@ -156,6 +156,9 @@ Strip::Strip() {
     enabled = false;
     isOn = false;
 
+    // new
+    gateDensity = 1.0f;
+
     lock = Lock(&group);
 }
 
@@ -211,6 +214,9 @@ void Strip::init (
     rangeParameter = vts.getRawParameterValue(
         ParameterNames::stripRange[stripId]
     );
+    gateDensityParameter = vts.getRawParameterValue(
+        ParameterNames::stripGateDensity[stripId]
+    );
 
     vts.getParameter(ParameterNames::stripProbability[stripId])->
         addListener(&listener);
@@ -231,6 +237,8 @@ void Strip::init (
     vts.getParameter(ParameterNames::stripOffset[stripId])->
         addListener(&listener);
     vts.getParameter(ParameterNames::stripRange[stripId])->
+        addListener(&listener);
+    vts.getParameter(ParameterNames::stripGateDensity[stripId])->
         addListener(&listener);
 }
 
@@ -317,6 +325,15 @@ void Strip::createParameterLayout (
         },
         0.0f
     ));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat> (
+        ParameterNames::stripGateDensity[stripId], 
+        "Gate Density", 
+        juce::NormalisableRange {
+            0.0f, 1.0f, 0.01f, 1.0f, false
+        },
+        1.0f
+    ));
 }
 
 //==============================================================================
@@ -330,6 +347,7 @@ void Strip::loadParameters() {
     repeatLength = (int) repeatLengthParameter->load() + 1;
     offset = offsetParameter->load();
     range = rangeParameter->load();
+    gateDensity = gateDensityParameter->load();
 }
 
 //==============================================================================
@@ -340,6 +358,10 @@ Step::Step() {
     noteNumber = 0;
     channel = 1;
     velocity = (juce::uint8) 127;
+    
+    // New
+    isGateOpen = true;
+    isGateClose = false;
 
     strip = nullptr;
 }
@@ -401,6 +423,10 @@ Step Step::loadFrom(Strip *strip) {
 
     juce::uint8 velocity = (juce::uint8) nextInt(vmin, vmax);
 
+    // New Stuff
+    bool isGateOpen = nextFloat() < strip->gateDensity;
+    bool isGateClose = nextFloat() > strip->gateDensity;
+
     Step step;
     step.noteNumber = noteNumber;
     step.channel = channel;
@@ -409,6 +435,10 @@ Step Step::loadFrom(Strip *strip) {
 
     step.hasValue = true;
     step.identifier = identifier;
+
+    // new Stuff
+    step.isGateOpen = isGateOpen;
+    step.isGateClose = isGateClose;
 
     return step;
 }

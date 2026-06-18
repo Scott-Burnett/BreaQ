@@ -64,6 +64,11 @@ private:
     float range;
     juce::Slider rangeSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> rangeSliderAttachment;
+
+    // new
+    float gateDensity;
+    juce::Slider gateDensitySlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gateDensitySliderAttachment;
 };
 
 //==============================================================================
