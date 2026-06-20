@@ -472,6 +472,7 @@ Group::Group() {
     enabled = true;
     loop = false;
     isOn = false;
+    gateIsOpen = false;
 
     currentStrip = nullptr;
 
@@ -609,7 +610,63 @@ void Group::takeStep(juce::MidiBuffer& midiBuffer, int samplePos, Strip* strips)
     ;
 
     newNote(currentStep, newStep, midiBuffer, samplePos);
+
+    // Do We Just Open the Gate Here??
+    openGate(midiBuffer, samplePos, strips);
 }
+
+//==============================================================================
+void Group::openGate(juce::MidiBuffer& midiBuffer, int samplePos, Strip* strips) {
+    // This is bad because it assumes the step has already been incremented
+    if (this->gateIsOpen) {
+        // Gate is already Open
+        return;
+    }
+
+    if (!sequence[step].isGateOpen) {
+        // Not trying to open the gate: IDGAF
+        return;
+    }
+
+    // Were not open yet, but we should be: Start a new gate note
+    midiBuffer.addEvent (
+        // This is really shit, But Im drunk so whatever
+        juce::MidiMessage::noteOn (
+            1,                  // Channel
+            8 + this->id,       // NoteNumber: Fuckin watever, its 8 + Group ID
+            (juce::uint8) 127   // Velocity
+        ),
+        samplePos
+    );
+};
+
+//==============================================================================
+void Group::closeGate(juce::MidiBuffer& midiBuffer, int samplePos, Strip* strips) {
+    // This is bad because is assumes the step is still pointing to the current step
+    // Above is NOT NECESSARILY TRUE (Although almost always is)
+    if (!this->gateIsOpen) {
+        // Gate is already Closed
+        return;
+    }
+
+    if (!sequence[step].isGateClose) {
+        // Not trying to close the gate: IDGAF
+        return;
+    }
+
+    // were open, and we are trying to close: end the gate note
+    midiBuffer.addEvent (
+        juce::MidiMessage::noteOff (
+            // Remember, EXTREMELY SHIT
+            // We cant use the existing note on/off methods because they turn the whole strip on/off
+            // I told myself Id get this done tonights
+            1,              // Channel
+            8 + this->id    // NoteNumber: its fucking 8 + Group ID IDGAF
+        ),
+        samplePos
+    );
+
+};
 
 //==============================================================================
 void Group::newNote(Step currentStep, Step newStep, juce::MidiBuffer& midiBuffer, int samplePos) {
@@ -981,24 +1038,39 @@ void BreaQAudioProcessor::processBlock (
     int samplePos;
 
     while (iterator.getNextEvent(current, samplePos)) {
-        if (!current.isNoteOn()) {
-            continue;
+        // Now we just have two blocks, off or on ^_____^
+        if (current.isNoteOff()) {
+            // Yes, This is disgusting. Suggest something better or STFU
+            for (int g = 0; g < NUM_GROUPS; g++) {
+                switch (current.getNoteNumber()) {
+                    // We do the same thing in every case, but rather be consistent
+                    case NOTE_TAKE_STEP:
+                        groups[g].closeGate(processedBuffer, samplePos, strips);
+                        break;
+                    case NOTE_SCHEDULE_RESET:
+                        groups[g].closeGate(processedBuffer, samplePos, strips);
+                        break;
+                }
+                
+            }
         }
 
-        for (int g = 0; g < NUM_GROUPS; g++) {
-            switch (current.getNoteNumber()) {
-                case NOTE_TAKE_STEP:
-                    groups[g].takeStep(processedBuffer, samplePos, strips);
-                    break;
-                case NOTE_SCHEDULE_RESET:
-                    // Bad but good enough for now, but come back and fix this
-                    // More like "STEP FROM FIRST" than "RESET"
-                    // Fine as long as you dont send two note ons at once
-                    groups[g].scheduleReset();
-                    groups[g].takeStep(processedBuffer, samplePos, strips);
-                    break;
+        if (current.isNoteOn()) {
+            for (int g = 0; g < NUM_GROUPS; g++) {
+                switch (current.getNoteNumber()) {
+                    case NOTE_TAKE_STEP:
+                        groups[g].takeStep(processedBuffer, samplePos, strips);
+                        break;
+                    case NOTE_SCHEDULE_RESET:
+                        // Bad but good enough for now, but come back and fix this
+                        // More like "STEP FROM FIRST" than "RESET"
+                        // Fine as long as you dont send two note ons at once
+                        groups[g].scheduleReset();
+                        groups[g].takeStep(processedBuffer, samplePos, strips);
+                        break;
+                }
+                
             }
-            
         }
 
         needsRepaint = true;

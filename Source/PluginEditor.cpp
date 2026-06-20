@@ -186,7 +186,7 @@ void StripEditor::resized (juce::Rectangle<int> bounds) {
     bounds = bounds.reduced(4);
     bounds = bounds.reduced(4);
 
-    int rows = 5;
+    int rows = 6;
     float rowHeight = bounds.getHeight() / (float) rows;
     float columnWidth = bounds.getWidth() * 0.7f;
     auto rowBounds = bounds;
@@ -230,6 +230,12 @@ void StripEditor::resized (juce::Rectangle<int> bounds) {
 
     auto chokeBounds = probabilityChokeBounds;
     chokeSlider.setBounds(chokeBounds);
+
+    // Row 6
+    auto gateDensityBounds = rowBounds.removeFromBottom(rowHeight);
+
+    // auto gateDensityBounds = probabilityChokeBounds.removeFromLeft(columnWidth);
+    gateDensitySlider.setBounds(gateDensityBounds);
 }
 
 //==============================================================================

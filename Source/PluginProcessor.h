@@ -124,6 +124,7 @@ public:
     bool enabled;
     bool loop;
     bool isOn;
+    bool gateIsOpen;
 
     Strip* currentStrip;
 
@@ -150,6 +151,8 @@ public:
 
     void createSequence(Strip* strips);
     void takeStep(juce::MidiBuffer&, int, Strip*);
+    void openGate(juce::MidiBuffer&, int, Strip*);
+    void closeGate(juce::MidiBuffer&, int, Strip*);
     void newNote(Step, Step, juce::MidiBuffer&, int);
     void scheduleReset();
 
