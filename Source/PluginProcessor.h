@@ -43,6 +43,7 @@ public:
 
     // New
     float gateDensity;
+    bool gateIsOpen;
 
     float choke;
 
@@ -124,7 +125,7 @@ public:
     bool enabled;
     bool loop;
     bool isOn;
-    bool gateIsOpen;
+    // bool gateIsOpen;
 
     Strip* currentStrip;
 

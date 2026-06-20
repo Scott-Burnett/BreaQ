@@ -158,6 +158,7 @@ Strip::Strip() {
 
     // new
     gateDensity = 1.0f;
+    gateIsOpen = false;
 
     lock = Lock(&group);
 }
@@ -472,7 +473,7 @@ Group::Group() {
     enabled = true;
     loop = false;
     isOn = false;
-    gateIsOpen = false;
+    // gateIsOpen = false;
 
     currentStrip = nullptr;
 
@@ -612,45 +613,40 @@ void Group::takeStep(juce::MidiBuffer& midiBuffer, int samplePos, Strip* strips)
     newNote(currentStep, newStep, midiBuffer, samplePos);
 
     // Do We Just Open the Gate Here??
+    // Fuckin yolo
     openGate(midiBuffer, samplePos, strips);
 }
 
 //==============================================================================
 void Group::openGate(juce::MidiBuffer& midiBuffer, int samplePos, Strip* strips) {
     // This is bad because it assumes the step has already been incremented
-    if (this->gateIsOpen) {
-        // Gate is already Open
+    if (sequence[step].strip->gateIsOpen ||
+        !sequence[step].isGateOpen) {
+        // gate is already open, or not trying to open the gate: IDGAF
         return;
     }
 
-    if (!sequence[step].isGateOpen) {
-        // Not trying to open the gate: IDGAF
-        return;
-    }
-
-    // Were not open yet, but we should be: Start a new gate note
+    // Were not open yet, and we are trying to open: Start a new gate note
     midiBuffer.addEvent (
         // This is really shit, But Im drunk so whatever
         juce::MidiMessage::noteOn (
-            1,                  // Channel
-            8 + this->id,       // NoteNumber: Fuckin watever, its 8 + Group ID
-            (juce::uint8) 127   // Velocity
+            1,                                  // Channel
+            8 + sequence[step].strip->stripId,  // NoteNumber: Fuckin watever, its 8 + Strip ID
+            (juce::uint8) 127                   // Velocity
         ),
         samplePos
     );
+    
+    sequence[step].strip->gateIsOpen = true;
 };
 
 //==============================================================================
 void Group::closeGate(juce::MidiBuffer& midiBuffer, int samplePos, Strip* strips) {
     // This is bad because is assumes the step is still pointing to the current step
     // Above is NOT NECESSARILY TRUE (Although almost always is)
-    if (!this->gateIsOpen) {
-        // Gate is already Closed
-        return;
-    }
-
-    if (!sequence[step].isGateClose) {
-        // Not trying to close the gate: IDGAF
+    if (!sequence[step].strip->gateIsOpen ||
+        !sequence[step].isGateClose) {
+        // Gate isnt open, or not trying to close the gate: IDGAF
         return;
     }
 
@@ -660,12 +656,13 @@ void Group::closeGate(juce::MidiBuffer& midiBuffer, int samplePos, Strip* strips
             // Remember, EXTREMELY SHIT
             // We cant use the existing note on/off methods because they turn the whole strip on/off
             // I told myself Id get this done tonights
-            1,              // Channel
-            8 + this->id    // NoteNumber: its fucking 8 + Group ID IDGAF
+            1,                                  // Channel
+            8 + sequence[step].strip->stripId   // NoteNumber: its fucking 8 + Strip ID IDGAF, Fix it later
         ),
         samplePos
     );
 
+    sequence[step].strip->gateIsOpen = false;
 };
 
 //==============================================================================
