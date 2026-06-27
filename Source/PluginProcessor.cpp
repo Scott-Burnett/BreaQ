@@ -620,7 +620,8 @@ void Group::takeStep(juce::MidiBuffer& midiBuffer, int samplePos, Strip* strips)
 //==============================================================================
 void Group::openGate(juce::MidiBuffer& midiBuffer, int samplePos, Strip* strips) {
     // This is bad because it assumes the step has already been incremented
-    if (sequence[step].strip->gateIsOpen ||
+    if (!sequence[step].hasValue ||
+        sequence[step].strip->gateIsOpen ||
         !sequence[step].isGateOpen) {
         // gate is already open, or not trying to open the gate: IDGAF
         return;
@@ -644,7 +645,8 @@ void Group::openGate(juce::MidiBuffer& midiBuffer, int samplePos, Strip* strips)
 void Group::closeGate(juce::MidiBuffer& midiBuffer, int samplePos, Strip* strips) {
     // This is bad because is assumes the step is still pointing to the current step
     // Above is NOT NECESSARILY TRUE (Although almost always is)
-    if (!sequence[step].strip->gateIsOpen ||
+    if (!sequence[step].hasValue ||
+        !sequence[step].strip->gateIsOpen ||
         !sequence[step].isGateClose) {
         // Gate isnt open, or not trying to close the gate: IDGAF
         return;
