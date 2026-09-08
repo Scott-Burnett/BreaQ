@@ -12,6 +12,9 @@ std::uint64_t identifiers[NUM_GROUPS] = {
 
 //==============================================================================
 static std::uint64_t nextIdentifier(int group) {
+    // Yes its eventually gonna wrap around
+    // Long is big enough, Maximum of 16 ^ 2 notes per sequence
+    // The last one that got 0ULL will be long gone
     return identifiers[group]++;
 }
 
@@ -488,8 +491,8 @@ Group::Group() {
     intervalLength = 0;
     intervalLengthMultiplier = 0;
 
-    tjopLength = 0;
-    tjopLengthMultiplier = 0;
+    divisionLength = 0;
+    divisionLengthMultiplier = 0;
 
     density = 0.0f;
 
@@ -511,10 +514,10 @@ void Group::createSequence(
 
     int s = 0;
     int i = 0;
-    int t = 0;
+    int d = 0;
     int sequenceSteps = sequenceLength * sequenceLengthMultiplier;
     int intervalSteps = intervalLength * intervalLengthMultiplier;
-    int tjopSteps = tjopLength * tjopLengthMultiplier;
+    int divisionSteps = divisionLength * divisionLengthMultiplier;
 
     s = 0;
     while (
@@ -525,7 +528,8 @@ void Group::createSequence(
             s < sequenceSteps &&
             i < intervalSteps) {
 
-            Strip* strip = nextFloat() < density
+            Strip* strip = 
+                nextFloat() < density
                 ? choose (
                     strips,
                     [this] (Strip* strip) -> bool {
@@ -544,44 +548,45 @@ void Group::createSequence(
                 : Step::empty()
             ;
 
-            int chokeSteps = strip != nullptr
-                ? (int) ((float) tjopSteps * strip->choke)
-                : tjopSteps
+            int chokeSteps = 
+                strip != nullptr
+                ? (int) ((float) divisionSteps * strip->choke)
+                : divisionSteps
             ;
 
             int repeatSteps = 
                 strip != nullptr &&
                 strip->repeatProbability > nextFloat()
                 ? strip->repeatLength
-                : tjopSteps
+                : divisionSteps
             ;
 
-            t = 0;
+            d = 0;
             while (
                 s < sequenceSteps &&
                 i < intervalSteps &&
-                t < tjopSteps) {
+                d < divisionSteps) {
 
                 int r = 0;
                 while (
                     s < sequenceSteps &&
                     i < intervalSteps &&
-                    t < tjopSteps &&
+                    d < divisionSteps &&
                     r < repeatSteps) {
 
-                    if (t > chokeSteps) {
+                    if (d > chokeSteps) {
                         next = Step::empty();
                     }
 
                     sequence[s] = next;
 
-                    s++, i++, t++, r++;
+                    s++, i++, d++, r++;
                 } // Repeat Loop
                 
                 if (next.hasValue) {
                     next.identifier = nextIdentifier(strip->group);
                 }
-            } // Tjop Loop
+            } // Division Loop
         } // Interval Loop
     } // Sequence Loop
 }
@@ -717,11 +722,11 @@ void Group::init(
     loopParameter = vts.getRawParameterValue(
         ParameterNames::groupLoop[id]
     );
-    tjopLengthParameter = vts.getRawParameterValue(
-        ParameterNames::groupTjopLength[id]
+    divisionLengthParameter = vts.getRawParameterValue(
+        ParameterNames::groupDivisionLength[id]
     );
-    tjopLengthMultiplierParameter = vts.getRawParameterValue(
-        ParameterNames::groupTjopLengthMultiplier[id]
+    divisionLengthMultiplierParameter = vts.getRawParameterValue(
+        ParameterNames::groupDivisionLengthMultiplier[id]
     );
     intervalLengthParameter = vts.getRawParameterValue(
         ParameterNames::groupIntervalLength[id]
@@ -747,9 +752,9 @@ void Group::init(
         addListener(&listener);
     vts.getParameter(ParameterNames::groupLoop[id])->
         addListener(&listener);
-    vts.getParameter(ParameterNames::groupTjopLength[id])->
+    vts.getParameter(ParameterNames::groupDivisionLength[id])->
         addListener(&listener);
-    vts.getParameter(ParameterNames::groupTjopLengthMultiplier[id])->
+    vts.getParameter(ParameterNames::groupDivisionLengthMultiplier[id])->
         addListener(&listener);
     vts.getParameter(ParameterNames::groupIntervalLength[id])->
         addListener(&listener);
@@ -796,14 +801,14 @@ void Group::createParameterLayout(
     ));
 
     layout.add(std::make_unique<juce::AudioParameterChoice>(
-        ParameterNames::groupTjopLength[id],
-        "TjopLength",
+        ParameterNames::groupDivisionLength[id],
+        "DivisionLength",
         ParameterOptions::lengthOptions,
         0
     ));
     layout.add(std::make_unique<juce::AudioParameterChoice>(
-        ParameterNames::groupTjopLengthMultiplier[id],
-        "TjopLengthMultiplier",
+        ParameterNames::groupDivisionLengthMultiplier[id],
+        "DivisionLengthMultiplier",
         ParameterOptions::lengthOptions,
         0
     ));
@@ -850,8 +855,8 @@ void Group::loadParameters() {
 
     density = densityParameter->load();
 
-    tjopLength = tjopLengthParameter->load() + 1;
-    tjopLengthMultiplier = tjopLengthMultiplierParameter->load() + 1;
+    divisionLength = divisionLengthParameter->load() + 1;
+    divisionLengthMultiplier = divisionLengthMultiplierParameter->load() + 1;
 
     intervalLength = intervalLengthParameter->load() + 1;
     intervalLengthMultiplier = intervalLengthMultiplierParameter->load() + 1;

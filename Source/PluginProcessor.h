@@ -134,8 +134,8 @@ public:
     Step* sequence;
     bool needsReset;
 
-    int tjopLength;
-    int tjopLengthMultiplier;
+    int divisionLength;
+    int divisionLengthMultiplier;
     int intervalLength;
     int intervalLengthMultiplier;
     int sequenceLength;
@@ -162,8 +162,8 @@ private:
     std::atomic<float>* plusSixteenParameter = nullptr;
     std::atomic<float>* enabledParameter = nullptr;
     std::atomic<float>* loopParameter = nullptr;
-    std::atomic<float>* tjopLengthParameter = nullptr;
-    std::atomic<float>* tjopLengthMultiplierParameter = nullptr;
+    std::atomic<float>* divisionLengthParameter = nullptr;
+    std::atomic<float>* divisionLengthMultiplierParameter = nullptr;
     std::atomic<float>* intervalLengthParameter = nullptr;
     std::atomic<float>* intervalLengthMultiplierParameter = nullptr;
     std::atomic<float>* sequenceLengthParameter = nullptr;

@@ -1009,18 +1009,18 @@ const std::string ParameterNames::groupLoop[NUM_GROUPS] = {
     "groupLoop3"
 };
 
-const std::string ParameterNames::groupTjopLength[NUM_GROUPS] = {
-    "groupTjopLength0",
-    "groupTjopLength1",
-    "groupTjopLength2",
-    "groupTjopLength3"
+const std::string ParameterNames::groupDivisionLength[NUM_GROUPS] = {
+    "groupDivisionLength0",
+    "groupDivisionLength1",
+    "groupDivisionLength2",
+    "groupDivisionLength3"
 };
 
-const std::string ParameterNames::groupTjopLengthMultiplier[NUM_GROUPS] = {
-    "groupTjopLengthMultiplier0",
-    "groupTjopLengthMultiplier1",
-    "groupTjopLengthMultiplier2",
-    "groupTjopLengthMultiplier3"
+const std::string ParameterNames::groupDivisionLengthMultiplier[NUM_GROUPS] = {
+    "groupDivisionLengthMultiplier0",
+    "groupDivisionLengthMultiplier1",
+    "groupDivisionLengthMultiplier2",
+    "groupDivisionLengthMultiplier3"
 };
 
 const std::string ParameterNames::groupIntervalLength[NUM_GROUPS] = {

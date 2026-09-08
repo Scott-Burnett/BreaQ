@@ -110,13 +110,13 @@ private:
     juce::ToggleButton loopButton;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> loopButtonAttachment;
 
-    int tjopLength;
-    OptionSlider tjopLengthSlider;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> tjopLengthSliderAttachment;
+    int divisionLength;
+    OptionSlider divisionLengthSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> divisionLengthSliderAttachment;
 
-    int tjopLengthMultiplier;
-    OptionSlider tjopLengthMultiplierSlider;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> tjopLengthMultiplierSliderAttachment;
+    int divisionLengthMultiplier;
+    OptionSlider divisionLengthMultiplierSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> divisionLengthMultiplierSliderAttachment;
 
     int intervalLength;
     OptionSlider intervalLengthSlider;

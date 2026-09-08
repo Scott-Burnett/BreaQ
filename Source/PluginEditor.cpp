@@ -325,21 +325,21 @@ void GroupEditor::init(
     );
 
     initOptionSlider(
-        ParameterNames::groupTjopLength[groupNumber],
-        tjopLengthSlider,
+        ParameterNames::groupDivisionLength[groupNumber],
+        divisionLengthSlider,
         ParameterOptions::lengthOptions,
         16,
-        tjopLengthSliderAttachment,
+        divisionLengthSliderAttachment,
         vts,
         editor
     );
 
     initOptionSlider(
-        ParameterNames::groupTjopLengthMultiplier[groupNumber],
-        tjopLengthMultiplierSlider,
+        ParameterNames::groupDivisionLengthMultiplier[groupNumber],
+        divisionLengthMultiplierSlider,
         ParameterOptions::lengthOptions,
         16,
-        tjopLengthMultiplierSliderAttachment,
+        divisionLengthMultiplierSliderAttachment,
         vts,
         editor
     );
@@ -541,23 +541,23 @@ void GroupEditor::resized(juce::Rectangle<int> bounds) {
     ;
     intervalLengthSlider.setBounds(intervalLengthBounds);
 
-    auto tjopLengthMultiplierBounds = bounds.removeFromRight(columnWidth);
-    tjopLengthMultiplierBounds =
-        tjopLengthMultiplierBounds
+    auto divisionLengthMultiplierBounds = bounds.removeFromRight(columnWidth);
+    divisionLengthMultiplierBounds =
+        divisionLengthMultiplierBounds
         .removeFromTop(topRowHeight)
         .expanded(8)
         .translated(0, +10)
     ;
-    tjopLengthMultiplierSlider.setBounds(tjopLengthMultiplierBounds);
+    divisionLengthMultiplierSlider.setBounds(divisionLengthMultiplierBounds);
 
-    auto tjopLengthBounds = bounds.removeFromRight(columnWidth);
-    tjopLengthBounds =
-        tjopLengthBounds
+    auto divisionLengthBounds = bounds.removeFromRight(columnWidth);
+    divisionLengthBounds =
+        divisionLengthBounds
         .removeFromBottom(bottomRowHeight)
         .expanded(8)
         .translated(0, +2)
     ;
-    tjopLengthSlider.setBounds(tjopLengthBounds);
+    divisionLengthSlider.setBounds(divisionLengthBounds);
 }
 
 //==============================================================================
@@ -573,8 +573,8 @@ void GroupEditor::loadParameters(Group* group) {
             step = group->step;
             numSteps = group->numSteps;
 
-            tjopLength = group->tjopLength;
-            tjopLengthMultiplier = group->tjopLengthMultiplier;
+            divisionLength = group->divisionLength;
+            divisionLengthMultiplier = group->divisionLengthMultiplier;
             intervalLength = group->intervalLength;
             intervalLengthMultiplier = group->intervalLengthMultiplier;
             sequenceLength = group->sequenceLength;

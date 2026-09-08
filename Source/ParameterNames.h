@@ -41,8 +41,8 @@ public:
     const static std::string groupLoop[NUM_GROUPS];
     const static std::string groupLength[NUM_GROUPS];
     const static std::string groupPlusSixteen[NUM_GROUPS];
-    const static std::string groupTjopLength[NUM_GROUPS];
-    const static std::string groupTjopLengthMultiplier[NUM_GROUPS];
+    const static std::string groupDivisionLength[NUM_GROUPS];
+    const static std::string groupDivisionLengthMultiplier[NUM_GROUPS];
     const static std::string groupIntervalLength[NUM_GROUPS];
     const static std::string groupIntervalLengthMultiplier[NUM_GROUPS];
     const static std::string groupSequenceLength[NUM_GROUPS];
