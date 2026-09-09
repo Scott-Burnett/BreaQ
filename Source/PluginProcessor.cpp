@@ -428,8 +428,8 @@ Step Step::loadFrom(Strip *strip) {
     juce::uint8 velocity = (juce::uint8) nextInt(vmin, vmax);
 
     // New Stuff
-    bool isGateOpen = nextFloat() < strip->gateDensity;
-    bool isGateClose = nextFloat() > strip->gateDensity;
+    // bool isGateOpen = nextFloat() < strip->gateDensity;
+    // bool isGateClose = nextFloat() > strip->gateDensity;
 
     Step step;
     step.noteNumber = noteNumber;
@@ -441,8 +441,8 @@ Step Step::loadFrom(Strip *strip) {
     step.identifier = identifier;
 
     // new Stuff
-    step.isGateOpen = isGateOpen;
-    step.isGateClose = isGateClose;
+    // step.isGateOpen = isGateOpen;
+    // step.isGateClose = isGateClose;
 
     return step;
 }
@@ -589,6 +589,112 @@ void Group::createSequence(
             } // Division Loop
         } // Interval Loop
     } // Sequence Loop
+
+    // Now do the gating
+    this->gateSequence();
+
+    // Finally do the repeating here (Later)
+}
+
+//==============================================================================
+void Group::gateSequence() {
+    // int s = 0;
+
+    // int sequenceSteps = this->numSteps;
+
+    // Step* previous;
+    // Step* next;
+
+    // // Walk through the whole sequence
+    // while (s < sequenceSteps) {
+
+    //     // walk from this step to the next
+    //     while (!Step::differs(*previous, *next)) {
+    //         // Above only true if we havent done the repeat thing yet
+
+    //         int gateSteps = 4; // Total number of steps for this gate loop
+    //         int gateLength = 1; // Number of steps between gate Opens
+    //         float gatePortion = 0.5f; // Portion of the gate that is open.
+
+    //         int g = 0;
+    //         while (
+    //             s < sequenceSteps &&
+    //             g < gateSteps &&
+    //             !Step::differs(*previous, *next)
+    //         ) {
+
+    //             int l = 0;
+    //             while (
+    //                 s < sequenceSteps &&
+    //                 g < gateSteps &&
+    //                 l < gateLength &&
+    //                 !Step::differs(*previous, *next)
+    //             ) {
+    //                 previous = next;
+    //                 next = &this->sequence[s];
+
+    //                 float progress = (float) l;
+                    
+    //                 // Open the gate if we are before the GatePortion
+    //                 this->sequence[s].isGateOpen = progress < (float) gateLength * gatePortion;
+                    
+    //                 // Close the gate if the next step will exceed the GatePortion
+    //                 this->sequence[s].isGateClose = progress + 1.0f >= (float) gateLength * gatePortion;
+
+    //                 // increment everything
+    //                 s++;
+    //                 g++;
+    //                 l++;
+    //             }
+    //         }
+    //     }
+    // }
+
+    // ===============================================================
+
+    // Gemini Code:
+
+    int sequenceSteps = this->numSteps;
+    if (sequenceSteps == 0 || this->sequence == nullptr) return;
+
+    // Initial parameters (Will be immediately overwritten on step 0 due to blockStartStep initialization)
+    int gateSteps = 1;
+    int gateLength = 1;
+    float targetGateLimit = 0.0f;
+
+    int gateIndex = 0; 
+
+    Step* blockStartStep = nullptr;
+
+    for (int s = 0; s < sequenceSteps; s++) {
+        Step* currentStep = &this->sequence[s];
+
+        // 1. If block changes (or it's the very first step), force gateIndex to the end
+        if (blockStartStep == nullptr || Step::differs(*blockStartStep, *currentStep)) {
+            blockStartStep = currentStep;
+            gateIndex = gateSteps; // Force trigger the wrap/reroll logic below
+        }
+
+        // 2. Look-ahead wrap & reroll check
+        if (gateIndex >= gateSteps) {
+            gateSteps = 4;
+            gateLength = 1;
+            float gatePortion = 0.5f;
+
+            gateIndex = 0; 
+            targetGateLimit = static_cast<float>(gateLength) * gatePortion;
+        }
+
+        int l = gateIndex % gateLength;
+        float progress = static_cast<float>(l);
+
+        // --- BOOLEAN GATING EXPRESSIONS ---
+        currentStep->isGateOpen = (progress < targetGateLimit);
+        currentStep->isGateClose = (progress >= targetGateLimit) || ((progress + 1.0f) != targetGateLimit);
+
+        // 3. Advance index normally
+        gateIndex++;
+    }
 }
 
 //==============================================================================

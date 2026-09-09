@@ -151,6 +151,7 @@ public:
     void loadParameters();
 
     void createSequence(Strip* strips);
+    void gateSequence();
     void takeStep(juce::MidiBuffer&, int, Strip*);
     void openGate(juce::MidiBuffer&, int, Strip*);
     void closeGate(juce::MidiBuffer&, int, Strip*);
