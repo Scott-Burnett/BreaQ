@@ -598,61 +598,6 @@ void Group::createSequence(
 
 //==============================================================================
 void Group::gateSequence() {
-    // int s = 0;
-
-    // int sequenceSteps = this->numSteps;
-
-    // Step* previous;
-    // Step* next;
-
-    // // Walk through the whole sequence
-    // while (s < sequenceSteps) {
-
-    //     // walk from this step to the next
-    //     while (!Step::differs(*previous, *next)) {
-    //         // Above only true if we havent done the repeat thing yet
-
-    //         int gateSteps = 4; // Total number of steps for this gate loop
-    //         int gateLength = 1; // Number of steps between gate Opens
-    //         float gatePortion = 0.5f; // Portion of the gate that is open.
-
-    //         int g = 0;
-    //         while (
-    //             s < sequenceSteps &&
-    //             g < gateSteps &&
-    //             !Step::differs(*previous, *next)
-    //         ) {
-
-    //             int l = 0;
-    //             while (
-    //                 s < sequenceSteps &&
-    //                 g < gateSteps &&
-    //                 l < gateLength &&
-    //                 !Step::differs(*previous, *next)
-    //             ) {
-    //                 previous = next;
-    //                 next = &this->sequence[s];
-
-    //                 float progress = (float) l;
-                    
-    //                 // Open the gate if we are before the GatePortion
-    //                 this->sequence[s].isGateOpen = progress < (float) gateLength * gatePortion;
-                    
-    //                 // Close the gate if the next step will exceed the GatePortion
-    //                 this->sequence[s].isGateClose = progress + 1.0f >= (float) gateLength * gatePortion;
-
-    //                 // increment everything
-    //                 s++;
-    //                 g++;
-    //                 l++;
-    //             }
-    //         }
-    //     }
-    // }
-
-    // ===============================================================
-
-    // Gemini Code:
 
     int sequenceSteps = this->numSteps;
     if (sequenceSteps == 0 || this->sequence == nullptr) return;
