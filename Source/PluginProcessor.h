@@ -42,7 +42,6 @@ public:
     bool isOn;
 
     // New
-    float gateDensity;
     bool gateIsOpen;
 
     float choke;
@@ -113,6 +112,32 @@ public:
     void addNoteOffEvent(juce::MidiBuffer&, int);
 };
 
+//==============================================================================
+/**
+*/
+class Gate {
+public:
+    int id;
+
+    int gateLength;
+    int gateLengthMultiplier;
+    int gateInterval;
+    float gatePortion;
+
+    Gate();
+    ~Gate();
+
+    void setGateId(int);
+    void init(juce::AudioProcessorValueTreeState&, juce::AudioProcessorParameter::Listener&);
+    void createParameterLayout(juce::AudioProcessorValueTreeState::ParameterLayout&);
+    void loadParameters();
+
+private:
+    std::atomic<float>* gateLengthParameter = nullptr;
+    std::atomic<float>* gateLengthMultiplierParameter = nullptr;
+    std::atomic<float>* gateIntervalParameter = nullptr;
+    std::atomic<float>* gatePortionParameter = nullptr;
+};
 
 //==============================================================================
 /**
@@ -190,6 +215,8 @@ class BreaQAudioProcessor  :
 {
 public:
     BreaQAudioProcessorEditor* editor;
+
+    Gate* gates;
 
     Group* groups;
     Strip* strips;

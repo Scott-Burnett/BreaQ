@@ -1,5 +1,34 @@
 #include "ParameterNames.h"
 
+// Gates
+const std::string ParameterNames::gateLength[NUM_GATES] = {
+    "GateLength0",
+    "GateLength1",
+    "GateLength2",
+    "GateLength3"
+};
+
+const std::string ParameterNames::gateLengthMultiplier[NUM_GATES] = {
+    "GateLengthMultiplier0",
+    "GateLengthMultiplier1",
+    "GateLengthMultiplier2",
+    "GateLengthMultiplier3"
+};
+
+const std::string ParameterNames::gateInterval[NUM_GATES] = {
+    "GateInterval0",
+    "GateInterval1",
+    "GateInterval2",
+    "GateInterval3",
+};
+
+const std::string ParameterNames::gatePortion[NUM_GATES] = {
+    "GatePortion0",
+    "GatePortion1",
+    "GatePortion2",
+    "GatePortion3",
+};
+
 // Slices
 const std::string ParameterNames::sliceProbability[128] = {
     "SliceProbability0",

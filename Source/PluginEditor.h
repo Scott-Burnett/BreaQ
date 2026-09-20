@@ -8,6 +8,43 @@
 //==============================================================================
 /*
 */
+class GateEditor {
+public:
+    GateEditor();
+    ~GateEditor();
+
+    void init (
+        int, 
+        juce::AudioProcessorValueTreeState&, 
+        juce::AudioProcessorEditor&
+    );
+    void paint(juce::Graphics&);
+    void resized(juce::Rectangle<int>);
+
+private:
+    bool needsRepaint;
+    juce::Rectangle<int> bounds;
+
+    int gateLength;
+    OptionSlider gateLengthSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gateLengthSliderAttachment;
+
+    int gateLengthMultiplier;
+    OptionSlider gateLengthMultiplierSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gateLengthMultiplierSliderAttachment;
+
+    int gateInterval;
+    OptionSlider gateIntervalSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gateIntervalSliderAttachment;
+
+    int gatePortion;
+    OptionSlider gatePortionSlider;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gatePortionSliderAttachment;
+};
+
+//==============================================================================
+/*
+*/
 class StripEditor {
 public:
     StripEditor();
@@ -69,6 +106,8 @@ private:
     float gateDensity;
     juce::Slider gateDensitySlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gateDensitySliderAttachment;
+
+    // ToDo: Gate Options one two three and four
 };
 
 //==============================================================================
@@ -161,6 +200,8 @@ private:
     bool open;
     BreaQAudioProcessor& audioProcessor;
     BreaQLookAndFeel breaQLookAndFeel;
+
+    GateEditor* gates;
 
     GroupEditor* groups;
     StripEditor* strips;

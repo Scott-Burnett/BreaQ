@@ -69,6 +69,24 @@ static Strip* choose (
 }
 
 //==============================================================================
+static Gate* choose (
+    Step * step,
+    Gate* gates
+) {
+    // this sucks, Rather pass in the strip?
+    if (!step->hasValue) {
+        return nullptr;
+    }
+
+    // Get availableGates from Strip here
+    int thing = step->strip->group;
+
+    int choice = nextInt(0, NUM_GATES - 1);
+
+    return &gates[choice];
+}
+
+//==============================================================================
 Lock::Lock() {
     shape = nullptr;
 
@@ -160,7 +178,6 @@ Strip::Strip() {
     isOn = false;
 
     // new
-    gateDensity = 1.0f;
     gateIsOpen = false;
 
     lock = Lock(&group);
@@ -351,7 +368,6 @@ void Strip::loadParameters() {
     repeatLength = (int) repeatLengthParameter->load() + 1;
     offset = offsetParameter->load();
     range = rangeParameter->load();
-    gateDensity = gateDensityParameter->load();
 }
 
 //==============================================================================
@@ -427,10 +443,6 @@ Step Step::loadFrom(Strip *strip) {
 
     juce::uint8 velocity = (juce::uint8) nextInt(vmin, vmax);
 
-    // New Stuff
-    // bool isGateOpen = nextFloat() < strip->gateDensity;
-    // bool isGateClose = nextFloat() > strip->gateDensity;
-
     Step step;
     step.noteNumber = noteNumber;
     step.channel = channel;
@@ -439,10 +451,6 @@ Step Step::loadFrom(Strip *strip) {
 
     step.hasValue = true;
     step.identifier = identifier;
-
-    // new Stuff
-    // step.isGateOpen = isGateOpen;
-    // step.isGateClose = isGateClose;
 
     return step;
 }
@@ -466,6 +474,92 @@ bool Step::differs(Step first, Step second) {
     }
 
     return first.identifier != second.identifier;
+}
+
+//==============================================================================
+Gate::Gate() {
+    id = -1;
+
+    gateLength = 0;
+    gateLengthMultiplier = 0;
+    gateInterval = 0;
+    gatePortion = 0.0f;
+}
+
+//==============================================================================
+Gate::~Gate() {
+
+}
+
+//==============================================================================
+void Gate::setGateId(int id) {
+    this->id = id;
+}
+
+//==============================================================================
+void Gate::init(
+    juce::AudioProcessorValueTreeState& vts, 
+    juce::AudioProcessorParameter::Listener& listener) {
+
+    gateLengthParameter = vts.getRawParameterValue(
+        ParameterNames::gateLength[id]
+    );
+    gateLengthMultiplierParameter = vts.getRawParameterValue(
+        ParameterNames::gateLengthMultiplier[id]
+    );
+    gateIntervalParameter = vts.getRawParameterValue(
+        ParameterNames::gateInterval[id]
+    );
+    gatePortionParameter = vts.getRawParameterValue(
+        ParameterNames::gatePortion[id]
+    );
+
+    vts.getParameter(ParameterNames::gateLength[id])->
+        addListener(&listener);
+    vts.getParameter(ParameterNames::gateLengthMultiplier[id])->
+        addListener(&listener);
+    vts.getParameter(ParameterNames::gateInterval[id])->
+        addListener(&listener);
+    vts.getParameter(ParameterNames::gatePortion[id])->
+        addListener(&listener);
+}
+
+//==============================================================================
+void Gate::createParameterLayout(juce::AudioProcessorValueTreeState::ParameterLayout& layout) {
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        ParameterNames::gateLength[id],
+        "GateLength",
+        ParameterOptions::lengthOptions,
+        0
+    ));
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        ParameterNames::gateLengthMultiplier[id],
+        "GateLengthMultiplier",
+        ParameterOptions::lengthOptions,
+        0
+    ));
+    layout.add(std::make_unique<juce::AudioParameterChoice>(
+        ParameterNames::gateInterval[id],
+        "GateInterval",
+        ParameterOptions::lengthOptions,
+        0
+    ));
+    layout.add(std::make_unique<juce::AudioParameterFloat> (
+        ParameterNames::gatePortion[id], 
+        "Portion", 
+        juce::NormalisableRange {
+            0.0f, 1.0f, 0.01f, 1.0f, false
+        },
+        0.0f
+    ));
+}
+
+//==============================================================================
+void Gate::loadParameters() {
+    gateLength = gateLengthParameter->load() + 1;
+    gateLengthMultiplier = gateLengthMultiplierParameter->load() + 1;
+    gateInterval = gateIntervalParameter->load() + 1;
+    gatePortion = gatePortionParameter->load();
 }
 
 //==============================================================================
@@ -614,17 +708,21 @@ void Group::gateSequence() {
     for (int s = 0; s < sequenceSteps; s++) {
         Step* currentStep = &this->sequence[s];
 
-        // 1. If block changes (or it's the very first step), force gateIndex to the end
-        if (blockStartStep == nullptr || Step::differs(*blockStartStep, *currentStep)) {
+        
+        if (blockStartStep == nullptr || 
+            Step::differs(*blockStartStep, *currentStep)) {
+            // 1. If block changes (or it's the very first step), force gateIndex to the end
             blockStartStep = currentStep;
             gateIndex = gateSteps; // Force trigger the wrap/reroll logic below
         }
 
         // 2. Look-ahead wrap & reroll check
         if (gateIndex >= gateSteps) {
-            gateSteps = 4;
-            gateLength = 1;
-            float gatePortion = 0.5f;
+            gateSteps = 4; // gate:gateLength * gate:gateLenthMultiplier
+            gateLength = 1; // gate:gateInterval
+            float gatePortion = 0.5f; // gate:gatePortion
+
+            // Gate* theGate = choose(blockStartStep, this->gates);
 
             gateIndex = 0; 
             targetGateLimit = static_cast<float>(gateLength) * gatePortion;
@@ -633,11 +731,9 @@ void Group::gateSequence() {
         int l = gateIndex % gateLength;
         float progress = static_cast<float>(l);
 
-        // --- BOOLEAN GATING EXPRESSIONS ---
         currentStep->isGateOpen = (progress < targetGateLimit);
         currentStep->isGateClose = (progress >= targetGateLimit) || ((progress + 1.0f) != targetGateLimit);
 
-        // 3. Advance index normally
         gateIndex++;
     }
 }
@@ -682,6 +778,8 @@ void Group::openGate(juce::MidiBuffer& midiBuffer, int samplePos, Strip* strips)
         // gate is already open, or not trying to open the gate: IDGAF
         return;
     }
+
+    // TODO: We should close the gate here if gateIsOpen == false
 
     // Were not open yet, and we are trying to open: Start a new gate note
     midiBuffer.addEvent (
@@ -930,6 +1028,10 @@ BreaQAudioProcessor::BreaQAudioProcessor()
     )
 #endif
 {
+    for (int i = 0; i < NUM_GATES; i++) {
+        gates[i].init(parameters, *this);
+    }
+    
     for (int i = 0; i < NUM_GROUPS; i++) {
         groups[i].init(parameters, *this);
     }
@@ -960,6 +1062,9 @@ void BreaQAudioProcessor::parameterGestureChanged(int parameterIndex, bool gestu
 //==============================================================================
 void BreaQAudioProcessor::timerCallback() {
     if (needsRepaint) {
+        for (int i = 0; i < NUM_GATES; i++) {
+            gates[i].loadParameters();
+        }
         for (int i = 0; i < NUM_GROUPS; i++) {
             groups[i].loadParameters();
         }
@@ -1164,8 +1269,15 @@ void BreaQAudioProcessor::setStateInformation (const void* data, int sizeInBytes
 juce::AudioProcessorValueTreeState::ParameterLayout BreaQAudioProcessor::createParameterLayout() {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
+    gates = new Gate[NUM_GATES];
+
     groups = new Group[NUM_GROUPS];
     strips = new Strip[NUM_STRIPS];
+
+    for (int i = 0; i < NUM_GATES; i++) {
+        gates[i].setGateId(i); // Dont think I need this
+        gates[i].createParameterLayout(layout);
+    }
 
     for (int i = 0; i < NUM_GROUPS; i++) {
         groups[i].setGroupId(i);

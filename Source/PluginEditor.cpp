@@ -66,6 +66,112 @@ static void initButton(
 }
 
 //==============================================================================
+GateEditor::GateEditor() {
+    needsRepaint = false;
+}
+
+//==============================================================================
+GateEditor::~GateEditor() {
+    
+}
+
+//==============================================================================
+void GateEditor::init(
+    int gateNumber,
+    juce::AudioProcessorValueTreeState& vts,
+    juce::AudioProcessorEditor& editor
+) {
+    initOptionSlider (
+        ParameterNames::gateLength[gateNumber], 
+        gateLengthSlider, 
+        ParameterOptions::lengthOptions,
+        16,
+        gateLengthSliderAttachment, 
+        vts, 
+        editor
+    );
+
+    initOptionSlider (
+        ParameterNames::gateLengthMultiplier[gateNumber], 
+        gateLengthMultiplierSlider, 
+        ParameterOptions::lengthOptions,
+        16,
+        gateLengthMultiplierSliderAttachment, 
+        vts, 
+        editor
+    );
+
+    initOptionSlider (
+        ParameterNames::gateInterval[gateNumber], 
+        gateIntervalSlider, 
+        ParameterOptions::lengthOptions,
+        16,
+        gateIntervalSliderAttachment, 
+        vts, 
+        editor
+    );
+
+    initSlider (
+        ParameterNames::gatePortion[gateNumber], 
+        gatePortionSlider, 
+        gatePortionSliderAttachment, 
+        vts, 
+        editor
+    );
+}
+
+//==============================================================================
+void GateEditor::paint(juce::Graphics& g) {
+
+}
+
+//==============================================================================
+void GateEditor::resized(juce::Rectangle<int> bounds) {
+    const int columns = 4;
+    bounds = bounds.reduced(6);
+
+    float columnWidth = bounds.getWidth() / (float) columns;
+    float topRowHeight = bounds.getHeight() * 0.35f;
+    float bottomRowHeight = bounds.getHeight() * 0.6f;
+
+    auto gateLengthBounds = bounds.removeFromLeft(columnWidth);
+    gateLengthBounds =
+        gateLengthBounds
+        .removeFromTop(topRowHeight)
+        .expanded(8)
+        .translated(0, +10)
+    ;
+    gateLengthSlider.setBounds(gateLengthBounds);
+
+    auto gateLengthMultiplierBounds = bounds.removeFromLeft(columnWidth);
+    gateLengthMultiplierBounds =
+        gateLengthMultiplierBounds
+        .removeFromBottom(bottomRowHeight)
+        .expanded(8)
+        .translated(0, +2)
+    ;
+    gateLengthMultiplierSlider.setBounds(gateLengthMultiplierBounds);
+
+    auto gateIntervalBounds = bounds.removeFromLeft(columnWidth);
+    gateIntervalBounds =
+        gateIntervalBounds
+        .removeFromTop(topRowHeight)
+        .expanded(8)
+        .translated(0, +10)
+    ;
+    gateIntervalSlider.setBounds(gateIntervalBounds);
+
+    auto gatePortionBounds = bounds.removeFromLeft(columnWidth);
+    gatePortionBounds =
+        gatePortionBounds
+        .removeFromBottom(bottomRowHeight)
+        .expanded(8)
+        .translated(0, +2)
+    ;
+    gatePortionSlider.setBounds(gatePortionBounds);
+}
+
+//==============================================================================
 StripEditor::StripEditor() {
     isOn = false;
     isEnabled = false;
@@ -399,13 +505,11 @@ void GroupEditor::paint(juce::Graphics& g) {
         return;
     }*/
     auto blockHeight = this->sequenceBounds.getHeight() / NUM_STRIPS;
-    auto bombis = this->sequenceBounds.getWidth();
     
     auto numSixteens = numSteps == 0
             ? 1
             : (numSteps + 15) / 16;
     auto blockWidth = this->sequenceBounds.getWidth() / (numSixteens * 16);
-
 
     auto workingBounds = sequenceBounds;
 
@@ -598,6 +702,11 @@ BreaQAudioProcessorEditor::BreaQAudioProcessorEditor (
 {
     juce::LookAndFeel::setDefaultLookAndFeel(&breaQLookAndFeel);
 
+    gates = new GateEditor[NUM_GATES];
+    for (int i = 0; i < NUM_GATES; i++) {
+        gates[i].init(i, vts, *this);
+    }
+
     groups = new GroupEditor[NUM_GROUPS];
     for (int i = 0; i < NUM_GROUPS; i++) {
         groups[i].init(i, vts, *this);
@@ -626,6 +735,11 @@ void BreaQAudioProcessorEditor::paint (juce::Graphics& g) {
     }*/
     g.fillAll(Colours::background1);
 
+    // Do I really need to repaint gates?? 
+    for (int i = 0; i < NUM_GATES; i++) {
+        gates[i].paint(g);
+    }
+
     for (int i = 0; i < NUM_GROUPS; i++) {
         groups[i].paint(g);
     }
@@ -652,7 +766,16 @@ void BreaQAudioProcessorEditor::resized () {
 
     auto titleBounds = bounds.removeFromTop(bounds.getHeight() * 0.05f);
     auto topBounds = bounds.removeFromTop(bounds.getHeight() * 0.5f);
-    auto globalControlsBounds = topBounds.removeFromRight(topBounds.getWidth() * 0.12f);
+
+    auto topColumnWidth = topBounds.getWidth() * 0.12f;
+    auto globalControlsBounds = topBounds.removeFromRight(topColumnWidth);
+
+    auto gateBounds = topBounds.removeFromRight(topColumnWidth);
+
+    auto gateHeight = gateBounds.getHeight() / NUM_GATES;
+    for (int i = 0; i < NUM_GATES; i++) {
+        gates[i].resized(gateBounds.removeFromTop(gateHeight));
+    }
 
     auto groupBounds = topBounds;
 
@@ -676,6 +799,9 @@ void BreaQAudioProcessorEditor::LoadState(Group* groupProcessors, Strip* stripPr
     if (!open) {
         return;
     }
+
+    // Assuming we dont need to load state for Gates
+
     for (int i = 0; i < NUM_GROUPS; i++) {
         if (&groups[i] == nullptr) {
             continue;

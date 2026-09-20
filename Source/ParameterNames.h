@@ -1,12 +1,15 @@
 #pragma once
 
 #include <../JuceLibraryCode/JuceHeader.h>
+
 // Numbers of Things
+#define NUM_GATES 4
 #define NUM_GROUPS 4
 #define NUM_STRIPS 8
 #define NUM_SLICES 2
 #define NUM_CHOICES 8
 #define MAX_STEPS 256
+
 // Note Control Values
 #define NOTE_TAKE_STEP 60
 #define NOTE_SCHEDULE_RESET 61
@@ -16,6 +19,12 @@
 */
 static class ParameterNames {
 public:
+    // Gates
+    const static std::string gateLength[NUM_GATES];
+    const static std::string gateLengthMultiplier[NUM_GATES];
+    const static std::string gateInterval[NUM_GATES];
+    const static std::string gatePortion[NUM_GATES];
+
     // Slices
     const static std::string sliceProbability[128];
     const static std::string sliceLength[128];
