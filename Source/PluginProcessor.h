@@ -175,9 +175,9 @@ public:
     void createParameterLayout(juce::AudioProcessorValueTreeState::ParameterLayout&);
     void loadParameters();
 
-    void createSequence(Strip* strips);
-    void gateSequence();
-    void takeStep(juce::MidiBuffer&, int, Strip*);
+    void createSequence(Strip*, Gate*);
+    void gateSequence(Gate*);
+    void takeStep(juce::MidiBuffer&, int, Strip*, Gate*);
     void openGate(juce::MidiBuffer&, int, Strip*);
     void closeGate(juce::MidiBuffer&, int, Strip*);
     void newNote(Step, Step, juce::MidiBuffer&, int);

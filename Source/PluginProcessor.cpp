@@ -69,6 +69,7 @@ static Strip* choose (
 }
 
 //==============================================================================
+
 static Gate* choose (
     Step * step,
     Gate* gates
@@ -594,7 +595,8 @@ Group::Group() {
 
 //==============================================================================
 void Group::createSequence(
-    Strip* strips
+    Strip* strips,
+    Gate* gates
 ) {
     // release all locks
     for (int i = 0; i < this->numSteps; i++) {
@@ -685,13 +687,13 @@ void Group::createSequence(
     } // Sequence Loop
 
     // Now do the gating
-    this->gateSequence();
+    this->gateSequence(gates);
 
     // Finally do the repeating here (Later)
 }
 
 //==============================================================================
-void Group::gateSequence() {
+void Group::gateSequence(Gate* gates) {
 
     int sequenceSteps = this->numSteps;
     if (sequenceSteps == 0 || this->sequence == nullptr) return;
@@ -722,7 +724,22 @@ void Group::gateSequence() {
             gateLength = 1; // gate:gateInterval
             float gatePortion = 0.5f; // gate:gatePortion
 
-            // Gate* theGate = choose(blockStartStep, this->gates);
+            // Retrieve gate for this step, or the blockStartingStep, Doesnt matter
+            Gate* theGate = choose(blockStartStep, gates);
+            
+            // ToDo: Handle NullPtr here, or maybe handle empty step here?
+            // What if strip has no enabled gates?
+            gateSteps = theGate != nullptr // eww
+                ? theGate->gateLength * theGate->gateLengthMultiplier
+                : 1;
+
+            gateLength = theGate != nullptr // ewwwwwwwww
+                ?  theGate->gateInterval
+                : 1;
+
+            gatePortion = theGate != nullptr // EWWWWWWWWWWWWWWWWWWW
+                ? theGate->gatePortion
+                : 1.0f;
 
             gateIndex = 0; 
             targetGateLimit = static_cast<float>(gateLength) * gatePortion;
@@ -731,15 +748,21 @@ void Group::gateSequence() {
         int l = gateIndex % gateLength;
         float progress = static_cast<float>(l);
 
-        currentStep->isGateOpen = (progress < targetGateLimit);
-        currentStep->isGateClose = (progress >= targetGateLimit) || ((progress + 1.0f) != targetGateLimit);
+        currentStep->isGateOpen = 
+            currentStep->hasValue &&
+            progress < targetGateLimit;
+
+        currentStep->isGateClose =
+            !currentStep->hasValue ||
+            progress >= targetGateLimit || 
+            (progress + 1.0f) != targetGateLimit;
 
         gateIndex++;
     }
 }
 
 //==============================================================================
-void Group::takeStep(juce::MidiBuffer& midiBuffer, int samplePos, Strip* strips) {
+void Group::takeStep(juce::MidiBuffer& midiBuffer, int samplePos, Strip* strips, Gate * gates) {
     Step currentStep = isOn
         ? sequence[step]
         : Step::empty()
@@ -748,7 +771,8 @@ void Group::takeStep(juce::MidiBuffer& midiBuffer, int samplePos, Strip* strips)
     if (++step >= numSteps ||
         needsReset) {
         if (!loop) {
-            createSequence(strips);
+            // ToDo: Figure this out, Need to pass gates here, which means it needs to come into this method
+            createSequence(strips, gates);
         }
         step = 0;
         needsReset = false;
@@ -1219,14 +1243,14 @@ void BreaQAudioProcessor::processBlock (
             for (int g = 0; g < NUM_GROUPS; g++) {
                 switch (current.getNoteNumber()) {
                     case NOTE_TAKE_STEP:
-                        groups[g].takeStep(processedBuffer, samplePos, strips);
+                        groups[g].takeStep(processedBuffer, samplePos, strips, gates);
                         break;
                     case NOTE_SCHEDULE_RESET:
                         // Bad but good enough for now, but come back and fix this
                         // More like "STEP FROM FIRST" than "RESET"
                         // Fine as long as you dont send two note ons at once
                         groups[g].scheduleReset();
-                        groups[g].takeStep(processedBuffer, samplePos, strips);
+                        groups[g].takeStep(processedBuffer, samplePos, strips, gates);
                         break;
                 }
                 
@@ -1270,7 +1294,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout BreaQAudioProcessor::createP
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
 
     gates = new Gate[NUM_GATES];
-
     groups = new Group[NUM_GROUPS];
     strips = new Strip[NUM_STRIPS];
 
