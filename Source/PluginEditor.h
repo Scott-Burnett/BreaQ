@@ -38,7 +38,7 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gateIntervalSliderAttachment;
 
     int gatePortion;
-    OptionSlider gatePortionSlider;
+    juce::Slider gatePortionSlider;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> gatePortionSliderAttachment;
 };
 
@@ -103,6 +103,9 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> rangeSliderAttachment;
 
     // ToDo: Gate Options one two three and four
+    bool* gateOptions;
+    juce::ToggleButton *gateOptionsSliders;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> *gateOptionsSliderAttachments;
 };
 
 //==============================================================================

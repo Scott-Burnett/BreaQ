@@ -43,6 +43,7 @@ public:
     const static std::string stripRepeatLength[32];
     const static std::string stripOffset[32];
     const static std::string stripRange[32];
+    const static std::string stripGateOptions[32];
 
     // Groups
     const static std::string groupEnabled[NUM_GROUPS];

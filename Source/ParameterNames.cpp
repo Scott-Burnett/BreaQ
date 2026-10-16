@@ -975,6 +975,41 @@ const std::string ParameterNames::stripRange[] = {
     "StripRange31"
 };
 
+const std::string ParameterNames::stripGateOptions[NUM_STRIPS * NUM_GATES] = {
+    "stripGateOption0",
+    "stripGateOption1",
+    "stripGateOption2",
+    "stripGateOption3",
+    "stripGateOption4",
+    "stripGateOption5",
+    "stripGateOption6",
+    "stripGateOption7",
+    "stripGateOption8",
+    "stripGateOption9",
+    "stripGateOption10",
+    "stripGateOption11",
+    "stripGateOption12",
+    "stripGateOption13",
+    "stripGateOption14",
+    "stripGateOption15",
+    "stripGateOption16",
+    "stripGateOption17",
+    "stripGateOption18",
+    "stripGateOption19",
+    "stripGateOption20",
+    "stripGateOption21",
+    "stripGateOption22",
+    "stripGateOption23",
+    "stripGateOption24",
+    "stripGateOption25",
+    "stripGateOption26",
+    "stripGateOption27",
+    "stripGateOption28",
+    "stripGateOption29",
+    "stripGateOption30",
+    "stripGateOption31",
+};
+
 const std::string ParameterNames::groupLength[NUM_GROUPS] = {
     "groupLength0",
     "groupLength1",

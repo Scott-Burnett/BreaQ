@@ -22,6 +22,9 @@ static void initSlider (
 
      slider.hideTextBox(false);
 
+    // ToDo: Interrogate this. Seems sketchy but it makes it run a lot faster?
+     slider.setBufferedToImage(true);
+
      sliderAttachment.reset (
          new juce::AudioProcessorValueTreeState::SliderAttachment (
              vts, sliderName, slider
@@ -122,7 +125,13 @@ void GateEditor::init(
 
 //==============================================================================
 void GateEditor::paint(juce::Graphics& g) {
+    g.setColour(Colours::transparentBackground2);
+    g.fillRect(bounds);
+    
+    g.setColour(Colours::transparentOrange4);
+    g.drawRect(bounds, 4);
 
+    needsRepaint = false;
 }
 
 //==============================================================================
@@ -131,42 +140,42 @@ void GateEditor::resized(juce::Rectangle<int> bounds) {
     bounds = bounds.reduced(6);
 
     float columnWidth = bounds.getWidth() / (float) columns;
-    float topRowHeight = bounds.getHeight() * 0.35f;
-    float bottomRowHeight = bounds.getHeight() * 0.6f;
+    float topRowHeight = bounds.getHeight() * 0.45f;
+    float bottomRowHeight = bounds.getHeight() * 0.5f;
 
     auto gateLengthBounds = bounds.removeFromLeft(columnWidth);
     gateLengthBounds =
         gateLengthBounds
-        .removeFromTop(topRowHeight)
+        .removeFromBottom(bottomRowHeight)
         .expanded(8)
-        .translated(0, +10)
+        .translated(0, 0)
     ;
     gateLengthSlider.setBounds(gateLengthBounds);
 
     auto gateLengthMultiplierBounds = bounds.removeFromLeft(columnWidth);
     gateLengthMultiplierBounds =
         gateLengthMultiplierBounds
-        .removeFromBottom(bottomRowHeight)
+        .removeFromTop(topRowHeight)
         .expanded(8)
-        .translated(0, +2)
+        .translated(0, 0)
     ;
     gateLengthMultiplierSlider.setBounds(gateLengthMultiplierBounds);
 
     auto gateIntervalBounds = bounds.removeFromLeft(columnWidth);
     gateIntervalBounds =
         gateIntervalBounds
-        .removeFromTop(topRowHeight)
+        .removeFromBottom(bottomRowHeight)
         .expanded(8)
-        .translated(0, +10)
+        .translated(0, 0)
     ;
     gateIntervalSlider.setBounds(gateIntervalBounds);
 
     auto gatePortionBounds = bounds.removeFromLeft(columnWidth);
     gatePortionBounds =
         gatePortionBounds
-        .removeFromBottom(bottomRowHeight)
+        .removeFromTop(topRowHeight)
         .expanded(8)
-        .translated(0, +2)
+        .translated(0, 0)
     ;
     gatePortionSlider.setBounds(gatePortionBounds);
 }
@@ -179,6 +188,9 @@ StripEditor::StripEditor() {
     choice = 0;
 
     needsRepaint = false;
+
+    gateOptionsSliders = new juce::ToggleButton[NUM_GATES];
+    gateOptionsSliderAttachments = new std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment>[NUM_GATES];
 }
 
 //==============================================================================
@@ -269,6 +281,16 @@ void StripEditor::init (
         vts, 
         editor
     );
+
+    for (int i = 0; i < NUM_GATES; i++) {
+        initButton (
+            ParameterNames::stripGateOptions[stripNumber * NUM_GATES + i], 
+            gateOptionsSliders[i], 
+            gateOptionsSliderAttachments[i], 
+            vts, 
+            editor
+        );
+    }
 }
 
 //==============================================================================
@@ -330,8 +352,13 @@ void StripEditor::resized (juce::Rectangle<int> bounds) {
     chokeSlider.setBounds(chokeBounds);
 
     // Row 6
-    // TODO: Put something else here
-    auto gateDensityBounds = rowBounds.removeFromBottom(rowHeight);
+    auto gateOptionsBounds = rowBounds.removeFromBottom(rowHeight);
+    auto gateOptionsWidth = gateOptionsBounds.getWidth() / NUM_GATES;
+
+    for (int i = 0; i < NUM_GATES; i++) {
+        auto gateOptionBounds = gateOptionsBounds.removeFromLeft(gateOptionsWidth);
+        gateOptionsSliders[i].setBounds(gateOptionBounds);
+    }
 }
 
 //==============================================================================

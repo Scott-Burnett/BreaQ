@@ -79,12 +79,20 @@ static Gate* choose (
         return nullptr;
     }
 
-    // Get availableGates from Strip here
-    int thing = step->strip->group;
+    int candidates = 0;
+    int lookup[NUM_GATES];
+    for (int i = 0; i < NUM_GATES; i++) {
+        if (step->strip->gateOptions[i]) {
+            lookup[candidates++] = i;
+        }
+    }
 
-    int choice = nextInt(0, NUM_GATES - 1);
+    if (candidates == 0) {
+        return nullptr;
+    }
 
-    return &gates[choice];
+    int choice = nextInt(0, candidates - 1);
+    return &gates[lookup[choice]];
 }
 
 //==============================================================================
@@ -181,6 +189,12 @@ Strip::Strip() {
     // new
     gateIsOpen = false;
 
+    gateOptions = new bool[NUM_GATES];
+    gateOptionsParameters = new std::atomic<float>*[NUM_GATES];
+    for (int i = 0; i < NUM_GATES; i++) {
+        gateOptions[i] = false;
+    }
+
     lock = Lock(&group);
 }
 
@@ -237,6 +251,12 @@ void Strip::init (
         ParameterNames::stripRange[stripId]
     );
 
+    for (int i = 0; i < NUM_GATES; i++) {
+        gateOptionsParameters[i] = vts.getRawParameterValue(
+            ParameterNames::stripGateOptions[stripId * NUM_GATES + i]
+        );
+    }
+
     vts.getParameter(ParameterNames::stripProbability[stripId])->
         addListener(&listener);
     vts.getParameter(ParameterNames::stripGroup[stripId])->
@@ -257,6 +277,11 @@ void Strip::init (
         addListener(&listener);
     vts.getParameter(ParameterNames::stripRange[stripId])->
         addListener(&listener);
+
+    for (int i = 0; i < NUM_GATES; i++) {
+        vts.getParameter(ParameterNames::stripGateOptions[stripId * NUM_GATES + i])->
+            addListener(&listener);
+    }
 }
 
 //==============================================================================
@@ -342,6 +367,15 @@ void Strip::createParameterLayout (
         },
         0.0f
     ));
+
+    for (int i = 0; i < NUM_GATES; i++) {
+        layout.add(std::make_unique<juce::AudioParameterChoice> (
+        ParameterNames::stripGateOptions[stripId * NUM_GATES + i], // This right?
+        "Gate Enabled", 
+        ParameterOptions::toggleButtonOptions,
+        0
+    ));
+    }
 }
 
 //==============================================================================
@@ -355,6 +389,10 @@ void Strip::loadParameters() {
     repeatLength = (int) repeatLengthParameter->load() + 1;
     offset = offsetParameter->load();
     range = rangeParameter->load();
+
+    for (int i = 0; i < NUM_GATES; i++) {
+        gateOptions[i] = (bool) gateOptionsParameters[i]->load();
+    }
 }
 
 //==============================================================================

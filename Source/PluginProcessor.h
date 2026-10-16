@@ -40,9 +40,11 @@ public:
     int stripId;
     bool enabled;
     bool isOn;
-
+    
     // New
     bool gateIsOpen;
+    
+    bool *gateOptions;
 
     float choke;
 
@@ -76,6 +78,8 @@ private:
 
     std::atomic<float>* offsetParameter = nullptr;
     std::atomic<float>* rangeParameter = nullptr;
+
+    std::atomic<float>** gateOptionsParameters = nullptr;
 };
 
 //==============================================================================
