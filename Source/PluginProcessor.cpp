@@ -236,9 +236,6 @@ void Strip::init (
     rangeParameter = vts.getRawParameterValue(
         ParameterNames::stripRange[stripId]
     );
-    gateDensityParameter = vts.getRawParameterValue(
-        ParameterNames::stripGateDensity[stripId]
-    );
 
     vts.getParameter(ParameterNames::stripProbability[stripId])->
         addListener(&listener);
@@ -259,8 +256,6 @@ void Strip::init (
     vts.getParameter(ParameterNames::stripOffset[stripId])->
         addListener(&listener);
     vts.getParameter(ParameterNames::stripRange[stripId])->
-        addListener(&listener);
-    vts.getParameter(ParameterNames::stripGateDensity[stripId])->
         addListener(&listener);
 }
 
@@ -346,15 +341,6 @@ void Strip::createParameterLayout (
             0.0f, 1.0f, 0.01f, 1.0f, false
         },
         0.0f
-    ));
-
-    layout.add(std::make_unique<juce::AudioParameterFloat> (
-        ParameterNames::stripGateDensity[stripId], 
-        "Gate Density", 
-        juce::NormalisableRange {
-            0.0f, 1.0f, 0.01f, 1.0f, false
-        },
-        1.0f
     ));
 }
 

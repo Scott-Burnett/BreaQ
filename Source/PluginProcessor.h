@@ -76,9 +76,6 @@ private:
 
     std::atomic<float>* offsetParameter = nullptr;
     std::atomic<float>* rangeParameter = nullptr;
-
-    // New
-    std::atomic<float>* gateDensityParameter = nullptr;
 };
 
 //==============================================================================

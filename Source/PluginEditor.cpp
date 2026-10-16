@@ -269,14 +269,6 @@ void StripEditor::init (
         vts, 
         editor
     );
-
-    initSlider (
-        ParameterNames::stripGateDensity[stripNumber], 
-        gateDensitySlider, 
-        gateDensitySliderAttachment, 
-        vts, 
-        editor
-    );
 }
 
 //==============================================================================
@@ -338,10 +330,8 @@ void StripEditor::resized (juce::Rectangle<int> bounds) {
     chokeSlider.setBounds(chokeBounds);
 
     // Row 6
+    // TODO: Put something else here
     auto gateDensityBounds = rowBounds.removeFromBottom(rowHeight);
-
-    // auto gateDensityBounds = probabilityChokeBounds.removeFromLeft(columnWidth);
-    gateDensitySlider.setBounds(gateDensityBounds);
 }
 
 //==============================================================================
