@@ -91,7 +91,8 @@ static Gate* choose (
         return nullptr;
     }
 
-    int choice = nextInt(0, candidates - 1);
+    // This seems wrong, But NextInt MaxValue is EXCLUSIVE, so we dont need to - 1
+    int choice = nextInt(0, candidates);
     return &gates[lookup[choice]];
 }
 
@@ -466,6 +467,8 @@ Step Step::loadFrom(Strip *strip) {
         127
     );
 
+    // Remember nextInt vMax is EXCLUSIVE!!!
+    // This might be wrong
     juce::uint8 velocity = (juce::uint8) nextInt(vmin, vmax);
 
     Step step;
@@ -776,10 +779,16 @@ void Group::gateSequence(Gate* gates) {
             currentStep->hasValue &&
             progress < targetGateLimit;
 
+        // Old Logic, Seems like it should be simpler??
+        // currentStep->isGateClose =
+        //     !currentStep->hasValue ||
+        //     progress >= targetGateLimit || 
+        //     (progress + 1.0f) != targetGateLimit;
+
+        // New Logic, Try this?
         currentStep->isGateClose =
             !currentStep->hasValue ||
-            progress >= targetGateLimit || 
-            (progress + 1.0f) != targetGateLimit;
+            progress + 1.0f > targetGateLimit;
 
         gateIndex++;
     }
