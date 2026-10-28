@@ -698,6 +698,7 @@ void Group::createSequence(
                     r < repeatSteps) {
 
                     if (d > chokeSteps) {
+                        // TODO: Fill void here?? Just choose another strip? Wouldnt that be cool!?
                         next = Step::empty();
                     }
 
